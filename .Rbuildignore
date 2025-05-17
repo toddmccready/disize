@@ -1,0 +1,6 @@
+^rv$
+^\.bumpversion\.toml$
+^\.lintr$
+^rproject\.toml$
+^rv\.lock$
+^LICENSE\.md$

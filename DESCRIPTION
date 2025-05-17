@@ -12,7 +12,3 @@ Imports:
     brms,
     dplyr,
     reshape2
-Suggests:
-    devtools
-    languageserver
-    lintr

@@ -41,7 +41,7 @@ disize <- function(
     n_genes = 500
 ) {
     # Check design formula is correct
-    if (class(design_formula) != "formula") {
+    if (!is(design_formula, "formula")) {
         stop("'design_formula' should be an R formula.")
     } else if (2 < length(design_formula)) {
         stop("'design_formula' should be of the form '~ x + ...'.")
