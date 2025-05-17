@@ -22,6 +22,6 @@ post_commit_hooks = []
 
 [[tool.bumpversion.files]]
 filename = "DESCRIPTION"
-search = 'Version:.*'
+search = 'Version:\\s*{current_version}\\s*'
 replace = "Version: {new_version}"
 regex = true
