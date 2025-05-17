@@ -1,7 +1,8 @@
 #' Modify the design by adding an interaction by genes
 #'
 #' @param formula this do stuff
-modify_design <- function(formula) {
+#' @param gene_name this also do stuff
+modify_design <- function(formula, gene_name) {
     # Extract terms
     terms <- attr(terms(formula), "term.labels")
 
@@ -10,7 +11,7 @@ modify_design <- function(formula) {
     terms[grepl("\\|", terms)] <- paste0(terms[grepl("\\|", terms)], ")")
 
     # Add interaction
-    terms <- paste0("(", terms, ":gene", ")")
+    terms <- paste0("(", terms, ":", gene_name, ")")
 
     # Reconstruct formula
     formula <- paste(terms, collapse = " + ")
@@ -29,6 +30,8 @@ modify_design <- function(formula) {
 #' @param metadata A dataframe containing sample metadata.
 #' @param model_data The model data if already formatted.
 #' @param batch_name The identifier for the batch column in 'metadata'.
+#' @param sample_name The identifier for the sample column in 'metadata'.
+#' @param gene_name The identifier for the gene column in 'model_data'.
 #' @param n_genes The number of genes used to estimate size factors.
 #'
 #' @export
@@ -38,6 +41,8 @@ disize <- function(
     metadata = NULL,
     model_data = NULL,
     batch_name = "batch",
+    sample_name = "sample",
+    gene_name = "gene",
     n_genes = 500
 ) {
     # Check design formula is correct
@@ -65,14 +70,14 @@ disize <- function(
         # Format counts to include sample-level and gene-level in long format
         counts <- reshape2::melt(
             counts,
-            c("sample", "gene"),
+            c(sample_name, gene_name),
             value.name = "counts"
         )
-        counts <- counts |>
-            dplyr::mutate(sample = factor(sample), gene = factor(gene))
+        counts[[sample_name]] <- factor(counts[[sample_name]])
+        counts[[gene_name]] <- factor(counts[[gene_name]])
 
         # Merge counts and metadata
-        model_data <- base::merge(counts, metadata, by = "sample")
+        model_data <- merge(counts, metadata, by = sample_name)
     } else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
         model_data <- model_data
     } else {
@@ -86,9 +91,6 @@ disize <- function(
     design <- modify_design(design_formula)
     design_formula <- paste0("design ~ 0 + ", design$formula)
 
-    # Construct batch-effect formula
-    batch_formula <- paste0("sf ~ 0 + ", batch_name)
-
     # Extract number of batches
     n_batches <- length(unique(model_data[[batch_name]]))
 
@@ -100,8 +102,8 @@ disize <- function(
     )
     formula <- brms::bf(formula, nl = TRUE) +
         brms::lf(design_formula) +
-        brms::lf(batch_formula) +
-        brms::lf(intercept ~ 0 + gene)
+        brms::lf(paste0("sf ~ 0 + ", batch_name)) +
+        brms::lf(paste0("intercept ~ 0 + ", gene_name))
 
     # Construct priors
     priors <- brms::prior_string(
