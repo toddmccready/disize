@@ -20,7 +20,7 @@ setup_hooks = []
 pre_commit_hooks = []
 post_commit_hooks = []
 
-[[file]]
+[[tool.bumpversion.files]]
 path = "DESCRIPTION"
 search = "Version: {version}"
 replace = "Version: {new_version}"
