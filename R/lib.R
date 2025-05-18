@@ -23,16 +23,26 @@ modify_design <- function(formula, gene_name) {
     )
 }
 
-#' @title Estimate size factors
+#' @title Design-infored size factor estimation.
+#'
 #'
 #' @param design_formula The formula describing the experimental design.
-#' @param counts A samples x genes count matrix.
+#' @param counts A (samples x genes) count matrix.
 #' @param metadata A dataframe containing sample metadata.
-#' @param model_data The model data if already formatted.
-#' @param batch_name The identifier for the batch column in 'metadata'.
-#' @param sample_name The identifier for the sample column in 'metadata'.
-#' @param gene_name The identifier for the gene column in 'model_data'.
-#' @param n_genes The number of genes used to estimate size factors.
+#' @param model_data The model data if already constructed. Must contain the
+#'  'batch_name', 'sample_name', 'gene_name' identifiers as columns and any
+#'  predictors used in 'design_formula'.
+#' @param batch_name The identifier for the batch column in 'metadata',
+#'  defaults to "batch".
+#' @param sample_name The identifier for the sample column in 'metadata',
+#'  defaults to "sample".
+#' @param gene_name The identifier for the gene column in 'model_data',
+#'  defaults to "gene".
+#' @param n_genes The number of genes used during estimation, defaults to 500.
+#'  Increasing this value will result in this function taking longer but more
+#'  confidence in the size factors.
+#'
+#' @returns A named numeric vector containing the size factor point estimates.
 #'
 #' @export
 disize <- function(
@@ -127,7 +137,7 @@ disize <- function(
     model <- brms::brm(
         formula,
         model_data,
-        family = stats::poisson(),
+        family = "negbinomial",
         priors,
         algorithm = "meanfield",
         iter = 1e5

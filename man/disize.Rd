@@ -2,7 +2,7 @@
 % Please edit documentation in R/lib.R
 \name{disize}
 \alias{disize}
-\title{Estimate size factors}
+\title{Design-infored size factor estimation.}
 \usage{
 disize(
   design_formula,
@@ -10,22 +10,38 @@ disize(
   metadata = NULL,
   model_data = NULL,
   batch_name = "batch",
+  sample_name = "sample",
+  gene_name = "gene",
   n_genes = 500
 )
 }
 \arguments{
 \item{design_formula}{The formula describing the experimental design.}
 
-\item{counts}{A samples x genes count matrix.}
+\item{counts}{A (samples x genes) count matrix.}
 
 \item{metadata}{A dataframe containing sample metadata.}
 
-\item{model_data}{The model data if already formatted.}
+\item{model_data}{The model data if already constructed. Must contain the
+'batch_name', 'sample_name', 'gene_name' identifiers as columns and any
+predictors used in 'design_formula'.}
 
-\item{batch_name}{The identifier for the batch column in 'metadata'.}
+\item{batch_name}{The identifier for the batch column in 'metadata',
+defaults to "batch".}
 
-\item{n_genes}{The number of genes used to estimate size factors.}
+\item{sample_name}{The identifier for the sample column in 'metadata',
+defaults to "sample".}
+
+\item{gene_name}{The identifier for the gene column in 'model_data',
+defaults to "gene".}
+
+\item{n_genes}{The number of genes used during estimation, defaults to 500.
+Increasing this value will result in this function taking longer but more
+confidence in the size factors.}
+}
+\value{
+A named numeric vector containing the size factor point estimates.
 }
 \description{
-Estimate size factors
+Design-infored size factor estimation.
 }
