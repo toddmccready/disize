@@ -93,7 +93,8 @@ disize <- function(
     } else {
         stop(
             "either 'counts', 'metadata' can be specified(and 'model_data' ",
-            "left NULL) or 'model_data' can be specified."
+            "left NULL) or 'model_data' can be specified(and 'counts', ",
+            "'metadata' left NULL)"
         )
     }
 
