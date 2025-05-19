@@ -5,7 +5,7 @@ r_version = "4.5"
 # any CRAN-type repository, order matters. Additional ability to force source package installation
 # Example: {alias = "CRAN", url = "https://cran.r-project.org", force_source = true}
 repositories = [
-    {alias = "CRAN", url = "https://cloud.r-project.org"},
+    { alias = "CRAN", url = "https://cran.r-project.org" }
 ]
 
 # package to install and any specifications. Any descriptive dependency can have the `install_suggestions` specification
@@ -16,10 +16,5 @@ repositories = [
     # {name = "dplyr", path = "/path/to/local/dplyr"},
 dependencies = [
     "brms",
-    "dplyr",
     "reshape2",
-    "devtools",
-    "languageserver",
-    "lintr",
 ]
-
