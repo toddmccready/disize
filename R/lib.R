@@ -73,6 +73,7 @@ disize <- function(
         }
 
         # Subset genes for model
+        n_genes <- min(n_genes, nrow(counts))
         counts <- counts[, order(colMeans(counts != 0), decreasing = TRUE)[
             1:n_genes
         ]]
@@ -89,7 +90,13 @@ disize <- function(
         # Merge counts and metadata
         model_data <- merge(counts, metadata, by = sample_name)
     } else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
-        model_data <- model_data
+        # Ensure relevant terms are factors
+        if (!is(model_data[[batch_name]], "factor")) {
+            model_data[[batch_name]] <- factor(model_data[[batch_name]])
+        }
+        if (!is(model_data[[gene_name]], "factor")) {
+            model_data[[gene_name]] <- factor(model_data[[gene_name]])
+        }
     } else {
         stop(
             "either 'counts', 'metadata' can be specified(and 'model_data' ",
@@ -99,7 +106,7 @@ disize <- function(
     }
 
     # Modify the design formula
-    design <- modify_design(design_formula)
+    design <- modify_design(design_formula, gene_name)
     design_formula <- paste0("design ~ 0 + ", design$formula)
 
     # Extract number of batches

@@ -11,3 +11,6 @@ RoxygenNote: 7.3.2
 Imports:
     brms,
     reshape2
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
