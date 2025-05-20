@@ -1,8 +1,10 @@
 # **disize**: A tool for size factor estimation
 
-Thought of a way to use sparsity-inducing priors to leverage experimental design when estimating size factors.
+Leverage experimental design for size factor estimation by providing a `design_formula` to `disize`.
 
-The only function exported is `disize::disize`, provide your count matrix and a dataframe providing metadata for the samples (or pass an explicit `model_data` argument) and you're good to go.
+Currently, `disize` accepts either a count matrix `counts` and a `metadata` dataframe containing observation-level metadata(the predictors in your design!), or an already formatted `model_data` dataframe.
+
+Note: the rows of `counts` should have the same names as the `obs_name` column in `metadata`. If `counts` has no column names, `disize` assumes it is ordered such that the column indices correspond to the row indices of `metadata`.
 
 # Examples
 ```r

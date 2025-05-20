@@ -86,14 +86,19 @@ disize <- function(
         # Format counts to include sample-level and gene-level in long format
         counts <- reshape2::melt(
             counts,
-            c(sample_name, gene_name),
+            c(obs_name, gene_name),
             value.name = "counts"
         )
-        counts[[sample_name]] <- factor(counts[[sample_name]])
+        counts[[obs_name]] <- factor(counts[[obs_name]])
         counts[[gene_name]] <- factor(counts[[gene_name]])
 
+        # If 'obs_name' is not present assume indices match
+        if (is.null(metadata[[obs_name]])) {
+            metadata[[obs_name]] <- 1:nrow(metadata)
+        }
+
         # Merge counts and metadata
-        model_data <- merge(counts, metadata, by = sample_name)
+        model_data <- merge(counts, metadata, by = obs_name)
     } else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
         # Ensure relevant terms are factors
         if (!is(model_data[[batch_name]], "factor")) {
