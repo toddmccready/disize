@@ -35,5 +35,5 @@ Note: the rows of `counts` should have the same names as the `obs_name` column i
 ```
 
 # TODO
-- Do custom convergence checks for size factor parameters, essentially compile the model once and use the "init" argument for rstan::optimization to optimize in smaller passes, then add custom stopping conditions for the size factors.
+- Do custom convergence checks for size factor parameters, essentially compile the model once and use the "init" argument for rstan::optimization to optimize in shorter passes, then add custom stopping conditions for the size factors.
 - Offer downsampling (i.i.d) observations as we don't care about precision of expression estimates.
