@@ -5,16 +5,14 @@ r_version = "4.5"
 # any CRAN-type repository, order matters. Additional ability to force source package installation
 # Example: {alias = "CRAN", url = "https://cran.r-project.org", force_source = true}
 repositories = [
-    { alias = "CRAN", url = "https://cran.r-project.org" }
+    { alias = "CRAN", url = "https://cran.r-project.org" },
+    { alias = "STAN", url = "https://stan-dev.r-universe.dev" },
 ]
 
 # package to install and any specifications. Any descriptive dependency can have the `install_suggestions` specification
 # Examples:
-    # "dplyr",
-    # {name = "dplyr", repository = "CRAN", force_source = true},
-    # {name = "dplyr", git = "https://github.com/tidyverse/dplyr.git", tag = "v1.1.4"},
-    # {name = "dplyr", path = "/path/to/local/dplyr"},
-dependencies = [
-    "brms",
-    "reshape2",
-]
+# "dplyr",
+# {name = "dplyr", repository = "CRAN", force_source = true},
+# {name = "dplyr", git = "https://github.com/tidyverse/dplyr.git", tag = "v1.1.4"},
+# {name = "dplyr", path = "/path/to/local/dplyr"},
+dependencies = ["brms", "reshape2", "devtools", "testthat", "cmdstanr"]

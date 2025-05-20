@@ -3,3 +3,4 @@
 ^rproject\.toml$
 ^rv\.lock$
 ^LICENSE\.md$
+^old-README$

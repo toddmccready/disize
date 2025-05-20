@@ -11,6 +11,9 @@ RoxygenNote: 7.3.2
 Imports:
     brms,
     reshape2
-Suggests: 
-    testthat (>= 3.0.0)
+Suggests:
+    testthat (>= 3.0.0),
+    dplyr (>= 1.1.4),
+    purrr (>= 1.0.4),
+    tidyr (>= 1.3.1)
 Config/testthat/edition: 3

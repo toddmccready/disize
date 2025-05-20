@@ -10,27 +10,28 @@ disize(
   metadata = NULL,
   model_data = NULL,
   batch_name = "batch",
-  sample_name = "sample",
+  obs_name = "obs",
   gene_name = "gene",
-  n_genes = 500
+  n_genes = 500,
+  n_threads = 1
 )
 }
 \arguments{
 \item{design_formula}{The formula describing the experimental design.}
 
-\item{counts}{A (samples x genes) count matrix.}
+\item{counts}{A (obsservation x feature) count matrix.}
 
 \item{metadata}{A dataframe containing sample metadata.}
 
 \item{model_data}{The model data if already constructed. Must contain the
-'batch_name', 'sample_name', 'gene_name' identifiers as columns and any
+'batch_name', 'obs_name', 'gene_name' identifiers as columns and any
 predictors used in 'design_formula'.}
 
 \item{batch_name}{The identifier for the batch column in 'metadata',
 defaults to "batch".}
 
-\item{sample_name}{The identifier for the sample column in 'metadata',
-defaults to "sample".}
+\item{obs_name}{The identifier for the observation column in 'metadata',
+defaults to "obs".}
 
 \item{gene_name}{The identifier for the gene column in 'model_data',
 defaults to "gene".}
@@ -38,6 +39,9 @@ defaults to "gene".}
 \item{n_genes}{The number of genes used during estimation, defaults to 500.
 Increasing this value will result in this function taking longer but more
 confidence in the size factors.}
+
+\item{n_threads}{The number of threads to be used during estimation,
+defaults to 1. Increasing this value will generally decrease runtime.}
 }
 \value{
 A named numeric vector containing the size factor point estimates.
