@@ -58,8 +58,12 @@ disize <- function(
     gene_name = "gene",
     n_genes = 500,
     n_threads = NULL,
-    verbose = TRUE
+    verbose = 3,
+    n_passes = 10,
+    n_iters = 100,
+    tolerance = 1e-3
 ) {
+    # Argument checks ----
     # Check design formula is correct
     if (!is(design_formula, "formula")) {
         stop("'design_formula' should be an R formula")
@@ -115,6 +119,7 @@ disize <- function(
         )
     }
 
+    # Formatting ----
     # Save batch names
     batches <- levels(model_data[[batch_name]])
 
@@ -167,7 +172,7 @@ disize <- function(
         prior = priors,
         threads = brms::threading(n_threads)
     )
-    my_data <- brms::standata(
+    model_data <- brms::standata(
         formula,
         data = model_data,
         family = "negbinomial",
@@ -178,16 +183,69 @@ disize <- function(
     # Construct model
     model <- rstan::stan_model(model_code = my_code)
 
-    # Estimate model parameters
+    # Estimate model parameters ----
     if (verbose) message("Estimating size factors...")
-    fit <- rstan::optimizing(model, data = my_data)
 
-    # Extract and name size factors
-    size_factors <- fit$theta_tilde[grepl("sf", colnames(fit$theta_tilde))]
-    names(size_factors) <- batches
+    # Free up space
+    gc()
 
-    # Transform size factors to more useful scale
-    size_factors <- log(size_factors) + log(n_batches)
+    # Construct progress bar
+    if (2 < verbose) {
+        pb <- progress::progress_bar$new(total = n_passes)
+        pb$tick(0)
+    }
 
-    size_factors
+    # Compute initial fit
+    cur_fit <- rstan::optimizing(
+        model,
+        data = model_data,
+        iter = n_iters,
+        as_vector = FALSE
+    )
+
+    # Extract size factors
+    cur_sf <- log(cur_fit$par$b_sf) + log(n_batches)
+
+    if (2 < verbose) pb$tick()
+    for (i in 1:(n_passes - 1)) {
+        # Store previous size factors
+        prev_sf <- cur_sf
+
+        # Compute next fit
+        cur_fit <- rstan::optimizing(
+            model,
+            data = model_data,
+            iter = n_iters,
+            init = cur_fit$par,
+            as_vector = FALSE
+        )
+
+        # Extract size factors
+        cur_sf <- log(cur_fit$par$b_sf) + log(n_batches)
+
+        # Free up space
+        gc()
+
+        # Evaluate convergence
+        if (all(abs(cur_sf - prev_sf) < tolerance)) {
+            # Name and return size factors
+            names(cur_sf) <- batches
+
+            if (2 < verbose) pb$terminate()
+            return(cur_sf)
+        }
+
+        if (2 < verbose) pb$tick()
+    }
+
+    if (1 < verbose) {
+        warning("Model did not converge, size factors may be imprecise.")
+    }
+
+    # Terminate progress bar
+    if (2 < verbose) pb$terminate()
+
+    # Name and return size factors
+    names(cur_sf) <- batches
+    cur_sf
 }

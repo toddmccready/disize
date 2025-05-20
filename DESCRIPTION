@@ -10,7 +10,8 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports:
     brms,
-    reshape2
+    reshape2,
+    progress
 Suggests:
     testthat (>= 3.0.0),
     dplyr (>= 1.1.4),

@@ -46,7 +46,7 @@ test_that("small-simple-bulk", {
             d = pmap(list(gene, donor, q, sf), function(g, d, q, sf) {
                 tibble(
                     cell_barcode = paste0(d, "_", 1:n_o),
-                    counts = rnbinom(n_o, mu = q * sf, size = 100)
+                    counts = as.integer(rnbinom(n_o, mu = q * sf, size = 100))
                 )
             })
         ) |>
@@ -60,7 +60,7 @@ test_that("small-simple-bulk", {
     ))
 
     expect_equal(
-        object = unname(size_factors),
+        object = as.vector(unname(size_factors)),
         expected = (true_sf$sf / sum(true_sf$sf)) * n_d,
         tolerance = 0.1
     )
@@ -110,7 +110,7 @@ test_that("large-simple-bulk", {
             d = pmap(list(gene, donor, q, sf), function(g, d, q, sf) {
                 tibble(
                     cell_barcode = paste0(d, "_", 1:n_o),
-                    counts = rnbinom(n_o, mu = q * sf, size = 100)
+                    counts = as.integer(rnbinom(n_o, mu = q * sf, size = 100))
                 )
             })
         ) |>
@@ -125,7 +125,7 @@ test_that("large-simple-bulk", {
     ))
 
     expect_equal(
-        object = unname(size_factors),
+        object = as.vector(unname(size_factors)),
         expected = (true_sf$sf / sum(true_sf$sf)) * n_d,
         tolerance = 0.1
     )
@@ -179,7 +179,11 @@ test_that("small-simple-sc", {
                 function(g, d, p, q, sf) {
                     tibble(
                         cell_barcode = paste0(d, ":", p, "_", 1:n_o),
-                        counts = rnbinom(n_o, mu = q * sf, size = 100)
+                        counts = as.integer(rnbinom(
+                            n_o,
+                            mu = q * sf,
+                            size = 100
+                        ))
                     )
                 }
             )
@@ -195,7 +199,7 @@ test_that("small-simple-sc", {
     ))
 
     expect_equal(
-        object = unname(size_factors),
+        object = as.vector(unname(size_factors)),
         expected = (true_sf$sf / sum(true_sf$sf)) * n_d,
         tolerance = 0.1
     )
@@ -205,7 +209,7 @@ test_that("small-simple-sc", {
 test_that("large-simple-sc", {
     # Simulate data
     n_g <- 500
-    n_d <- 4
+    n_d <- 6
     n_p <- 2
     n_o <- 50
 
@@ -250,7 +254,11 @@ test_that("large-simple-sc", {
                 function(g, d, p, q, sf) {
                     tibble(
                         cell_barcode = paste0(d, ":", p, "_", 1:n_o),
-                        counts = rnbinom(n_o, mu = q * sf, size = 100)
+                        counts = as.integer(rnbinom(
+                            n_o,
+                            mu = q * sf,
+                            size = 100
+                        ))
                     )
                 }
             )
@@ -266,7 +274,7 @@ test_that("large-simple-sc", {
     ))
 
     expect_equal(
-        object = unname(size_factors),
+        object = as.vector(unname(size_factors)),
         expected = (true_sf$sf / sum(true_sf$sf)) * n_d,
         tolerance = 0.1
     )
