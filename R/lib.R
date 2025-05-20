@@ -57,14 +57,14 @@ disize <- function(
     obs_name = "obs",
     gene_name = "gene",
     n_genes = 500,
-    n_threads = 1,
-    backend = "rstan"
+    n_threads = NULL,
+    verbose = TRUE
 ) {
     # Check design formula is correct
     if (!is(design_formula, "formula")) {
-        stop("'design_formula' should be an R formula.")
+        stop("'design_formula' should be an R formula")
     } else if (2 < length(design_formula)) {
-        stop("'design_formula' should be of the form '~ x + ...'.")
+        stop("'design_formula' should be of the form '~ x + ...'")
     }
 
     # Check data is inputted correctly
@@ -110,12 +110,15 @@ disize <- function(
         )
     }
 
+    # Save batch names
+    batches <- levels(model_data[[batch_name]])
+
     # Modify the design formula
     design <- modify_design(design_formula, gene_name)
     design_formula <- paste0("design ~ 0 + ", design$formula)
 
     # Extract number of batches
-    n_batches <- length(unique(model_data[[batch_name]]))
+    n_batches <- length(batches)
 
     # Construct formula for brms
     formula <- paste0(
@@ -135,31 +138,51 @@ disize <- function(
     )
 
     # Include optional priors
+    if (any(!design$random)) {
+        # Induce sparsity in fixed effects
+        priors <- priors +
+            brms::prior(
+                "horseshoe(main = TRUE)",
+                class = "b",
+                nlpar = "design"
+            )
+    }
     if (any(design$random)) {
         # Induce sparsity in random effects
         priors <- priors +
             brms::prior("horseshoe(1)", class = "sd", nlpar = "design")
     }
-    if (any(!design$random)) {
-        # Induce sparsity in fixed effects
-        priors <- priors +
-            brms::prior("horseshoe(1)", class = "b", nlpar = "design")
-    }
 
-    # Estimate model parameters
-    model <- brms::brm(
+    # Construct Stan code
+    if (verbose) message("Compiling Stan model...")
+    my_code <- brms::stancode(
         formula,
-        model_data,
+        data = model_data,
         family = "negbinomial",
-        priors,
-        algorithm = "meanfield",
-        iter = 1e5,
-        threads = brms::threading(n_threads),
-        backend = backend
+        prior = priors,
+        threads = brms::threading(n_threads)
+    )
+    my_data <- brms::standata(
+        formula,
+        data = model_data,
+        family = "negbinomial",
+        prior = priors,
+        threads = brms::threading(n_threads)
     )
 
-    # Extract size factors
-    size_factors <- log(brms::fixef(model)[1:n_batches, 1]) + log(n_batches)
+    # Construct model
+    model <- rstan::stan_model(model_code = my_code)
+
+    # Estimate model parameters
+    if (verbose) message("Estimating size factors...")
+    fit <- rstan::optimizing(model, data = my_data)
+
+    # Extract and name size factors
+    size_factors <- fit$theta_tilde[grepl("sf", colnames(fit$theta_tilde))]
+    names(size_factors) <- batches
+
+    # Transform size factors to more useful scale
+    size_factors <- log(size_factors) + log(n_batches)
 
     size_factors
 }

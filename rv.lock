@@ -258,22 +258,6 @@ force_source = false
 dependencies = []
 
 [[packages]]
-name = "cmdstanr"
-version = "0.9.0"
-source = { repository = "https://stan-dev.r-universe.dev", git = "https://github.com/stan-dev/cmdstanr", sha = "da99e2ba954658bdad63bffb738c4444c33a4e0e" }
-force_source = false
-dependencies = [
-    "checkmate",
-    "data.table",
-    { name = "jsonlite", requirement = "(>= 1.2.0)" },
-    { name = "posterior", requirement = "(>= 1.4.1)" },
-    { name = "processx", requirement = "(>= 3.5.0)" },
-    { name = "R6", requirement = "(>= 2.4.0)" },
-    { name = "withr", requirement = "(>= 2.5.0)" },
-    { name = "rlang", requirement = "(>= 0.4.7)" },
-]
-
-[[packages]]
 name = "coda"
 version = "0.19-4.1"
 source = { repository = "https://cran.r-project.org" }
@@ -326,13 +310,6 @@ dependencies = [
 [[packages]]
 name = "curl"
 version = "6.2.2"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
-
-[[packages]]
-name = "data.table"
-version = "1.17.2"
 source = { repository = "https://cran.r-project.org" }
 force_source = false
 dependencies = []
