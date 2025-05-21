@@ -253,5 +253,5 @@ disize <- function(
     sf <- sf_hist[[i]]
     names(sf) <- batches
 
-    cur_sf
+    sf
 }
