@@ -28,7 +28,7 @@ Note: the rows of `counts` should have the same names as the `obs_name` column i
 +     design_formula = ~ cell_type + (1 | donor:cell_type),
 +     model_data = data,
 +     n_threads = 7,
-+     verbose = FALSE
++     verbose = 0
 + ))
          1          2
 -0.9821126  0.4858037
