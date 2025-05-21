@@ -4,7 +4,7 @@ library(purrr)
 
 test_that("small-simple-bulk", {
     # Simulate data
-    n_g <- 100
+    n_g <- 500
     n_d <- 2
     n_o <- 1
 
@@ -51,12 +51,13 @@ test_that("small-simple-bulk", {
             })
         ) |>
         unnest(d) |>
-        select(gene, donor, batch, cell_barcode, counts)
+        select(gene, donor, batch, counts)
 
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ (1 | donor),
-        model_data = data
+        model_data = data,
+        n_threads = ceiling(parallel::detectCores() / 2)
     ))
 
     expect_equal(
@@ -115,13 +116,13 @@ test_that("large-simple-bulk", {
             })
         ) |>
         unnest(d) |>
-        select(gene, donor, batch, cell_barcode, counts)
+        select(gene, donor, batch, counts)
 
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ (1 | donor),
         model_data = data,
-        n_threads = max(parallel::detectCores() - 1L, 1L)
+        n_threads = ceiling(parallel::detectCores() / 2)
     ))
 
     expect_equal(
@@ -133,7 +134,7 @@ test_that("large-simple-bulk", {
 
 test_that("small-simple-sc", {
     # Simulate data
-    n_g <- 100
+    n_g <- 500
     n_d <- 2
     n_p <- 3
     n_o <- 50
@@ -189,13 +190,13 @@ test_that("small-simple-sc", {
             )
         ) |>
         unnest(d) |>
-        select(gene, donor, batch, cell_type, cell_barcode, counts)
+        select(gene, donor, batch, cell_type, counts)
 
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         model_data = data,
-        n_threads = max(parallel::detectCores() - 1L, 1L)
+        n_threads = ceiling(parallel::detectCores() / 2)
     ))
 
     expect_equal(
@@ -210,7 +211,7 @@ test_that("large-simple-sc", {
     # Simulate data
     n_g <- 500
     n_d <- 6
-    n_p <- 2
+    n_p <- 3
     n_o <- 50
 
     data <- tibble(gene = 1:n_g) |>
@@ -264,13 +265,13 @@ test_that("large-simple-sc", {
             )
         ) |>
         unnest(d) |>
-        select(gene, donor, batch, cell_type, cell_barcode, counts)
+        select(gene, donor, batch, cell_type, counts)
 
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         model_data = data,
-        n_threads = max(parallel::detectCores() - 1L, 1L)
+        n_threads = 4
     ))
 
     expect_equal(

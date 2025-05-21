@@ -59,7 +59,7 @@ disize <- function(
     n_genes = 500,
     n_threads = NULL,
     verbose = 3,
-    n_passes = 10,
+    n_passes = 20,
     n_iters = 100,
     tolerance = 1e-3
 ) {

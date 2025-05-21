@@ -35,4 +35,5 @@ Note: the rows of `counts` should have the same names as the `obs_name` column i
 ```
 
 # TODO
+- Figure out why n_threads doesn't work properly and just defaults to every core.
 - Offer downsampling (i.i.d) observations as we don't care about precision of expression estimates.
