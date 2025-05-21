@@ -184,8 +184,8 @@ disize <- function(
         threads = brms::threading(n_threads)
     )
 
-    # Construct model
-    model <- rstan::stan_model(model_code = my_code)
+    # Compile model
+    model <- rstan::stan_model(model_code = my_code, allow_optimizations = TRUE)
 
     # Estimate model parameters ----
     if (verbose) message("Estimating size factors...")
@@ -208,13 +208,11 @@ disize <- function(
     )
 
     # Extract size factors
-    cur_sf <- log(cur_fit$par$b_sf) + log(n_batches)
+    sf_hist <- list()
+    sf_hist[[1]] <- log(cur_fit$par$b_sf) + log(n_batches)
 
     if (2 < verbose) pb$tick()
-    for (i in 1:(n_passes - 1)) {
-        # Store previous size factors
-        prev_sf <- cur_sf
-
+    for (i in 2:n_passes) {
         # Compute next fit
         cur_fit <- rstan::optimizing(
             model,
@@ -225,18 +223,20 @@ disize <- function(
         )
 
         # Extract size factors
-        cur_sf <- log(cur_fit$par$b_sf) + log(n_batches)
+        sf_hist[[i]] <- log(cur_fit$par$b_sf) + log(n_batches)
 
         # Free up space
         gc()
 
         # Evaluate convergence
-        if (all(abs(cur_sf - prev_sf) < tolerance)) {
+        # TODO: do something smart with the history
+        if (all(abs(sf_hist[[i]] - sf_hist[[i - 1]]) < tolerance)) {
             # Name and return size factors
-            names(cur_sf) <- batches
+            sf <- sf_hist[[i]]
+            names(sf) <- batches
 
             if (2 < verbose) pb$terminate()
-            return(cur_sf)
+            return(sf)
         }
 
         if (2 < verbose) pb$tick()
@@ -250,6 +250,8 @@ disize <- function(
     if (2 < verbose) pb$terminate()
 
     # Name and return size factors
-    names(cur_sf) <- batches
+    sf <- sf_hist[[i]]
+    names(sf) <- batches
+
     cur_sf
 }
