@@ -152,7 +152,7 @@ disize <- function(
         # Induce sparsity in fixed effects
         priors <- priors +
             brms::prior(
-                "horseshoe(main = TRUE)",
+                "horseshoe(main = TRUE, scale_slab = 10000)",
                 class = "b",
                 nlpar = "design"
             )
@@ -160,7 +160,11 @@ disize <- function(
     if (any(design$random)) {
         # Induce sparsity in random effects
         priors <- priors +
-            brms::prior("horseshoe(1)", class = "sd", nlpar = "design")
+            brms::prior(
+                "horseshoe(1, scale_slab = 10000)",
+                class = "sd",
+                nlpar = "design"
+            )
     }
 
     # Construct Stan code
