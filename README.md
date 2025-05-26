@@ -1,4 +1,4 @@
-# **disize**: A tool for size factor estimation
+# `disize`: A tool for size factor estimation
 
 Leverage experimental design for size factor estimation by providing a `design_formula` to `disize`.
 

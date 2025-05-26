@@ -1,7 +1,7 @@
 #' Modify the design by adding an interaction by genes
 #'
-#' @param formula this do stuff
-#' @param gene_name this also do stuff
+#' @param formula The design formula
+#' @param gene_name The identifier for genes in `model_data`.
 modify_design <- function(formula, gene_name) {
     # Extract terms
     terms <- attr(terms(formula), "term.labels")
