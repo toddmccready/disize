@@ -41,6 +41,8 @@ modify_design <- function(formula, gene_name) {
 #' @param n_genes The number of genes used during estimation, defaults to 500.
 #'  Increasing this value will result in this function taking longer but more
 #'  confidence in the size factors.
+#' @param n_subset The number of observations per experimental unit used during
+#'  estimation, defaults to 50.
 #' @param n_threads The number of threads to be used during estimation,
 #'  defaults to 1. Increasing this value will generally decrease runtime.
 #' @param backend How to call Stan, defaults to "rstan".
@@ -57,6 +59,7 @@ disize <- function(
     obs_name = "obs",
     gene_name = "gene",
     n_genes = 500,
+    n_subset = 50,
     n_threads = NULL,
     verbose = 3,
     n_passes = 20,
@@ -82,7 +85,7 @@ disize <- function(
         }
 
         # Subset genes
-        n_genes <- min(n_genes, nrow(counts))
+        n_genes <- min(n_genes, ncol(counts))
 
         ordering <- order(Matrix::colMeans(counts != 0), decreasing = TRUE)
         counts <- counts[, ordering[1:n_genes]]
@@ -91,10 +94,11 @@ disize <- function(
         predictors <- all.vars(design_formula)
         metadata <- metadata |>
             dplyr::group_by(dplyr::across(dplyr::all_of(predictors))) |>
-            dplyr::slice_sample(n = 50, replace = FALSE) |>
-            dplyr::ungroup()
+            dplyr::slice_sample(n = n_subset, replace = FALSE) |>
+            dplyr::ungroup() |>
+            dplyr::select(dplyr::all_of(c(predictors, obs_name, batch_name)))
 
-        counts <- counts[metadata[["obs_name"]], ]
+        counts <- counts[metadata[[obs_name]], ]
 
         # Convert to dense matrix if needed
         if (is(counts, "sparseMatrix")) {
@@ -125,6 +129,10 @@ disize <- function(
         if (!is(model_data[[gene_name]], "factor")) {
             model_data[[gene_name]] <- factor(model_data[[gene_name]])
         }
+
+        # Format characters to factors
+        model_data <- model_data |>
+            dplyr::mutate(dplyr::across(dplyr::where(is.character), as.factor))
     } else {
         stop(
             "either 'counts', 'metadata' can be specified(and 'model_data' ",
