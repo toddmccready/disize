@@ -271,7 +271,7 @@ test_that("large-simple-sc", {
     size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         model_data = data,
-        n_threads = 4
+        n_threads = 8
     ))
 
     expect_equal(

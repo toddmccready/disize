@@ -77,7 +77,7 @@ disize <- function(
         if (nrow(metadata) != nrow(counts)) {
             stop(
                 "'counts' and 'metadata' should have the same # of ",
-                "samples(rows)."
+                "observations(rows)."
             )
         }
 
@@ -86,6 +86,11 @@ disize <- function(
         counts <- counts[, order(colMeans(counts != 0), decreasing = TRUE)[
             1:n_genes
         ]]
+
+        # Convert to dense matrix if needed
+        if (is(counts, "sparseMatrix")) {
+            counts <- as.matrix(counts)
+        }
 
         # Format counts to include sample-level and gene-level in long format
         counts <- reshape2::melt(
@@ -204,7 +209,8 @@ disize <- function(
         model,
         data = model_data,
         iter = n_iters,
-        as_vector = FALSE
+        as_vector = FALSE,
+        init_alpha = 1e-8
     )
 
     # Extract size factors
@@ -219,7 +225,9 @@ disize <- function(
             data = model_data,
             iter = n_iters,
             init = cur_fit$par,
-            as_vector = FALSE
+            as_vector = FALSE,
+            history_size = 1,
+            init_alpha = 1e-6
         )
 
         # Extract size factors

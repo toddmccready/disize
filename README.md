@@ -35,5 +35,6 @@ Note: the rows of `counts` should have the same names as the `obs_name` column i
 ```
 
 # TODO
-- Figure out why n_threads doesn't work properly and just defaults to every core.
+- Figure out why n_threads doesn't work properly and just defaults to every core with `ceiling(parallel::detectCores() / 2)`.
 - Offer downsampling (i.i.d) observations as we don't care about precision of expression estimates.
+- Automatically determine n_passes and n_iters as a function of number of parameters.
