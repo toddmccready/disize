@@ -81,11 +81,20 @@ disize <- function(
             )
         }
 
-        # Subset genes for model
+        # Subset genes
         n_genes <- min(n_genes, nrow(counts))
 
         ordering <- order(Matrix::colMeans(counts != 0), decreasing = TRUE)
         counts <- counts[, ordering[1:n_genes]]
+
+        # Subset observations
+        predictors <- all.vars(design_formula)
+        metadata <- metadata |>
+            dplyr::group_by(dplyr::across(dplyr::all_of(predictors))) |>
+            dplyr::slice_sample(n = 50, replace = FALSE) |>
+            dplyr::ungroup()
+
+        counts <- counts[metadata[["obs_name"]], ]
 
         # Convert to dense matrix if needed
         if (is(counts, "sparseMatrix")) {
