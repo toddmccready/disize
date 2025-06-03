@@ -122,17 +122,6 @@ disize <- function(
         # Merge counts and metadata
         model_data <- merge(counts, metadata, by = obs_name)
     } else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
-        # Ensure relevant terms are factors
-        if (!is(model_data[[batch_name]], "factor")) {
-            model_data[[batch_name]] <- factor(model_data[[batch_name]])
-        }
-        if (!is(model_data[[gene_name]], "factor")) {
-            model_data[[gene_name]] <- factor(model_data[[gene_name]])
-        }
-
-        # Format characters to factors
-        model_data <- model_data |>
-            dplyr::mutate(dplyr::across(dplyr::where(is.character), as.factor))
     } else {
         stop(
             "either 'counts', 'metadata' can be specified(and 'model_data' ",
@@ -142,6 +131,18 @@ disize <- function(
     }
 
     # Formatting ----
+    # Ensure relevant terms are factors
+    if (!is(model_data[[batch_name]], "factor")) {
+        model_data[[batch_name]] <- factor(model_data[[batch_name]])
+    }
+    if (!is(model_data[[gene_name]], "factor")) {
+        model_data[[gene_name]] <- factor(model_data[[gene_name]])
+    }
+
+    # Format characters to factors
+    model_data <- model_data |>
+        dplyr::mutate(dplyr::across(dplyr::where(is.character), as.factor))
+
     # Save batch names
     batches <- levels(model_data[[batch_name]])
 
