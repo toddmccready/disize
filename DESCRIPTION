@@ -1,6 +1,6 @@
 Package: disize
 Title: Design Informed Size Factor Estimation
-Version: 0.2.6
+Version: 0.2.7
 Authors@R:
     person("Todd", "McCready", email = "175446079+toddmccready@users.noreply.github.com", role = c("aut", "cre"))
 Description: A tool for estimating size factors taking into account experimental design.
