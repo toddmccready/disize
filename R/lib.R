@@ -83,9 +83,9 @@ disize <- function(
 
         # Subset genes for model
         n_genes <- min(n_genes, nrow(counts))
-        counts <- counts[, order(colMeans(counts != 0), decreasing = TRUE)[
-            1:n_genes
-        ]]
+
+        ordering <- order(Matrix::colMeans(counts != 0), decreasing = TRUE)
+        counts <- counts[, ordering[1:n_genes]]
 
         # Convert to dense matrix if needed
         if (is(counts, "sparseMatrix")) {
