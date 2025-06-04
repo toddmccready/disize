@@ -8,10 +8,10 @@ test_that("small-simple-bulk", {
     n_d <- 2
     n_o <- 1
 
-    data <- tibble(gene = 1:n_g) |>
+    data <- tibble(feat_idx = 1:n_g) |>
         # Simulate true expression quantities
         mutate(
-            d = pmap(list(gene), function(g) {
+            d = pmap(list(feat_idx), function(g) {
                 nonzero <- rbinom(1, 1, 0.1) == 1
 
                 if (nonzero) {
@@ -43,7 +43,7 @@ test_that("small-simple-bulk", {
         ) |>
         # Generate counts
         mutate(
-            d = pmap(list(gene, donor, q, sf), function(g, d, q, sf) {
+            d = pmap(list(feat_idx, donor, q, sf), function(g, d, q, sf) {
                 tibble(
                     cell_barcode = paste0(d, "_", 1:n_o),
                     counts = as.integer(rnbinom(n_o, mu = q * sf, size = 100))
@@ -51,13 +51,16 @@ test_that("small-simple-bulk", {
             })
         ) |>
         unnest(d) |>
-        select(gene, donor, batch, counts)
+        select(feat_idx, donor, batch, counts)
+
+    # Coerce relevant columns to a factor
+    data[["donor"]] <- factor(data[["donor"]])
 
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ (1 | donor),
         model_data = data,
-        n_threads = ceiling(parallel::detectCores() / 2)
+        n_threads = 4
     ))
 
     expect_equal(
@@ -73,10 +76,10 @@ test_that("large-simple-bulk", {
     n_d <- 12
     n_o <- 1
 
-    data <- tibble(gene = 1:n_g) |>
+    data <- tibble(feat_idx = 1:n_g) |>
         # Simulate true expression quantities
         mutate(
-            d = pmap(list(gene), function(g) {
+            d = pmap(list(feat_idx), function(g) {
                 nonzero <- rbinom(1, 1, 0.1) == 1
 
                 if (nonzero) {
@@ -108,7 +111,7 @@ test_that("large-simple-bulk", {
         ) |>
         # Generate counts
         mutate(
-            d = pmap(list(gene, donor, q, sf), function(g, d, q, sf) {
+            d = pmap(list(feat_idx, donor, q, sf), function(g, d, q, sf) {
                 tibble(
                     cell_barcode = paste0(d, "_", 1:n_o),
                     counts = as.integer(rnbinom(n_o, mu = q * sf, size = 100))
@@ -116,7 +119,10 @@ test_that("large-simple-bulk", {
             })
         ) |>
         unnest(d) |>
-        select(gene, donor, batch, counts)
+        select(feat_idx, donor, batch, counts)
+
+    # Coerce relevant columns to a factor
+    data[["donor"]] <- factor(data[["donor"]])
 
     # Compute size factors
     size_factors <- exp(disize(
@@ -139,11 +145,11 @@ test_that("small-simple-sc", {
     n_p <- 3
     n_o <- 50
 
-    data <- tibble(gene = 1:n_g) |>
+    data <- tibble(feat_idx = 1:n_g) |>
         crossing(tibble(cell_type = 1:n_p)) |>
         # Simulate true expression quantities
         mutate(
-            d = pmap(list(gene, cell_type), function(g, p) {
+            d = pmap(list(feat_idx, cell_type), function(g, p) {
                 nonzero <- rbinom(1, 1, 0.1) == 1
 
                 if (nonzero) {
@@ -176,7 +182,7 @@ test_that("small-simple-sc", {
         # Generate counts
         mutate(
             d = pmap(
-                list(gene, donor, cell_type, q, sf),
+                list(feat_idx, donor, cell_type, q, sf),
                 function(g, d, p, q, sf) {
                     tibble(
                         cell_barcode = paste0(d, ":", p, "_", 1:n_o),
@@ -190,7 +196,7 @@ test_that("small-simple-sc", {
             )
         ) |>
         unnest(d) |>
-        select(gene, donor, batch, cell_type, counts)
+        select(feat_idx, donor, batch, cell_type, counts)
 
     # Compute size factors
     size_factors <- exp(disize(
@@ -214,11 +220,11 @@ test_that("large-simple-sc", {
     n_p <- 3
     n_o <- 50
 
-    data <- tibble(gene = 1:n_g) |>
+    data <- tibble(feat_idx = 1:n_g) |>
         crossing(tibble(cell_type = 1:n_p)) |>
         # Simulate true expression quantities
         mutate(
-            d = pmap(list(gene, cell_type), function(g, p) {
+            d = pmap(list(feat_idx, cell_type), function(g, p) {
                 nonzero <- rbinom(1, 1, 0.1) == 1
 
                 if (nonzero) {
@@ -251,7 +257,7 @@ test_that("large-simple-sc", {
         # Generate counts
         mutate(
             d = pmap(
-                list(gene, donor, cell_type, q, sf),
+                list(feat_idx, donor, cell_type, q, sf),
                 function(g, d, p, q, sf) {
                     tibble(
                         cell_barcode = paste0(d, ":", p, "_", 1:n_o),
@@ -265,7 +271,7 @@ test_that("large-simple-sc", {
             )
         ) |>
         unnest(d) |>
-        select(gene, donor, batch, cell_type, counts)
+        select(feat_idx, donor, batch, cell_type, counts)
 
     # Compute size factors
     size_factors <- exp(disize(

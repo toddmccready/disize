@@ -1,8 +1,7 @@
 #' Modify the design by adding an interaction by genes
 #'
 #' @param formula The design formula
-#' @param gene_name The identifier for genes in `model_data`.
-modify_design <- function(formula, gene_name) {
+modify_design <- function(formula) {
     # Extract terms
     terms <- attr(terms(formula), "term.labels")
 
@@ -11,7 +10,7 @@ modify_design <- function(formula, gene_name) {
     terms[grepl("\\|", terms)] <- paste0(terms[grepl("\\|", terms)], ")")
 
     # Add interaction
-    terms <- paste0("(", terms, ":", gene_name, ")")
+    terms <- paste0("(", terms, ":feat_idx)")
 
     # Reconstruct formula
     formula <- paste(terms, collapse = " + ")
@@ -30,15 +29,11 @@ modify_design <- function(formula, gene_name) {
 #' @param counts A (obsservation x feature) count matrix.
 #' @param metadata A dataframe containing sample metadata.
 #' @param model_data The model data if already constructed. Must contain the
-#'  'batch_name', 'obs_name', 'gene_name' identifiers as columns and any
+#'  'batch_name' and "feat_idx" identifiers as columns, and any
 #'  predictors used in 'design_formula'.
 #' @param batch_name The identifier for the batch column in 'metadata',
 #'  defaults to "batch".
-#' @param obs_name The identifier for the observation column in 'metadata',
-#'  defaults to "obs".
-#' @param gene_name The identifier for the gene column in 'model_data',
-#'  defaults to "gene".
-#' @param n_genes The number of genes used during estimation, defaults to 500.
+#' @param n_feats The number of genes used during estimation, defaults to 500.
 #'  Increasing this value will result in this function taking longer but more
 #'  confidence in the size factors.
 #' @param n_subset The number of observations per experimental unit used during
@@ -56,9 +51,7 @@ disize <- function(
     metadata = NULL,
     model_data = NULL,
     batch_name = "batch",
-    obs_name = "obs",
-    gene_name = "gene",
-    n_genes = 500,
+    n_feats = 500,
     n_subset = 50,
     n_threads = NULL,
     verbose = 3,
@@ -84,16 +77,21 @@ disize <- function(
             )
         }
 
-        # If 'obs_name' is not present assume indices match
-        if (is.null(metadata[[obs_name]])) {
-            metadata[[obs_name]] <- 1:nrow(metadata)
-        }
+        # Remove dimnames in 'counts' if present
+        dimnames(data) <- list(NULL, NULL)
 
-        # Subset genes
-        n_genes <- min(n_genes, ncol(counts))
+        # Include explicit observation index variable
+        metadata[["obs_idx"]] <- 1:nrow(metadata)
 
-        ordering <- order(Matrix::colMeans(counts != 0), decreasing = TRUE)
-        counts <- counts[, ordering[1:n_genes]]
+        # Ensure valid number of features selected
+        n_feats <- min(n_feats, ncol(counts))
+
+        # Subset features
+        ordering <- order(Matrix::colMeans(counts), decreasing = TRUE)
+        counts <- counts[, ordering[1:n_feats]]
+
+        # Include original feature indices
+        colnames(counts) <- ordering[1:n_feats]
 
         # Subset observations
         predictors <- all.vars(design_formula)
@@ -110,14 +108,12 @@ disize <- function(
             counts <- as.matrix(counts)
         }
 
-        # Format counts to include sample-level and gene-level in long format
+        # Format counts to long format
         counts <- reshape2::melt(
             counts,
-            c(obs_name, gene_name),
+            c("obs_idx", "feat_idx"),
             value.name = "counts"
         )
-        counts[[obs_name]] <- factor(counts[[obs_name]])
-        counts[[gene_name]] <- factor(counts[[gene_name]])
 
         # Merge counts and metadata
         model_data <- merge(counts, metadata, by = obs_name)
@@ -131,12 +127,12 @@ disize <- function(
     }
 
     # Formatting ----
-    # Ensure relevant terms are factors
+    # Ensure relevant columns are factors
     if (!is(model_data[[batch_name]], "factor")) {
         model_data[[batch_name]] <- factor(model_data[[batch_name]])
     }
-    if (!is(model_data[[gene_name]], "factor")) {
-        model_data[[gene_name]] <- factor(model_data[[gene_name]])
+    if (!is(model_data[["feat_idx"]], "factor")) {
+        model_data[["feat_idx"]] <- factor(model_data[["feat_idx"]])
     }
 
     # Format characters to factors
@@ -147,7 +143,7 @@ disize <- function(
     batches <- levels(model_data[[batch_name]])
 
     # Modify the design formula
-    design <- modify_design(design_formula, gene_name)
+    design <- modify_design(design_formula)
     design_formula <- paste0("design ~ 0 + ", design$formula)
 
     # Extract number of batches
@@ -162,7 +158,7 @@ disize <- function(
     formula <- brms::bf(formula, nl = TRUE) +
         brms::lf(design_formula) +
         brms::lf(paste0("sf ~ 0 + ", batch_name)) +
-        brms::lf(paste0("intercept ~ 0 + ", gene_name))
+        brms::lf(paste0("intercept ~ 0 + feat_idx"))
 
     # Construct priors
     priors <- brms::prior_string(
@@ -192,7 +188,7 @@ disize <- function(
 
     # Construct Stan code
     if (verbose) message("Compiling Stan model...")
-    my_code <- brms::stancode(
+    model_code <- brms::stancode(
         formula,
         data = model_data,
         family = "negbinomial",
@@ -208,7 +204,9 @@ disize <- function(
     )
 
     # Compile model
-    model <- rstan::stan_model(model_code = my_code, allow_optimizations = TRUE)
+    model <- rstan::stan_model(
+        model_code = model_code
+    )
 
     # Estimate model parameters ----
     if (verbose) message("Estimating size factors...")
@@ -227,8 +225,7 @@ disize <- function(
         model,
         data = model_data,
         iter = n_iters,
-        as_vector = FALSE,
-        init_alpha = 1e-8
+        as_vector = FALSE
     )
 
     # Extract size factors
@@ -243,9 +240,7 @@ disize <- function(
             data = model_data,
             iter = n_iters,
             init = cur_fit$par,
-            as_vector = FALSE,
-            history_size = 1,
-            init_alpha = 1e-6
+            as_vector = FALSE
         )
 
         # Extract size factors
