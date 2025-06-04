@@ -99,9 +99,12 @@ disize <- function(
             dplyr::group_by(dplyr::across(dplyr::all_of(predictors))) |>
             dplyr::slice_sample(n = n_subset, replace = FALSE) |>
             dplyr::ungroup() |>
-            dplyr::select(dplyr::all_of(c(predictors, obs_name, batch_name)))
+            dplyr::select(dplyr::all_of(c(predictors, "obs_idx", batch_name)))
 
-        counts <- counts[metadata[[obs_name]], ]
+        counts <- counts[metadata[["obs_idx"]], ]
+
+        # Include original observation indices
+        rownames(counts) <- metadata[["obs_idx"]]
 
         # Convert to dense matrix if needed
         if (is(counts, "sparseMatrix")) {
@@ -116,7 +119,7 @@ disize <- function(
         )
 
         # Merge counts and metadata
-        model_data <- merge(counts, metadata, by = obs_name)
+        model_data <- merge(counts, metadata, by = "obs_idx")
     } else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
     } else {
         stop(
