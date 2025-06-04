@@ -84,6 +84,11 @@ disize <- function(
             )
         }
 
+        # If 'obs_name' is not present assume indices match
+        if (is.null(metadata[[obs_name]])) {
+            metadata[[obs_name]] <- 1:nrow(metadata)
+        }
+
         # Subset genes
         n_genes <- min(n_genes, ncol(counts))
 
@@ -113,11 +118,6 @@ disize <- function(
         )
         counts[[obs_name]] <- factor(counts[[obs_name]])
         counts[[gene_name]] <- factor(counts[[gene_name]])
-
-        # If 'obs_name' is not present assume indices match
-        if (is.null(metadata[[obs_name]])) {
-            metadata[[obs_name]] <- 1:nrow(metadata)
-        }
 
         # Merge counts and metadata
         model_data <- merge(counts, metadata, by = obs_name)
