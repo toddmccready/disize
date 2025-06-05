@@ -1,24 +1,34 @@
 #' Modify the design by adding an interaction by genes
 #'
-#' @param formula The design formula
-modify_design <- function(formula) {
+#' @param design_formula The design formula
+modify_design <- function(design_formula, feat_name) {
     # Extract terms
-    terms <- attr(terms(formula), "term.labels")
+    terms <- attr(terms(design_formula), "term.labels")
+
+    # Identify random effects
+    re <- grepl("\\| ", terms)
 
     # Wrap random effects in brackets
     terms <- gsub("\\| ", "\\| \\(", terms)
-    terms[grepl("\\|", terms)] <- paste0(terms[grepl("\\|", terms)], ")")
+    terms[re] <- paste0(terms[re], ")")
 
     # Add interaction
-    terms <- paste0("(", terms, ":feat_idx)")
+    terms <- paste0("(", terms, ":", feat_name, ")")
 
-    # Reconstruct formula
-    formula <- paste(terms, collapse = " + ")
+    fixed <- NULL
+    if (length(terms[!re]) != 0) {
+        fixed <- formula(paste0(" ~ 0 + ", paste(terms[!re], collapse = " + ")))
+    }
+
+    random <- NULL
+    if (length(terms[re]) != 0) {
+        random <- formula(paste0(" ~ 0 + ", paste(terms[re], collapse = " + ")))
+    }
 
     list(
-        formula = formula,
-        terms = terms,
-        random = grepl("\\|", terms)
+        formula = as.formula(paste0(" ~ 0 + ", paste(terms, collapse = " + "))),
+        fixed = fixed,
+        random = random
     )
 }
 
@@ -51,6 +61,8 @@ disize <- function(
     metadata = NULL,
     model_data = NULL,
     batch_name = "batch",
+    obs_name = "obs_id",
+    feat_name = "feat_id",
     n_feats = 500,
     n_subset = 50,
     n_threads = NULL,
@@ -59,7 +71,6 @@ disize <- function(
     n_iters = 100,
     tolerance = 1e-3
 ) {
-    # Argument checks ----
     # Check design formula is correct
     if (!is(design_formula, "formula")) {
         stop("'design_formula' should be an R formula")
@@ -67,7 +78,6 @@ disize <- function(
         stop("'design_formula' should be of the form '~ x + ...'")
     }
 
-    # Check data is inputted correctly
     if (is.null(model_data) && (!is.null(counts) && !is.null(metadata))) {
         # Check for the same number of samples
         if (nrow(metadata) != nrow(counts)) {
@@ -77,11 +87,18 @@ disize <- function(
             )
         }
 
-        # Remove dimnames in 'counts' if present
-        dimnames(data) <- list(NULL, NULL)
+        # Include explicit observation names if not present
+        if (is.null(rownames(counts))) {
+            rownames(counts) <- 1:nrow(counts)
+        }
+        if (is.null(metadata[[obs_name]])) {
+            metadata[[obs_name]] <- 1:nrow(counts)
+        }
 
-        # Include explicit observation index variable
-        metadata[["obs_idx"]] <- 1:nrow(metadata)
+        # Include explicit feature names if not present
+        if (is.null(colnames(counts))) {
+            colnames(counts) <- 1:ncol(counts)
+        }
 
         # Ensure valid number of features selected
         n_feats <- min(n_feats, ncol(counts))
@@ -90,21 +107,16 @@ disize <- function(
         ordering <- order(Matrix::colMeans(counts), decreasing = TRUE)
         counts <- counts[, ordering[1:n_feats]]
 
-        # Include original feature indices
-        colnames(counts) <- ordering[1:n_feats]
+        # Extract predictor terms
+        predictors <- all.vars(design_formula)
 
         # Subset observations
-        predictors <- all.vars(design_formula)
         metadata <- metadata |>
             dplyr::group_by(dplyr::across(dplyr::all_of(predictors))) |>
             dplyr::slice_sample(n = n_subset, replace = FALSE) |>
             dplyr::ungroup() |>
-            dplyr::select(dplyr::all_of(c(predictors, "obs_idx", batch_name)))
-
-        counts <- counts[metadata[["obs_idx"]], ]
-
-        # Include original observation indices
-        rownames(counts) <- metadata[["obs_idx"]]
+            dplyr::select(dplyr::all_of(c(predictors, obs_name, batch_name)))
+        counts <- counts[metadata[[obs_name]], ]
 
         # Convert to dense matrix if needed
         if (is(counts, "sparseMatrix")) {
@@ -114,13 +126,14 @@ disize <- function(
         # Format counts to long format
         counts <- reshape2::melt(
             counts,
-            c("obs_idx", "feat_idx"),
-            value.name = "counts"
+            c(obs_name, feat_name),
+            value.name = "count"
         )
 
         # Merge counts and metadata
-        model_data <- merge(counts, metadata, by = "obs_idx")
+        model_data <- merge(counts, metadata, by = obs_name)
     } else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
+        # TODO make n_subset work here
     } else {
         stop(
             "either 'counts', 'metadata' can be specified(and 'model_data' ",
@@ -129,93 +142,51 @@ disize <- function(
         )
     }
 
-    # Formatting ----
     # Ensure relevant columns are factors
-    if (!is(model_data[[batch_name]], "factor")) {
-        model_data[[batch_name]] <- factor(model_data[[batch_name]])
-    }
-    if (!is(model_data[["feat_idx"]], "factor")) {
-        model_data[["feat_idx"]] <- factor(model_data[["feat_idx"]])
-    }
+    model_data[[batch_name]] <- as.factor(model_data[[batch_name]])
+    model_data[[feat_name]] <- as.factor(model_data[[feat_name]])
 
     # Format characters to factors
     model_data <- model_data |>
         dplyr::mutate(dplyr::across(dplyr::where(is.character), as.factor))
 
-    # Save batch names
+    # Save batch names and number
     batches <- levels(model_data[[batch_name]])
-
-    # Modify the design formula
-    design <- modify_design(design_formula)
-    design_formula <- paste0("design ~ 0 + ", design$formula)
-
-    # Extract number of batches
     n_batches <- length(batches)
 
-    # Construct formula for brms
-    formula <- paste0(
-        "counts ~ intercept + design + log(sf) + log(",
-        n_batches,
-        ")"
-    )
-    formula <- brms::bf(formula, nl = TRUE) +
-        brms::lf(design_formula) +
-        brms::lf(paste0("sf ~ 0 + ", batch_name)) +
-        brms::lf(paste0("intercept ~ 0 + feat_idx"))
+    # Modify the design formula
+    design <- modify_design(design_formula, feat_name)
 
-    # Construct priors
-    priors <- brms::prior_string(
-        paste0("dirichlet(rep_vector(1, ", n_batches, "))"),
-        nlpar = "sf"
-    )
-
-    # Include optional priors
-    if (any(!design$random)) {
-        # Induce sparsity in fixed effects
-        priors <- priors +
-            brms::prior(
-                "horseshoe(main = TRUE, scale_slab = 10000)",
-                class = "b",
-                nlpar = "design"
-            )
-    }
-    if (any(design$random)) {
-        # Induce sparsity in random effects
-        priors <- priors +
-            brms::prior(
-                "horseshoe(1, scale_slab = 10000)",
-                class = "sd",
-                nlpar = "design"
-            )
+    # Construct model matrix
+    if (!is.null(design$fixed)) {
+        fixed_matrix <- Matrix::sparse.model.matrix(design$fixed, model_data)
     }
 
-    # Construct Stan code
+    # Construct random effects matrix
+    if (!is.null(design$random)) {
+        random_matrices <- lapply(
+            X = reformulas::mkReTrms(
+                bars = reformulas::findbars(design$random),
+                fr = model_data,
+                calc.lambdat = FALSE
+            )$Ztlist,
+            FUN = function(Z) {
+                Matrix::t(Z)
+            }
+        )
+    }
+
+    # TODO: Extract matrix data in CSR format
+
+    # TODO: See whether we need multiple Stan models (f, r, f + r) or just one
+
+    # Construct Stan model
     if (verbose) message("Compiling Stan model...")
-    model_code <- brms::stancode(
-        formula,
-        data = model_data,
-        family = "negbinomial",
-        prior = priors,
-        threads = brms::threading(n_threads)
-    )
-    model_data <- brms::standata(
-        formula,
-        data = model_data,
-        family = "negbinomial",
-        prior = priors,
-        threads = brms::threading(n_threads)
-    )
 
     # Compile model
-    model <- rstan::stan_model(
-        model_code = model_code
-    )
 
     # Estimate model parameters ----
     if (verbose) message("Estimating size factors...")
-
-    # Free up space
-    gc()
 
     # Construct progress bar
     if (2 < verbose) {
@@ -223,24 +194,15 @@ disize <- function(
         pb$tick(0)
     }
 
-    # Compute initial fit
-    cur_fit <- rstan::optimizing(
-        model,
-        data = model_data,
-        iter = n_iters,
-        as_vector = FALSE
-    )
-
     # Extract size factors
     sf_hist <- list()
-    sf_hist[[1]] <- log(cur_fit$par$b_sf) + log(n_batches)
 
     if (2 < verbose) pb$tick()
     for (i in 2:n_passes) {
         # Compute next fit
         cur_fit <- rstan::optimizing(
             model,
-            data = model_data,
+            data = stan_data,
             iter = n_iters,
             init = cur_fit$par,
             as_vector = FALSE

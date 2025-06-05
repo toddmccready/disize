@@ -198,6 +198,10 @@ test_that("small-simple-sc", {
         unnest(d) |>
         select(feat_idx, donor, batch, cell_type, counts)
 
+    # Coerce relevant columns to a factor
+    data[["donor"]] <- factor(data[["donor"]])
+    data[["cell_type"]] <- factor(data[["cell_type"]])
+
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
@@ -273,6 +277,10 @@ test_that("large-simple-sc", {
         unnest(d) |>
         select(feat_idx, donor, batch, cell_type, counts)
 
+    # Coerce relevant columns to a factor
+    data[["donor"]] <- factor(data[["donor"]])
+    data[["cell_type"]] <- factor(data[["cell_type"]])
+
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
@@ -283,6 +291,43 @@ test_that("large-simple-sc", {
     expect_equal(
         object = as.vector(unname(size_factors)),
         expected = (true_sf$sf / sum(true_sf$sf)) * n_d,
+        tolerance = 0.1
+    )
+})
+
+test_that("as-counts-matrix", {
+    # Settings
+    n_g <- 500
+    n_d <- 2
+    n_p <- 4
+    n_o <- 100
+
+    # Simulate counts
+    counts <- matrix(
+        rnbinom((n_d * n_p * n_o) * n_g, mu = 10, size = 10),
+        nrow = (n_d * n_p * n_o),
+        ncol = n_g
+    )
+
+    # Construct metadata
+    metadata <- data.frame(
+        obs_id = factor(1:(n_d * n_p * n_o)),
+        batch = factor(rep(1:n_d, each = (n_p * n_o))),
+        donor = factor(rep(1:n_d, each = (n_p * n_o))),
+        cell_type = factor(rep(1:n_p, times = (n_d * n_o)))
+    )
+
+    # Compute size factors
+    size_factors <- exp(disize(
+        design_formula = ~ cell_type + (1 | cell_type:donor),
+        counts = counts,
+        metadata = metadata,
+        n_threads = 4
+    ))
+
+    expect_equal(
+        object = as.vector(unname(size_factors)),
+        expected = rep(1.0, n_d),
         tolerance = 0.1
     )
 })

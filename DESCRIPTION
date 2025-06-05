@@ -11,7 +11,9 @@ RoxygenNote: 7.3.2
 Imports:
     brms,
     reshape2,
-    progress
+    progress,
+    reformulas,
+    cmdstanr
 Suggests:
     testthat (>= 3.0.0),
     dplyr (>= 1.1.4),
