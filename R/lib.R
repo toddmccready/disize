@@ -27,6 +27,7 @@ modify_design <- function(design_formula, feat_name) {
 
     list(
         formula = as.formula(paste0(" ~ 0 + ", paste(terms, collapse = " + "))),
+        intercept = as.formula(paste0("~ 0 + ", feat_name)),
         fixed = fixed,
         random = random
     )
@@ -141,47 +142,92 @@ disize <- function(
             "'metadata' left NULL)"
         )
     }
+    # Allocate list for formatted Stan data
+    stan_data <- list(n_obs = nrow(model_data))
 
     # Ensure relevant columns are factors
     model_data[[batch_name]] <- as.factor(model_data[[batch_name]])
     model_data[[feat_name]] <- as.factor(model_data[[feat_name]])
 
+    # Include number of features
+    stan_data[["n_feats"]] <- length(levels(model_data[[feat_name]]))
+    stan_data[["feat_id"]] <- as.integer(model_data[[feat_name]])
+
     # Format characters to factors
     model_data <- model_data |>
         dplyr::mutate(dplyr::across(dplyr::where(is.character), as.factor))
 
-    # Save batch names and number
-    batches <- levels(model_data[[batch_name]])
-    n_batches <- length(batches)
+    # Include batch-level for Stan
+    stan_data[["n_batches"]] <- levels(model_data[[batch_name]]) |>
+        length()
+    stan_data[["batch_id"]] <- as.integer(model_data[[batch_name]])
 
     # Modify the design formula
     design <- modify_design(design_formula, feat_name)
 
-    # Construct model matrix
+    # Construct intercept model matrix
+    int_design <- Matrix::sparse.model.matrix(design$intercept, model_data) |>
+        as("RsparseMatrix")
+
+    stan_data[["n_int"]] <- ncol(int_design)
+    stan_data[["n_nz_int"]] <- length(int_design@x)
+    stan_data[["int_design"]] <- list(
+        int_design@x,
+        int_design@j,
+        int_design@p
+    )
+
+    # Construct fixed-effects model matrix if present
     if (!is.null(design$fixed)) {
-        fixed_matrix <- Matrix::sparse.model.matrix(design$fixed, model_data)
+        fe_design <- Matrix::sparse.model.matrix(design$fixed, model_data) |>
+            as("RsparseMatrix")
+
+        stan_data[["n_fe"]] <- ncol(fe_design)
+        stan_data[["n_nz_fe"]] <- length(fe_design@x)
+        stan_data[["fe_design"]] <- list(
+            fe_design@x,
+            fe_design@j,
+            fe_design@p
+        )
     }
 
     # Construct random effects matrix
     if (!is.null(design$random)) {
-        random_matrices <- lapply(
-            X = reformulas::mkReTrms(
-                bars = reformulas::findbars(design$random),
-                fr = model_data,
-                calc.lambdat = FALSE
-            )$Ztlist,
-            FUN = function(Z) {
-                Matrix::t(Z)
-            }
+        remm <- reformulas::mkReTrms(
+            bars = reformulas::findbars(design$random),
+            fr = model_data,
+            calc.lambdat = FALSE,
+            sparse = TRUE
         )
+        re_design <- Matrix::t(remm$Zt) |> as("RsparseMatrix")
+
+        # Check if all random-effects terms are scalar normals
+        all_scalar <- lapply(remm$cnms, function(b) {length(b) == 1}) |>
+            unlist() |>
+            all()
+        if (!all_scalar) {
+            stop("Only include one predictor on the LHS of a random-effects pipe.")
+        }
+
+        # Include data for Stan
+        stan_data[["n_re"]] <- ncol(re_design)
+        stan_data[["n_nz_re"]] <- length(re_design@x)
+        stan_data[["re_design"]] <- list(
+            re_design@x,
+            re_design@j,
+            re_design@p
+        )
+        stan_data[["n_re_terms"]] <- length(remm$cnms)
+        stan_data[["re_id"]] <- rep(1:length(remm$cnms), times = diff(remm$Gp))
+
     }
 
-    # TODO: Extract matrix data in CSR format
-
-    # TODO: See whether we need multiple Stan models (f, r, f + r) or just one
+    # Include counts for Stan
+    stan_data[["counts"]] <- as.integer(model_data[["counts"]])
 
     # Construct Stan model
     if (verbose) message("Compiling Stan model...")
+    stan_model <- cmdstanr::cmdstan_model("src/model.stan") # for now
 
     # Compile model
 
