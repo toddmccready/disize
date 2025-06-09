@@ -294,9 +294,9 @@ test_that("large-simple-sc", {
 test_that("as-counts-matrix", {
     # Settings
     n_g <- 500
-    n_d <- 2
-    n_p <- 4
-    n_o <- 100
+    n_d <- 6
+    n_p <- 3
+    n_o <- 50
 
     # Simulate counts
     counts <- matrix(

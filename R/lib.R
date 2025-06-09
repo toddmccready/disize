@@ -159,7 +159,7 @@ disize <- function(
         counts <- reshape2::melt(
             counts,
             c(obs_name, feat_name),
-            value.name = "count"
+            value.name = "counts"
         )
 
         # Merge counts and metadata
@@ -173,6 +173,8 @@ disize <- function(
             "'metadata' left NULL)"
         )
     }
+    if (2 < verbose) message("Formatting data...")
+
     # Allocate list for formatted Stan data
     stan_data <- list(n_obs = nrow(model_data))
 

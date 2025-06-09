@@ -7,35 +7,35 @@ Currently, `disize` accepts either a count matrix `counts` and a `metadata` data
 Note: the rows of `counts` should have the same names as the `obs_name` column in `metadata`. If `counts` has no row names, `disize` assumes it is ordered such that the row indices correspond to the row indices of `metadata`.
 
 # Examples
-```r
-> data
-# A tibble: 30,000 × 6
-    gene donor batch cell_type cell_barcode counts
-   <int> <int> <int>     <int> <chr>         <dbl>
- 1     1     1     1         1 1:1_1             4
- 2     1     1     1         1 1:1_2             8
- 3     1     1     1         1 1:1_3             8
- 4     1     1     1         1 1:1_4             7
- 5     1     1     1         1 1:1_5             6
- 6     1     1     1         1 1:1_6            10
- 7     1     1     1         1 1:1_7            11
- 8     1     1     1         1 1:1_8             4
- 9     1     1     1         1 1:1_9            17
-10     1     1     1         1 1:1_10            7
-# ℹ 29,990 more rows
+```R
+> dim(counts)
+[1] 900 500
+
+> metadata
+# A tibble: 900 × 4
+   obs_id batch_id donor cell_type
+   <fct>  <fct>    <fct> <fct>
+ 1 1      1        1     1
+ 2 2      1        1     2
+ 3 3      1        1     3
+ 4 4      1        1     1
+ 5 5      1        1     2
+ 6 6      1        1     3
+ 7 7      1        1     1
+ 8 8      1        1     2
+ 9 9      1        1     3
+10 10     1        1     1
+# ℹ 890 more rows
 # ℹ Use `print(n = ...)` to see more rows
+
 > (size_factors <- disize(
-+     design_formula = ~ cell_type + (1 | donor:cell_type),
-+     model_data = data,
-+     n_threads = 7,
-+     verbose = 0
++     design_formula = ~ cell_type + (1 | cell_type:donor),
++     counts = counts,
++     metadata = metadata
 + ))
-         1          2
--0.9821126  0.4858037
+            1             2             3             4             5            6
+ 0.0020845603  0.0013157564 -0.0025107518 -0.0025500306  0.0006061994  0.0010440993
 ```
 
 # TODO
-- Figure out why n_threads doesn't work properly and just defaults to every core with `ceiling(parallel::detectCores() / 2)`.
-- Offer downsampling (i.i.d) observations as we don't care about precision of expression estimates.
-- Automatically determine n_passes and n_iters as a function of number of parameters.
-- Figure out why `brms::stancode` takes up so much memory.
+- Figure out multithreading
