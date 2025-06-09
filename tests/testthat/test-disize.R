@@ -57,7 +57,7 @@ test_that("small-simple-bulk", {
     data[["donor"]] <- factor(data[["donor"]])
 
     # Compute size factors
-    size_factors <- exp(disize::disize(
+    size_factors <- exp(disize(
         design_formula = ~ (1 | donor),
         model_data = data
     ))
@@ -124,7 +124,7 @@ test_that("large-simple-bulk", {
     data[["donor"]] <- factor(data[["donor"]])
 
     # Compute size factors
-    size_factors <- exp(disize::disize(
+    size_factors <- exp(disize(
         design_formula = ~ (1 | donor),
         model_data = data
     ))
@@ -201,7 +201,7 @@ test_that("small-simple-sc", {
     data[["cell_type"]] <- factor(data[["cell_type"]])
 
     # Compute size factors
-    size_factors <- exp(disize::disize(
+    size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         model_data = data
     ))
@@ -279,7 +279,7 @@ test_that("large-simple-sc", {
     data[["cell_type"]] <- factor(data[["cell_type"]])
 
     # Compute size factors
-    size_factors <- exp(disize::disize(
+    size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         model_data = data
     ))
