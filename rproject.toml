@@ -23,4 +23,7 @@ dependencies = [
     "reformulas",
     "cmdstanr",
     "instantiate",
+    "dplyr",
+    "tidyr",
+    "purrr",
 ]

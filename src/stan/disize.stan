@@ -40,47 +40,45 @@ data {
     array[n_obs + 1] int re_design_p;
 }
 parameters {
-    // Shrinkage ----
-    real<lower=0> tau; // Global shrinkage parameter
+    // Shrinkage for Fixed Effects (Horseshoe) ----
+    real<lower=0> tau;          // Global shrinkage parameter
     vector<lower=0>[n_fe] lambda; // Local shrinkage parameters
 
-
     // Feature Expression ----
-    vector[n_int] int_coefs; // Intercept coefficients
-    vector[n_fe] fe_coefs; // Fixed-effect coefficients
-    vector[n_re] re_coefs; // Random-effect coefficients
+    vector[n_int] int_coefs;  // Intercept coefficients
+    vector[n_fe] fe_coefs;    // Fixed-effect coefficients
 
+    // Non-Centered Random Effects ----
+    vector[n_re] z_re;        // Standardized ("raw") random-effect coefficients
     vector<lower=0>[n_re_terms] re_sigma; // Random-effect std-devs
-
 
     // Size Factors ----
     simplex[n_batches] raw_sf;
 
-
-    // Feature-level Dispersion
-    real<lower=0> iodisp; // TODO
+    // Feature-level Dispersion ----
+    real<lower=0> iodisp;
 }
 transformed parameters {
     // Size Factors ----
     vector[n_batches] sf = log(raw_sf) + log(n_batches);
+
+    // Actual Random Effects (Scaled) ----
+    vector[n_re] re_coefs;
+    for (i in 1:n_re) {
+        re_coefs[i] = z_re[i] * re_sigma[re_id[i]];
+    }
 }
 model {
     vector[n_obs] log_mu;
 
-    // Priors ----
-    // Horseshoe
-    lambda ~ cauchy(0, tau);
-    re_sigma ~ cauchy(0, tau);
+    // --- Priors ---
+    z_re ~ std_normal();
 
-    fe_coefs ~ normal(0, lambda);
+    // Horseshoe prior for fixed effects
+    lambda ~ cauchy(0, 1);
+    fe_coefs ~ normal(0, lambda * tau);
 
-    // Random-effects
-    for (i in 1:n_re) {
-        re_coefs[i] ~ normal(0, re_sigma[re_id[i]]);
-    }
-
-
-    // Computing gene expression quantity
+    // --- Linear Predictor ---
     log_mu = csr_matrix_times_vector(n_obs, n_int, int_design_x, int_design_j, int_design_p, int_coefs);
     if (n_fe != 0) {
         log_mu += csr_matrix_times_vector(n_obs, n_fe, fe_design_x, fe_design_j, fe_design_p, fe_coefs);
@@ -89,12 +87,10 @@ model {
         log_mu += csr_matrix_times_vector(n_obs, n_re, re_design_x, re_design_j, re_design_p, re_coefs);
     }
 
-
+    // --- Likelihood ----
     for (i in 1:n_obs) {
         // Adjusting for batch-effect
         log_mu[i] += sf[batch_id[i]];
-
-        // Likelihood ----
         counts[i] ~ neg_binomial_2_log(log_mu[i], iodisp);
     }
 }

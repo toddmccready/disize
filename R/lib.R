@@ -40,7 +40,8 @@ extract_params <- function(cur_fit) {
         tau = unname(params["tau"]),
         iodisp = unname(params["iodisp"]),
         raw_sf = unname(params[grepl("^raw_sf", names(params))]),
-        int_coefs = unname(params[grepl("^int_coefs", names(params))])
+        int_coefs = unname(params[grepl("^int_coefs", names(params))]),
+        sf = unname(params[grepl("^sf", names(params))])
     )
 
     if (any(grepl("fe_", names(params)))) {
@@ -52,9 +53,11 @@ extract_params <- function(cur_fit) {
     }
 
     if (any(grepl("re_", names(params)))) {
+        params_list[["z_re"]] <- unname(params[grepl("^z_re", names(params))])
         params_list[["re_coefs"]] <- unname(params[grepl("^re_coefs", names(params))])
         params_list[["re_sigma"]] <- unname(params[grepl("^re_sigma", names(params))])
     } else {
+        params_list[["z_re"]] <- numeric(0)
         params_list[["re_coefs"]] <- numeric(0)
         params_list[["re_sigma"]] <- numeric(0)
     }
@@ -90,7 +93,7 @@ disize <- function(
     counts = NULL,
     metadata = NULL,
     model_data = NULL,
-    batch_name = "batch",
+    batch_name = "batch_id",
     obs_name = "obs_id",
     feat_name = "feat_id",
     n_feats = 500,
@@ -280,19 +283,18 @@ disize <- function(
 
     # Extract size factors
     sf_hist <- list()
-    sf_hist[[1]] <- cur_fit$mle()[grepl("^sf", names(cur_fit$mle()))]
+    sf_hist[[1]] <- cur_params[["sf"]]
 
     if (2 < verbose) pb$tick()
     for (i in 2:n_passes) {
         # Compute next fit
-        cur_fit <- model$optimize(stan_data, init = cur_fit, iter = n_iters, show_messages = F, sig_figs = 18)
+        cur_fit <- model$optimize(stan_data, init = list(cur_params), iter = n_iters, show_messages = F, sig_figs = 18)
 
-        # Format parameters
+        # Extract parameters
         cur_params <- extract_params(cur_fit)
 
-
         # Extract size factors
-        sf_hist[[i]] <- cur_fit$draws()[,grepl("^sf", colnames(cur_fit$draws()))]
+        sf_hist[[i]] <- cur_params[["sf"]]
 
         # Evaluate convergence
         # TODO: do something smart with the history

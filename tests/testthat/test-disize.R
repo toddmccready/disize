@@ -32,7 +32,7 @@ test_that("small-simple-bulk", {
     # Simulate batch-effect
     true_sf <- tibble(
         donor = 1:n_d,
-        batch = 1:n_d,
+        batch_id = 1:n_d,
         sf = runif(n_d, 1.0, 10.0)
     )
 
@@ -51,13 +51,13 @@ test_that("small-simple-bulk", {
             })
         ) |>
         unnest(d) |>
-        select(feat_id, donor, batch, counts)
+        select(feat_id, donor, batch_id, counts)
 
     # Coerce relevant columns to a factor
     data[["donor"]] <- factor(data[["donor"]])
 
     # Compute size factors
-    size_factors <- exp(disize(
+    size_factors <- exp(disize::disize(
         design_formula = ~ (1 | donor),
         model_data = data
     ))
@@ -99,7 +99,7 @@ test_that("large-simple-bulk", {
     # Simulate batch-effect
     true_sf <- tibble(
         donor = 1:n_d,
-        batch = 1:n_d,
+        batch_id = 1:n_d,
         sf = runif(n_d, 1.0, 10.0)
     )
 
@@ -118,16 +118,15 @@ test_that("large-simple-bulk", {
             })
         ) |>
         unnest(d) |>
-        select(feat_id, donor, batch, counts)
+        select(feat_id, donor, batch_id, counts)
 
     # Coerce relevant columns to a factor
     data[["donor"]] <- factor(data[["donor"]])
 
     # Compute size factors
-    size_factors <- exp(disize(
+    size_factors <- exp(disize::disize(
         design_formula = ~ (1 | donor),
-        model_data = data,
-        n_threads = ceiling(parallel::detectCores() / 2)
+        model_data = data
     ))
 
     expect_equal(
@@ -169,7 +168,7 @@ test_that("small-simple-sc", {
     # Simulate batch-effect
     true_sf <- tibble(
         donor = 1:n_d,
-        batch = 1:n_d,
+        batch_id = 1:n_d,
         sf = runif(n_d, 1.0, 10.0)
     )
 
@@ -195,14 +194,14 @@ test_that("small-simple-sc", {
             )
         ) |>
         unnest(d) |>
-        select(feat_id, donor, batch, cell_type, counts)
+        select(feat_id, donor, batch_id, cell_type, counts)
 
     # Coerce relevant columns to a factor
     data[["donor"]] <- factor(data[["donor"]])
     data[["cell_type"]] <- factor(data[["cell_type"]])
 
     # Compute size factors
-    size_factors <- exp(disize(
+    size_factors <- exp(disize::disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         model_data = data
     ))
@@ -247,7 +246,7 @@ test_that("large-simple-sc", {
     # Simulate batch-effect
     true_sf <- tibble(
         donor = 1:n_d,
-        batch = 1:n_d,
+        batch_id = 1:n_d,
         sf = runif(n_d, 1.0, 10.0)
     )
 
@@ -273,14 +272,14 @@ test_that("large-simple-sc", {
             )
         ) |>
         unnest(d) |>
-        select(feat_id, donor, batch, cell_type, counts)
+        select(feat_id, donor, batch_id, cell_type, counts)
 
     # Coerce relevant columns to a factor
     data[["donor"]] <- factor(data[["donor"]])
     data[["cell_type"]] <- factor(data[["cell_type"]])
 
     # Compute size factors
-    size_factors <- exp(disize(
+    size_factors <- exp(disize::disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         model_data = data
     ))
@@ -309,7 +308,7 @@ test_that("as-counts-matrix", {
     # Construct metadata
     metadata <- data.frame(
         obs_id = factor(1:(n_d * n_p * n_o)),
-        batch = factor(rep(1:n_d, each = (n_p * n_o))),
+        batch_id = factor(rep(1:n_d, each = (n_p * n_o))),
         donor = factor(rep(1:n_d, each = (n_p * n_o))),
         cell_type = factor(rep(1:n_p, times = (n_d * n_o)))
     )
@@ -318,8 +317,7 @@ test_that("as-counts-matrix", {
     size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | cell_type:donor),
         counts = counts,
-        metadata = metadata,
-        n_threads = 4
+        metadata = metadata
     ))
 
     expect_equal(

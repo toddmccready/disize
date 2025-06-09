@@ -4,29 +4,6 @@ version = 2
 r_version = "4.5"
 
 [[packages]]
-name = "BH"
-version = "1.87.0-1"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
-
-[[packages]]
-name = "Brobdingnag"
-version = "1.2-9"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    { name = "Matrix", requirement = "(>= 1.5-0)" },
-]
-
-[[packages]]
-name = "MASS"
-version = "7.3-65"
-source = { builtin = true }
-force_source = false
-dependencies = []
-
-[[packages]]
 name = "Matrix"
 version = "1.7-3"
 source = { builtin = true }
@@ -36,22 +13,8 @@ dependencies = [
 ]
 
 [[packages]]
-name = "QuickJSR"
-version = "1.7.0"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
-
-[[packages]]
 name = "R6"
 version = "2.6.1"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
-
-[[packages]]
-name = "RColorBrewer"
-version = "1.1-3"
 source = { repository = "https://cran.r-project.org" }
 force_source = false
 dependencies = []
@@ -64,40 +27,12 @@ force_source = false
 dependencies = []
 
 [[packages]]
-name = "RcppEigen"
-version = "0.3.4.0.2"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    { name = "Rcpp", requirement = "(>= 0.11.0)" },
-    "Rcpp",
-]
-
-[[packages]]
-name = "RcppParallel"
-version = "5.1.10"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
-
-[[packages]]
 name = "Rdpack"
 version = "2.6.4"
 source = { repository = "https://cran.r-project.org" }
 force_source = false
 dependencies = [
     { name = "rbibutils", requirement = "(>= 1.3)" },
-]
-
-[[packages]]
-name = "StanHeaders"
-version = "2.32.10"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    { name = "RcppParallel", requirement = "(>= 5.1.4)" },
-    { name = "RcppEigen", requirement = "(>= 0.3.4.0.0)" },
-    { name = "RcppParallel", requirement = "(>= 5.1.4)" },
 ]
 
 [[packages]]
@@ -131,24 +66,6 @@ force_source = false
 dependencies = []
 
 [[packages]]
-name = "bayesplot"
-version = "1.12.0"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    { name = "dplyr", requirement = "(>= 0.8.0)" },
-    { name = "ggplot2", requirement = "(>= 3.4.0)" },
-    { name = "ggridges", requirement = "(>= 0.5.5)" },
-    "glue",
-    "posterior",
-    "reshape2",
-    { name = "rlang", requirement = "(>= 0.3.0)" },
-    { name = "tibble", requirement = "(>= 2.0.0)" },
-    "tidyr",
-    "tidyselect",
-]
-
-[[packages]]
 name = "brew"
 version = "1.0-10"
 source = { repository = "https://cran.r-project.org" }
@@ -156,53 +73,11 @@ force_source = false
 dependencies = []
 
 [[packages]]
-name = "bridgesampling"
-version = "1.1-2"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    "mvtnorm",
-    "Matrix",
-    "Brobdingnag",
-    "stringr",
-    "coda",
-    "scales",
-]
-
-[[packages]]
 name = "brio"
 version = "1.1.5"
 source = { repository = "https://cran.r-project.org" }
 force_source = false
 dependencies = []
-
-[[packages]]
-name = "brms"
-version = "2.22.0"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    { name = "Rcpp", requirement = "(>= 0.12.0)" },
-    { name = "rstan", requirement = "(>= 2.29.0)" },
-    { name = "ggplot2", requirement = "(>= 2.0.0)" },
-    { name = "loo", requirement = "(>= 2.8.0)" },
-    { name = "posterior", requirement = "(>= 1.6.0)" },
-    { name = "Matrix", requirement = "(>= 1.1.1)" },
-    { name = "mgcv", requirement = "(>= 1.8-13)" },
-    { name = "rstantools", requirement = "(>= 2.1.1)" },
-    { name = "bayesplot", requirement = "(>= 1.5.0)" },
-    { name = "bridgesampling", requirement = "(>= 0.3-0)" },
-    { name = "glue", requirement = "(>= 1.3.0)" },
-    { name = "rlang", requirement = "(>= 1.0.0)" },
-    { name = "future", requirement = "(>= 1.19.0)" },
-    { name = "future.apply", requirement = "(>= 1.0.0)" },
-    "matrixStats",
-    "nleqslv",
-    "nlme",
-    "coda",
-    "abind",
-    "backports",
-]
 
 [[packages]]
 name = "bslib"
@@ -281,22 +156,6 @@ dependencies = [
     { name = "withr", requirement = "(>= 2.5.0)" },
     { name = "rlang", requirement = "(>= 0.4.7)" },
 ]
-
-[[packages]]
-name = "coda"
-version = "0.19-4.1"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    "lattice",
-]
-
-[[packages]]
-name = "codetools"
-version = "0.2-20"
-source = { builtin = true }
-force_source = false
-dependencies = []
 
 [[packages]]
 name = "commonmark"
@@ -476,13 +335,6 @@ force_source = false
 dependencies = []
 
 [[packages]]
-name = "farver"
-version = "2.1.2"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
-
-[[packages]]
 name = "fastmap"
 version = "1.2.0"
 source = { repository = "https://cran.r-project.org" }
@@ -507,28 +359,6 @@ force_source = false
 dependencies = []
 
 [[packages]]
-name = "future"
-version = "1.49.0"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    "digest",
-    { name = "globals", requirement = "(>= 0.18.0)" },
-    { name = "listenv", requirement = "(>= 0.8.0)" },
-    { name = "parallelly", requirement = "(>= 1.44.0)" },
-]
-
-[[packages]]
-name = "future.apply"
-version = "1.11.3"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    { name = "future", requirement = "(>= 1.28.0)" },
-    { name = "globals", requirement = "(>= 0.16.1)" },
-]
-
-[[packages]]
 name = "generics"
 version = "0.1.4"
 source = { repository = "https://cran.r-project.org" }
@@ -547,37 +377,6 @@ dependencies = [
     { name = "rstudioapi", requirement = "(>= 0.11)" },
     "sys",
     { name = "zip", requirement = "(>= 2.1.0)" },
-]
-
-[[packages]]
-name = "ggplot2"
-version = "3.5.2"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    "cli",
-    "glue",
-    { name = "gtable", requirement = "(>= 0.1.1)" },
-    "isoband",
-    { name = "lifecycle", requirement = "(> 1.0.1)" },
-    "MASS",
-    "mgcv",
-    { name = "rlang", requirement = "(>= 1.1.0)" },
-    { name = "scales", requirement = "(>= 1.3.0)" },
-    "tibble",
-    { name = "vctrs", requirement = "(>= 0.6.0)" },
-    { name = "withr", requirement = "(>= 2.5.0)" },
-]
-
-[[packages]]
-name = "ggridges"
-version = "0.5.6"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    { name = "ggplot2", requirement = "(>= 3.4.0)" },
-    { name = "scales", requirement = "(>= 0.4.1)" },
-    { name = "withr", requirement = "(>= 2.1.1)" },
 ]
 
 [[packages]]
@@ -604,41 +403,11 @@ force_source = false
 dependencies = []
 
 [[packages]]
-name = "globals"
-version = "0.18.0"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    "codetools",
-]
-
-[[packages]]
 name = "glue"
 version = "1.8.0"
 source = { repository = "https://cran.r-project.org" }
 force_source = false
 dependencies = []
-
-[[packages]]
-name = "gridExtra"
-version = "2.3"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    "gtable",
-]
-
-[[packages]]
-name = "gtable"
-version = "0.3.6"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    "cli",
-    "glue",
-    "lifecycle",
-    { name = "rlang", requirement = "(>= 1.1.0)" },
-]
 
 [[packages]]
 name = "highr"
@@ -727,13 +496,6 @@ force_source = false
 dependencies = []
 
 [[packages]]
-name = "inline"
-version = "0.3.21"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
-
-[[packages]]
 name = "instantiate"
 version = "0.2.3"
 source = { repository = "https://cran.r-project.org" }
@@ -743,13 +505,6 @@ dependencies = [
     "fs",
     "rlang",
 ]
-
-[[packages]]
-name = "isoband"
-version = "0.2.7"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
 
 [[packages]]
 name = "jquerylib"
@@ -778,13 +533,6 @@ dependencies = [
     { name = "xfun", requirement = "(>= 0.51)" },
     { name = "yaml", requirement = "(>= 2.1.19)" },
 ]
-
-[[packages]]
-name = "labeling"
-version = "0.4.3"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
 
 [[packages]]
 name = "later"
@@ -816,24 +564,6 @@ dependencies = [
 ]
 
 [[packages]]
-name = "listenv"
-version = "0.9.1"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
-
-[[packages]]
-name = "loo"
-version = "2.8.0"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    "checkmate",
-    { name = "matrixStats", requirement = "(>= 0.52)" },
-    { name = "posterior", requirement = "(>= 1.5.0)" },
-]
-
-[[packages]]
 name = "magrittr"
 version = "2.0.3"
 source = { repository = "https://cran.r-project.org" }
@@ -858,16 +588,6 @@ dependencies = [
 ]
 
 [[packages]]
-name = "mgcv"
-version = "1.9-1"
-source = { builtin = true }
-force_source = false
-dependencies = [
-    { name = "nlme", requirement = "(>= 3.1-64)" },
-    "Matrix",
-]
-
-[[packages]]
 name = "mime"
 version = "0.13"
 source = { repository = "https://cran.r-project.org" }
@@ -885,29 +605,6 @@ dependencies = [
 ]
 
 [[packages]]
-name = "mvtnorm"
-version = "1.3-3"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
-
-[[packages]]
-name = "nleqslv"
-version = "3.3.5"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
-
-[[packages]]
-name = "nlme"
-version = "3.1-168"
-source = { builtin = true }
-force_source = false
-dependencies = [
-    "lattice",
-]
-
-[[packages]]
 name = "numDeriv"
 version = "2016.8-1.1"
 source = { repository = "https://cran.r-project.org" }
@@ -922,13 +619,6 @@ force_source = false
 dependencies = [
     "askpass",
 ]
-
-[[packages]]
-name = "parallelly"
-version = "1.44.0"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
 
 [[packages]]
 name = "pillar"
@@ -1250,39 +940,6 @@ force_source = false
 dependencies = []
 
 [[packages]]
-name = "rstan"
-version = "2.32.7"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    { name = "StanHeaders", requirement = "(>= 2.32.0)" },
-    { name = "inline", requirement = "(>= 0.3.19)" },
-    { name = "gridExtra", requirement = "(>= 2.3)" },
-    { name = "Rcpp", requirement = "(>= 1.0.7)" },
-    { name = "RcppParallel", requirement = "(>= 5.1.4)" },
-    { name = "loo", requirement = "(>= 2.4.1)" },
-    { name = "pkgbuild", requirement = "(>= 1.2.0)" },
-    "QuickJSR",
-    { name = "ggplot2", requirement = "(>= 3.3.5)" },
-    { name = "Rcpp", requirement = "(>= 1.0.7)" },
-    { name = "RcppEigen", requirement = "(>= 0.3.4.0.0)" },
-    { name = "BH", requirement = "(>= 1.75.0-0)" },
-    { name = "StanHeaders", requirement = "(>= 2.32.0)" },
-    { name = "RcppParallel", requirement = "(>= 5.1.4)" },
-]
-
-[[packages]]
-name = "rstantools"
-version = "2.4.0"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    "desc",
-    { name = "Rcpp", requirement = "(>= 0.12.16)" },
-    { name = "RcppParallel", requirement = "(>= 5.0.1)" },
-]
-
-[[packages]]
 name = "rstudioapi"
 version = "0.17.1"
 source = { repository = "https://cran.r-project.org" }
@@ -1310,23 +967,6 @@ dependencies = [
     { name = "htmltools", requirement = "(>= 0.5.1)" },
     "R6",
     "rappdirs",
-]
-
-[[packages]]
-name = "scales"
-version = "1.4.0"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = [
-    "cli",
-    { name = "farver", requirement = "(>= 2.0.3)" },
-    "glue",
-    "labeling",
-    "lifecycle",
-    "R6",
-    "RColorBrewer",
-    { name = "rlang", requirement = "(>= 1.1.0)" },
-    "viridisLite",
 ]
 
 [[packages]]
@@ -1572,13 +1212,6 @@ dependencies = [
     { name = "lifecycle", requirement = "(>= 1.0.3)" },
     { name = "rlang", requirement = "(>= 1.1.0)" },
 ]
-
-[[packages]]
-name = "viridisLite"
-version = "0.4.2"
-source = { repository = "https://cran.r-project.org" }
-force_source = false
-dependencies = []
 
 [[packages]]
 name = "waldo"
