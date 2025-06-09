@@ -15,8 +15,12 @@ repositories = [
 # {name = "dplyr", repository = "CRAN", force_source = true},
 # {name = "dplyr", git = "https://github.com/tidyverse/dplyr.git", tag = "v1.1.4"},
 # {name = "dplyr", path = "/path/to/local/dplyr"},
-dependencies = ["brms", "reshape2", "devtools", "testthat",
+dependencies = [
+    "reshape2",
+    "devtools",
+    "testthat",
     "progress",
     "reformulas",
     "cmdstanr",
+    "instantiate",
 ]

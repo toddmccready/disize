@@ -33,6 +33,35 @@ modify_design <- function(design_formula, feat_name) {
     )
 }
 
+extract_params <- function(cur_fit) {
+    params <- cur_fit$mle()
+
+    params_list <- list(
+        tau = unname(params["tau"]),
+        iodisp = unname(params["iodisp"]),
+        raw_sf = unname(params[grepl("^raw_sf", names(params))]),
+        int_coefs = unname(params[grepl("^int_coefs", names(params))])
+    )
+
+    if (any(grepl("fe_", names(params)))) {
+        params_list[["lambda"]] <- unname(params[grepl("^lambda", names(params))])
+        params_list[["fe_coefs"]] <- unname(params[grepl("^fe_coefs", names(params))])
+    } else {
+        params_list[["lambda"]] <- numeric(0)
+        params_list[["fe_coefs"]] <- numeric(0)
+    }
+
+    if (any(grepl("re_", names(params)))) {
+        params_list[["re_coefs"]] <- unname(params[grepl("^re_coefs", names(params))])
+        params_list[["re_sigma"]] <- unname(params[grepl("^re_sigma", names(params))])
+    } else {
+        params_list[["re_coefs"]] <- numeric(0)
+        params_list[["re_sigma"]] <- numeric(0)
+    }
+
+    params_list
+}
+
 #' @title Design-infored size factor estimation.
 #'
 #'
@@ -66,7 +95,6 @@ disize <- function(
     feat_name = "feat_id",
     n_feats = 500,
     n_subset = 50,
-    n_threads = NULL,
     verbose = 3,
     n_passes = 20,
     n_iters = 100,
@@ -171,11 +199,9 @@ disize <- function(
 
     stan_data[["n_int"]] <- ncol(int_design)
     stan_data[["n_nz_int"]] <- length(int_design@x)
-    stan_data[["int_design"]] <- list(
-        int_design@x,
-        int_design@j,
-        int_design@p
-    )
+    stan_data[["int_design_x"]] <- int_design@x
+    stan_data[["int_design_j"]] <- int_design@j + 1L
+    stan_data[["int_design_p"]] <- int_design@p + 1L
 
     # Construct fixed-effects model matrix if present
     if (!is.null(design$fixed)) {
@@ -184,11 +210,15 @@ disize <- function(
 
         stan_data[["n_fe"]] <- ncol(fe_design)
         stan_data[["n_nz_fe"]] <- length(fe_design@x)
-        stan_data[["fe_design"]] <- list(
-            fe_design@x,
-            fe_design@j,
-            fe_design@p
-        )
+        stan_data[["fe_design_x"]] <- fe_design@x
+        stan_data[["fe_design_j"]] <- fe_design@j + 1L
+        stan_data[["fe_design_p"]] <- fe_design@p + 1L
+    } else {
+        stan_data[["n_fe"]] <- 0L
+        stan_data[["n_nz_fe"]] <- 0L
+        stan_data[["fe_design_x"]] <- numeric(0)
+        stan_data[["fe_design_j"]] <- integer(0)
+        stan_data[["fe_design_p"]] <- integer(stan_data[["n_obs"]] + 1)
     }
 
     # Construct random effects matrix
@@ -212,24 +242,26 @@ disize <- function(
         # Include data for Stan
         stan_data[["n_re"]] <- ncol(re_design)
         stan_data[["n_nz_re"]] <- length(re_design@x)
-        stan_data[["re_design"]] <- list(
-            re_design@x,
-            re_design@j,
-            re_design@p
-        )
+        stan_data[["re_design_x"]] <- re_design@x
+        stan_data[["re_design_j"]] <- re_design@j + 1L
+        stan_data[["re_design_p"]] <- re_design@p + 1L
         stan_data[["n_re_terms"]] <- length(remm$cnms)
         stan_data[["re_id"]] <- rep(1:length(remm$cnms), times = diff(remm$Gp))
-
+    } else {
+        stan_data[["n_re"]] <- 0L
+        stan_data[["n_nz_re"]] <- 0L
+        stan_data[["re_design_x"]] <- numeric(0)
+        stan_data[["re_design_j"]] <- integer(0)
+        stan_data[["re_design_p"]] <- integer(stan_data[["n_obs"]] + 1)
+        stan_data[["n_re_terms"]] <- 0L
+        stan_data[["re_id"]] <- integer(0)
     }
 
     # Include counts for Stan
     stan_data[["counts"]] <- as.integer(model_data[["counts"]])
 
     # Construct Stan model
-    if (verbose) message("Compiling Stan model...")
-    stan_model <- cmdstanr::cmdstan_model("src/model.stan") # for now
-
-    # Compile model
+    model <- instantiate::stan_package_model(name = "disize", package = "disize")
 
     # Estimate model parameters ----
     if (verbose) message("Estimating size factors...")
@@ -240,32 +272,34 @@ disize <- function(
         pb$tick(0)
     }
 
+    # Estimate initial fit
+    cur_fit <- model$optimize(stan_data, iter = n_iters, show_messages = F, sig_figs = 18)
+
+    # Extract parameters
+    cur_params <- extract_params(cur_fit)
+
     # Extract size factors
     sf_hist <- list()
+    sf_hist[[1]] <- cur_fit$mle()[grepl("^sf", names(cur_fit$mle()))]
 
     if (2 < verbose) pb$tick()
     for (i in 2:n_passes) {
         # Compute next fit
-        cur_fit <- rstan::optimizing(
-            model,
-            data = stan_data,
-            iter = n_iters,
-            init = cur_fit$par,
-            as_vector = FALSE
-        )
+        cur_fit <- model$optimize(stan_data, init = cur_fit, iter = n_iters, show_messages = F, sig_figs = 18)
+
+        # Format parameters
+        cur_params <- extract_params(cur_fit)
+
 
         # Extract size factors
-        sf_hist[[i]] <- log(cur_fit$par$b_sf) + log(n_batches)
-
-        # Free up space
-        gc()
+        sf_hist[[i]] <- cur_fit$draws()[,grepl("^sf", colnames(cur_fit$draws()))]
 
         # Evaluate convergence
         # TODO: do something smart with the history
         if (all(abs(sf_hist[[i]] - sf_hist[[i - 1]]) < tolerance)) {
             # Name and return size factors
-            sf <- sf_hist[[i]]
-            names(sf) <- batches
+            sf <- as.vector(sf_hist[[i]])
+            names(sf) <- levels(model_data[[batch_name]])
 
             if (2 < verbose) pb$terminate()
             return(sf)
@@ -282,8 +316,8 @@ disize <- function(
     if (2 < verbose) pb$terminate()
 
     # Name and return size factors
-    sf <- sf_hist[[i]]
-    names(sf) <- batches
+    sf <- as.vector(sf_hist[[i]])
+    names(sf) <- levels(model_data[[batch_name]])
 
     sf
 }

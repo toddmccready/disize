@@ -10,10 +10,15 @@ disize(
   metadata = NULL,
   model_data = NULL,
   batch_name = "batch",
-  obs_name = "obs",
-  gene_name = "gene",
-  n_genes = 500,
-  n_threads = 1
+  obs_name = "obs_id",
+  feat_name = "feat_id",
+  n_feats = 500,
+  n_subset = 50,
+  n_threads = NULL,
+  verbose = 3,
+  n_passes = 20,
+  n_iters = 100,
+  tolerance = 0.001
 )
 }
 \arguments{
@@ -24,24 +29,23 @@ disize(
 \item{metadata}{A dataframe containing sample metadata.}
 
 \item{model_data}{The model data if already constructed. Must contain the
-'batch_name', 'obs_name', 'gene_name' identifiers as columns and any
+'batch_name' and "feat_idx" identifiers as columns, and any
 predictors used in 'design_formula'.}
 
 \item{batch_name}{The identifier for the batch column in 'metadata',
 defaults to "batch".}
 
-\item{obs_name}{The identifier for the observation column in 'metadata',
-defaults to "obs".}
-
-\item{gene_name}{The identifier for the gene column in 'model_data',
-defaults to "gene".}
-
-\item{n_genes}{The number of genes used during estimation, defaults to 500.
+\item{n_feats}{The number of genes used during estimation, defaults to 500.
 Increasing this value will result in this function taking longer but more
 confidence in the size factors.}
 
+\item{n_subset}{The number of observations per experimental unit used during
+estimation, defaults to 50.}
+
 \item{n_threads}{The number of threads to be used during estimation,
 defaults to 1. Increasing this value will generally decrease runtime.}
+
+\item{backend}{How to call Stan, defaults to "rstan".}
 }
 \value{
 A named numeric vector containing the size factor point estimates.

@@ -734,6 +734,17 @@ force_source = false
 dependencies = []
 
 [[packages]]
+name = "instantiate"
+version = "0.2.3"
+source = { repository = "https://cran.r-project.org" }
+force_source = false
+dependencies = [
+    "callr",
+    "fs",
+    "rlang",
+]
+
+[[packages]]
 name = "isoband"
 version = "0.2.7"
 source = { repository = "https://cran.r-project.org" }
