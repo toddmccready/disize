@@ -13,7 +13,8 @@ Imports:
     progress,
     reformulas,
     instantiate,
-    Matrix
+    Matrix,
+    dplyr
 Suggests:
     testthat (>= 3.0.0),
     dplyr (>= 1.1.4),
