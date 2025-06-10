@@ -69,7 +69,7 @@ transformed parameters {
 model {
     vector[n_obs] log_mu;
 
-    // --- Priors ---
+    // Priors ----
     z_re ~ std_normal();
 
     // Horseshoe prior for fixed effects
