@@ -9,15 +9,14 @@ disize(
   counts = NULL,
   metadata = NULL,
   model_data = NULL,
-  batch_name = "batch",
+  batch_name = "batch_id",
   obs_name = "obs_id",
   feat_name = "feat_id",
   n_feats = 500,
   n_subset = 50,
-  n_threads = NULL,
   verbose = 3,
   n_passes = 20,
-  n_iters = 100,
+  n_iters = 500,
   tolerance = 0.001
 )
 }

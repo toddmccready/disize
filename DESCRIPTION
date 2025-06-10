@@ -12,7 +12,8 @@ Imports:
     reshape2,
     progress,
     reformulas,
-    cmdstanr
+    instantiate,
+    Matrix
 Suggests:
     testthat (>= 3.0.0),
     dplyr (>= 1.1.4),

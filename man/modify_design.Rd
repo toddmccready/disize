@@ -8,6 +8,8 @@ modify_design(design_formula, feat_name)
 }
 \arguments{
 \item{design_formula}{The design formula}
+
+\item{feat_name}{The variable name for features}
 }
 \description{
 Modify the design by adding an interaction by genes

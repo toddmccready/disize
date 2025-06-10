@@ -91,15 +91,20 @@ extract_params <- function(cur_fit) {
 #'  'batch_name' and "feat_idx" identifiers as columns, and any
 #'  predictors used in 'design_formula'.
 #' @param batch_name The identifier for the batch column in 'metadata',
-#'  defaults to "batch".
+#'  defaults to "batch_id".
+#' @param obs_name The identifier for the observation column in 'metadata',
+#'  defaults to "obs_id".
+#' @param feat_name The identifier for the feature column in 'metadata',
+#'  defaults to "feat_id".
 #' @param n_feats The number of genes used during estimation, defaults to 500.
 #'  Increasing this value will result in this function taking longer but more
 #'  confidence in the size factors.
 #' @param n_subset The number of observations per experimental unit used during
 #'  estimation, defaults to 50.
-#' @param n_threads The number of threads to be used during estimation,
-#'  defaults to 1. Increasing this value will generally decrease runtime.
-#' @param backend How to call Stan, defaults to "rstan".
+#' @param verbose The verbosity level.
+#' @param n_passes The number of optimization passes to go through.
+#' @param n_iters The number of iterations used for a single optimization pass.
+#' @param tolerance The tolerance used to evaluate convergence of the size factors.
 #'
 #' @returns A named numeric vector containing the size factor point estimates.
 #'
