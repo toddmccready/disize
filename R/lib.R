@@ -42,7 +42,9 @@ extract_params <- function(cur_fit) {
 
     params_list <- list(
         tau = unname(params["tau"]),
-        iodisp = unname(params["iodisp"]),
+        iodisp = unname(params[grepl("^iodisp\\[", names(params))]),
+        iodisp_mu = unname(params["iodisp_mu"]),
+        iodisp_sigma = unname(params["iodisp_sigma"]),
         raw_sf = unname(params[grepl("^raw_sf", names(params))]),
         int_coefs = unname(params[grepl("^int_coefs", names(params))]),
         sf = unname(params[grepl("^sf", names(params))])

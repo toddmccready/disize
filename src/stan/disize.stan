@@ -54,7 +54,10 @@ parameters {
     simplex[n_batches] raw_sf;
 
     // Feature-level Dispersion ----
-    real<lower=0> iodisp;
+    vector<lower=0>[n_feats] iodisp;
+
+    real iodisp_mu;
+    real<lower=0> iodisp_sigma;
 }
 transformed parameters {
     // Size Factors ----
@@ -75,6 +78,9 @@ model {
     // Horseshoe prior for fixed effects
     lambda ~ cauchy(0, 1);
     fe_coefs ~ normal(0, lambda * tau);
+
+    // Inverse overdispersion regularization
+    iodisp ~ lognormal(iodisp_mu, iodisp_sigma);
 
     // Computing observed negative binomial
     log_mu = csr_matrix_times_vector(n_obs, n_int, int_design_x, int_design_j, int_design_p, int_coefs);
