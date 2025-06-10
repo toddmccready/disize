@@ -63,7 +63,7 @@ transformed parameters {
     // Feature Expression ----
     vector[n_re] re_coefs; // Random-effects coefficients
     for (i in 1:n_re) {
-        re_coefs[i] = z_re[i] * re_sigma[re_id[i]];
+        re_coefs[i] = z_re[i] * (re_sigma[re_id[i]] * tau);
     }
 }
 model {
@@ -89,6 +89,7 @@ model {
     for (i in 1:n_obs) {
         // Adjusting for batch-effect
         log_mu[i] += sf[batch_id[i]];
+
         counts[i] ~ neg_binomial_2_log(log_mu[i], iodisp);
     }
 }
