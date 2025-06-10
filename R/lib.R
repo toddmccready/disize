@@ -100,7 +100,7 @@ disize <- function(
     n_subset = 50,
     verbose = 3,
     n_passes = 20,
-    n_iters = 100,
+    n_iters = 500,
     tolerance = 1e-3
 ) {
     # Check design formula is correct
@@ -110,6 +110,7 @@ disize <- function(
         stop("'design_formula' should be of the form '~ x + ...'")
     }
 
+    # 'counts' & 'metadata' specified
     if (is.null(model_data) && (!is.null(counts) && !is.null(metadata))) {
         # Check for the same number of samples
         if (nrow(metadata) != nrow(counts)) {
@@ -164,31 +165,36 @@ disize <- function(
 
         # Merge counts and metadata
         model_data <- merge(counts, metadata, by = obs_name)
-    } else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
+    }
+    # 'model_data' specified
+    else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
         # TODO make n_subset work here
-    } else {
+    }
+    else {
         stop(
             "either 'counts', 'metadata' can be specified(and 'model_data' ",
             "left NULL) or 'model_data' can be specified(and 'counts', ",
             "'metadata' left NULL)"
         )
     }
-    if (2 < verbose) message("Formatting data...")
 
-    # Allocate list for formatted Stan data
-    stan_data <- list(n_obs = nrow(model_data))
+    # Formating Data For Stan ----
+    if (2 < verbose) message("Formatting data...")
 
     # Ensure relevant columns are factors
     model_data[[batch_name]] <- as.factor(model_data[[batch_name]])
     model_data[[feat_name]] <- as.factor(model_data[[feat_name]])
 
-    # Include number of features
-    stan_data[["n_feats"]] <- length(levels(model_data[[feat_name]]))
-    stan_data[["feat_id"]] <- as.integer(model_data[[feat_name]])
-
     # Format characters to factors
     model_data <- model_data |>
         dplyr::mutate(dplyr::across(dplyr::where(is.character), as.factor))
+
+    # Allocate named list for Stan
+    stan_data <- list(n_obs = nrow(model_data))
+
+    # Include number of features
+    stan_data[["n_feats"]] <- length(levels(model_data[[feat_name]]))
+    stan_data[["feat_id"]] <- as.integer(model_data[[feat_name]])
 
     # Include batch-level for Stan
     stan_data[["n_batches"]] <- levels(model_data[[batch_name]]) |>
@@ -210,8 +216,14 @@ disize <- function(
 
     # Construct fixed-effects model matrix if present
     if (!is.null(design$fixed)) {
-        fe_design <- Matrix::sparse.model.matrix(design$fixed, model_data) |>
-            as("RsparseMatrix")
+        # Partition model data for conserving memory
+        fe_design <- lapply(
+            X = split(1:nrow(model_data), ceiling(1:nrow(model_data) / 1e5)),
+            FUN = function(chunk_idxs) {
+                Matrix::sparse.model.matrix(design$fixed, model_data[chunk_idxs,]) |>
+                    as("RsparseMatrix")
+            }) |>
+            do.call(rbind, args = _)
 
         stan_data[["n_fe"]] <- ncol(fe_design)
         stan_data[["n_nz_fe"]] <- length(fe_design@x)
@@ -226,7 +238,7 @@ disize <- function(
         stan_data[["fe_design_p"]] <- integer(stan_data[["n_obs"]] + 1)
     }
 
-    # Construct random effects matrix
+    # Construct random-effects matrix if present
     if (!is.null(design$random)) {
         remm <- reformulas::mkReTrms(
             bars = reformulas::findbars(design$random),
@@ -241,7 +253,7 @@ disize <- function(
             unlist() |>
             all()
         if (!all_scalar) {
-            stop("Only include one predictor on the LHS of a random-effects pipe.")
+            stop("Only include one predictor on the LHS of a random-effects bar.")
         }
 
         # Include data for Stan
