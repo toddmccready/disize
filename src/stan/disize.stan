@@ -40,16 +40,14 @@ data {
     array[n_obs + 1] int re_design_p;
 }
 parameters {
-    // Shrinkage for Fixed Effects (Horseshoe) ----
-    real<lower=0> tau;          // Global shrinkage parameter
-    vector<lower=0>[n_fe] lambda; // Local shrinkage parameters
+    // Shrinkage ----
+    real<lower=0> tau; // Global shrinkage parameter
+    vector<lower=0>[n_fe] lambda; // Local shrinkage parameters for fixed-effects
 
     // Feature Expression ----
     vector[n_int] int_coefs;  // Intercept coefficients
-    vector[n_fe] fe_coefs;    // Fixed-effect coefficients
-
-    // Non-Centered Random Effects ----
-    vector[n_re] z_re;        // Standardized ("raw") random-effect coefficients
+    vector[n_fe] fe_coefs;    // Fixed-effects coefficients
+    vector[n_re] z_re; // Raw random-effects coefficients
     vector<lower=0>[n_re_terms] re_sigma; // Random-effect std-devs
 
     // Size Factors ----
@@ -62,8 +60,8 @@ transformed parameters {
     // Size Factors ----
     vector[n_batches] sf = log(raw_sf) + log(n_batches);
 
-    // Actual Random Effects (Scaled) ----
-    vector[n_re] re_coefs;
+    // Feature Expression ----
+    vector[n_re] re_coefs; // Random-effects coefficients
     for (i in 1:n_re) {
         re_coefs[i] = z_re[i] * re_sigma[re_id[i]];
     }
@@ -78,7 +76,7 @@ model {
     lambda ~ cauchy(0, 1);
     fe_coefs ~ normal(0, lambda * tau);
 
-    // --- Linear Predictor ---
+    // Computing observed negative binomial
     log_mu = csr_matrix_times_vector(n_obs, n_int, int_design_x, int_design_j, int_design_p, int_coefs);
     if (n_fe != 0) {
         log_mu += csr_matrix_times_vector(n_obs, n_fe, fe_design_x, fe_design_j, fe_design_p, fe_coefs);
@@ -87,7 +85,7 @@ model {
         log_mu += csr_matrix_times_vector(n_obs, n_re, re_design_x, re_design_j, re_design_p, re_coefs);
     }
 
-    // --- Likelihood ----
+    // Likelihood ----
     for (i in 1:n_obs) {
         // Adjusting for batch-effect
         log_mu[i] += sf[batch_id[i]];
