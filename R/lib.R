@@ -1,6 +1,7 @@
 #' Modify the design by adding an interaction by genes
 #'
 #' @param design_formula The design formula
+#' @param feat_name The variable name for features
 modify_design <- function(design_formula, feat_name) {
     # Extract terms
     terms <- attr(terms(design_formula), "term.labels")
@@ -33,6 +34,9 @@ modify_design <- function(design_formula, feat_name) {
     )
 }
 
+#' Extract the parameters out of an optimized model.
+#'
+#' @param cur_fit A CmdStanMLE object
 extract_params <- function(cur_fit) {
     params <- cur_fit$mle()
 
@@ -45,8 +49,14 @@ extract_params <- function(cur_fit) {
     )
 
     if (any(grepl("fe_", names(params)))) {
-        params_list[["lambda"]] <- unname(params[grepl("^lambda", names(params))])
-        params_list[["fe_coefs"]] <- unname(params[grepl("^fe_coefs", names(params))])
+        params_list[["lambda"]] <- unname(params[grepl(
+            "^lambda",
+            names(params)
+        )])
+        params_list[["fe_coefs"]] <- unname(params[grepl(
+            "^fe_coefs",
+            names(params)
+        )])
     } else {
         params_list[["lambda"]] <- numeric(0)
         params_list[["fe_coefs"]] <- numeric(0)
@@ -54,8 +64,14 @@ extract_params <- function(cur_fit) {
 
     if (any(grepl("re_", names(params)))) {
         params_list[["z_re"]] <- unname(params[grepl("^z_re", names(params))])
-        params_list[["re_coefs"]] <- unname(params[grepl("^re_coefs", names(params))])
-        params_list[["re_sigma"]] <- unname(params[grepl("^re_sigma", names(params))])
+        params_list[["re_coefs"]] <- unname(params[grepl(
+            "^re_coefs",
+            names(params)
+        )])
+        params_list[["re_sigma"]] <- unname(params[grepl(
+            "^re_sigma",
+            names(params)
+        )])
     } else {
         params_list[["z_re"]] <- numeric(0)
         params_list[["re_coefs"]] <- numeric(0)
@@ -165,12 +181,10 @@ disize <- function(
 
         # Merge counts and metadata
         model_data <- merge(counts, metadata, by = obs_name)
-    }
-    # 'model_data' specified
-    else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
+    } else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
+        # 'model_data' specified
         # TODO make n_subset work here
-    }
-    else {
+    } else {
         stop(
             "either 'counts', 'metadata' can be specified(and 'model_data' ",
             "left NULL) or 'model_data' can be specified(and 'counts', ",
@@ -179,7 +193,9 @@ disize <- function(
     }
 
     # Formating Data For Stan ----
-    if (2 < verbose) message("Formatting data...")
+    if (2 < verbose) {
+        message("Formatting data...")
+    }
 
     # Ensure relevant columns are factors
     model_data[[batch_name]] <- as.factor(model_data[[batch_name]])
@@ -220,9 +236,13 @@ disize <- function(
         fe_design <- lapply(
             X = split(1:nrow(model_data), ceiling(1:nrow(model_data) / 1e5)),
             FUN = function(chunk_idxs) {
-                Matrix::sparse.model.matrix(design$fixed, model_data[chunk_idxs,]) |>
+                Matrix::sparse.model.matrix(
+                    design$fixed,
+                    model_data[chunk_idxs, ]
+                ) |>
                     as("RsparseMatrix")
-            }) |>
+            }
+        ) |>
             do.call(rbind, args = _)
 
         stan_data[["n_fe"]] <- ncol(fe_design)
@@ -249,11 +269,15 @@ disize <- function(
         re_design <- Matrix::t(remm$Zt) |> as("RsparseMatrix")
 
         # Check if all random-effects terms are scalar normals
-        all_scalar <- lapply(remm$cnms, function(b) {length(b) == 1}) |>
+        all_scalar <- lapply(remm$cnms, function(b) {
+            length(b) == 1
+        }) |>
             unlist() |>
             all()
         if (!all_scalar) {
-            stop("Only include one predictor on the LHS of a random-effects bar.")
+            stop(
+                "Only include one predictor on the LHS of a random-effects bar."
+            )
         }
 
         # Include data for Stan
@@ -278,10 +302,15 @@ disize <- function(
     stan_data[["counts"]] <- as.integer(model_data[["counts"]])
 
     # Construct Stan model
-    model <- instantiate::stan_package_model(name = "disize", package = "disize")
+    model <- instantiate::stan_package_model(
+        name = "disize",
+        package = "disize"
+    )
 
     # Estimate model parameters ----
-    if (verbose) message("Estimating size factors...")
+    if (verbose) {
+        message("Estimating size factors...")
+    }
 
     # Construct progress bar
     if (2 < verbose) {
@@ -290,7 +319,12 @@ disize <- function(
     }
 
     # Estimate initial fit
-    cur_fit <- model$optimize(stan_data, iter = n_iters, show_messages = F, sig_figs = 18)
+    cur_fit <- model$optimize(
+        stan_data,
+        iter = n_iters,
+        show_messages = F,
+        sig_figs = 18
+    )
 
     # Extract parameters
     cur_params <- extract_params(cur_fit)
@@ -299,10 +333,18 @@ disize <- function(
     sf_hist <- list()
     sf_hist[[1]] <- cur_params[["sf"]]
 
-    if (2 < verbose) pb$tick()
+    if (2 < verbose) {
+        pb$tick()
+    }
     for (i in 2:n_passes) {
         # Compute next fit
-        cur_fit <- model$optimize(stan_data, init = list(cur_params), iter = n_iters, show_messages = F, sig_figs = 18)
+        cur_fit <- model$optimize(
+            stan_data,
+            init = list(cur_params),
+            iter = n_iters,
+            show_messages = F,
+            sig_figs = 18
+        )
 
         # Extract parameters
         cur_params <- extract_params(cur_fit)
@@ -317,7 +359,9 @@ disize <- function(
             sf <- as.vector(sf_hist[[i]])
             names(sf) <- levels(model_data[[batch_name]])
 
-            if (2 < verbose) pb$terminate()
+            if (2 < verbose) {
+                pb$terminate()
+            }
             return(sf)
         }
 
@@ -329,7 +373,9 @@ disize <- function(
     }
 
     # Terminate progress bar
-    if (2 < verbose) pb$terminate()
+    if (2 < verbose) {
+        pb$terminate()
+    }
 
     # Name and return size factors
     sf <- as.vector(sf_hist[[i]])
