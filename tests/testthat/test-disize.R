@@ -60,7 +60,7 @@ test_that("small-simple-bulk", {
     size_factors <- exp(disize(
         design_formula = ~ (1 | donor),
         model_data = data,
-        n_iters = 250
+        n_threads = 7
     ))
 
     expect_equal(
@@ -127,7 +127,9 @@ test_that("large-simple-bulk", {
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ (1 | donor),
-        model_data = data
+        model_data = data,
+        n_iters = 100,
+        n_threads = 4
     ))
 
     expect_equal(
@@ -204,7 +206,8 @@ test_that("small-simple-sc", {
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
-        model_data = data
+        model_data = data,
+        n_threads = 4
     ))
 
     expect_equal(
