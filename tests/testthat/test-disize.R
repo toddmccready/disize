@@ -59,7 +59,8 @@ test_that("small-simple-bulk", {
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ (1 | donor),
-        model_data = data
+        model_data = data,
+        n_iters = 250
     ))
 
     expect_equal(

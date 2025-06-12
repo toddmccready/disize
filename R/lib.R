@@ -124,7 +124,8 @@ disize <- function(
     verbose = 3,
     n_passes = 20,
     n_iters = 500,
-    tolerance = 1e-3
+    tolerance = 1e-3,
+    n_threads = 1
 ) {
     # Check design formula is correct
     if (!is(design_formula, "formula")) {
@@ -204,6 +205,7 @@ disize <- function(
         message("Formatting data...")
     }
 
+    # Formatting 'model_data' ----
     # Ensure relevant columns are factors
     model_data[[batch_name]] <- as.factor(model_data[[batch_name]])
     model_data[[feat_name]] <- as.factor(model_data[[feat_name]])
@@ -212,14 +214,12 @@ disize <- function(
     model_data <- model_data |>
         dplyr::mutate(dplyr::across(dplyr::where(is.character), as.factor))
 
-    # Allocate named list for Stan
-    stan_data <- list(n_obs = nrow(model_data))
-
+    # Formatting Stan Data ----
     # Include number of features
     stan_data[["n_feats"]] <- length(levels(model_data[[feat_name]]))
     stan_data[["feat_id"]] <- as.integer(model_data[[feat_name]])
 
-    # Include batch-level for Stan
+    # Include batch-level info for Stan
     stan_data[["n_batches"]] <- levels(model_data[[batch_name]]) |>
         length()
     stan_data[["batch_id"]] <- as.integer(model_data[[batch_name]])
@@ -227,21 +227,49 @@ disize <- function(
     # Modify the design formula
     design <- modify_design(design_formula, feat_name)
 
-    # Construct intercept model matrix
+    # Construct thread-specific indices
+    chunk_idxs_list <- split(
+        1:nrow(model_data),
+        ceiling(1:nrow(model_data) / (nrow(model_data) / n_threads))
+    )
+
+    # Construct and partition intercept model matrix
     int_design <- Matrix::sparse.model.matrix(design$intercept, model_data) |>
         as("RsparseMatrix")
 
-    stan_data[["n_int"]] <- ncol(int_design)
-    stan_data[["n_nz_int"]] <- length(int_design@x)
-    stan_data[["int_design_x"]] <- int_design@x
-    stan_data[["int_design_j"]] <- int_design@j + 1L
-    stan_data[["int_design_p"]] <- int_design@p + 1L
+    int_design_partition <- lapply(
+        X = chunk_idxs_list,
+        FUN = function(chunk_idxs) {
+            int_design_chunk <- int_design[chunk_idxs, ]
 
-    # Construct fixed-effects model matrix if present
+            reals <- c(
+                int_design_chunk@x
+            )
+            ints <- c(
+                int_design_chunk@j,
+                int_design_chunk@p
+            )
+
+            list(
+                reals = reals,
+                ints = ints,
+                n_nz_int = length(int_design_chunk@x)
+            )
+        }
+    )
+
+    # Include Stan-formatted data
+    stan_data[["n_int"]] <- ncol(int_design)
+
+    # Check if fixed-effects are present
     if (!is.null(design$fixed)) {
-        # Partition model data for conserving memory
+        # Construct and partition fixed-effects model matrix
         fe_design <- lapply(
-            X = split(1:nrow(model_data), ceiling(1:nrow(model_data) / 1e5)),
+            # Iterate over chunks to reduce memory consumption
+            X = split(
+                1:nrow(model_data),
+                ceiling(1:nrow(model_data) / 1e5)
+            ),
             FUN = function(chunk_idxs) {
                 Matrix::sparse.model.matrix(
                     design$fixed,
@@ -252,17 +280,42 @@ disize <- function(
         ) |>
             do.call(rbind, args = _)
 
+        fe_design_partition <- lapply(
+            X = chunk_idxs_list,
+            FUN = function(chunk_idxs) {
+                fe_design_chunk <- fe_design[chunk_idxs, ]
+
+                reals <- c(
+                    fe_design_chunk@x
+                )
+                ints <- c(
+                    fe_design_chunk@j,
+                    fe_design_chunk@p
+                )
+
+                list(
+                    reals = reals,
+                    ints = ints,
+                    n_nz_fe = length(fe_design_chunk@x)
+                )
+            }
+        )
+
+        # Include Stan-formatted data
         stan_data[["n_fe"]] <- ncol(fe_design)
-        stan_data[["n_nz_fe"]] <- length(fe_design@x)
-        stan_data[["fe_design_x"]] <- fe_design@x
-        stan_data[["fe_design_j"]] <- fe_design@j + 1L
-        stan_data[["fe_design_p"]] <- fe_design@p + 1L
     } else {
         stan_data[["n_fe"]] <- 0L
-        stan_data[["n_nz_fe"]] <- 0L
-        stan_data[["fe_design_x"]] <- numeric(0)
-        stan_data[["fe_design_j"]] <- integer(0)
-        stan_data[["fe_design_p"]] <- integer(stan_data[["n_obs"]] + 1)
+
+        fe_design_partition <- lapply(
+            X = chunk_idxs_list,
+            FUN = function(chunk_idxs) {
+                list(
+                    reals = numeric(0),
+                    ints = integer(0),
+                    n_nz_fe = 0L
+                )
+            }
+        )
     }
 
     # Construct random-effects matrix if present
@@ -287,26 +340,112 @@ disize <- function(
             )
         }
 
-        # Include data for Stan
+        re_design_partition <- lapply(
+            X = chunk_idxs_list,
+            FUN = function(chunk_idxs) {
+                re_design_chunk <- re_design[chunk_idxs, ]
+
+                reals <- c(
+                    re_design_chunk@x
+                )
+                ints <- c(
+                    re_design_chunk@j,
+                    re_design_chunk@p
+                )
+
+                list(
+                    reals = reals,
+                    ints = ints,
+                    n_nz_re = length(re_design_chunk@x)
+                )
+            }
+        )
+
         stan_data[["n_re"]] <- ncol(re_design)
-        stan_data[["n_nz_re"]] <- length(re_design@x)
-        stan_data[["re_design_x"]] <- re_design@x
-        stan_data[["re_design_j"]] <- re_design@j + 1L
-        stan_data[["re_design_p"]] <- re_design@p + 1L
         stan_data[["n_re_terms"]] <- length(remm$cnms)
         stan_data[["re_id"]] <- rep(1:length(remm$cnms), times = diff(remm$Gp))
     } else {
         stan_data[["n_re"]] <- 0L
-        stan_data[["n_nz_re"]] <- 0L
-        stan_data[["re_design_x"]] <- numeric(0)
-        stan_data[["re_design_j"]] <- integer(0)
-        stan_data[["re_design_p"]] <- integer(stan_data[["n_obs"]] + 1)
         stan_data[["n_re_terms"]] <- 0L
         stan_data[["re_id"]] <- integer(0)
+
+        re_design_partition <- lapply(
+            X = chunk_idxs_list,
+            FUN = function(chunk_idxs) {
+                list(
+                    reals = numeric(0),
+                    ints = integer(0),
+                    n_nz_re = 0L
+                )
+            }
+        )
     }
 
-    # Include counts for Stan
-    stan_data[["counts"]] <- as.integer(model_data[["counts"]])
+    # Construct and partition counts
+    counts_partition <- lapply(
+        X = chunk_idxs_list,
+        FUN = function(chunk_idxs) {
+            counts_chunk <- as.integer(model_data[["counts"]][chunk_idxs])
+
+            reals <- numeric(0)
+            ints <- c(length(counts_chunk), counts_chunk)
+
+            list(reals = reals, ints = ints)
+        }
+    )
+
+    # Concatenate relevant data for Stan
+    # reals: [ |- int_design@x -| , |- fe_design@x -|, |- re_design@x -|]
+    # ints:  [
+    #   n_obs, n_ints, n_fe, n_re, n_nz_int, n_nz_fe, n_nz_re,
+    #   |- counts -|,
+    #   |- int_design@j -|, |- int_design@p -|,
+    #   |- fe_design@j -|, |- re_design@p -|,
+    #   |- fe_design@j -|, |- re_design@p -|
+    # ]
+    data_partition <- lapply(1:n_threads, function(i) {
+        reals <- c(
+            int_design_partition[[i]][["reals"]],
+            fe_design_partition[[i]][["reals"]],
+            re_design_partition[[i]][["reals"]]
+        )
+        ints <- c(
+            length(chunk_idxs_list[[i]]),
+            stan_data[["n_int"]],
+            stan_data[["n_fe"]],
+            stan_data[["n_re"]],
+            int_design_partition[[i]][["n_nz_int"]],
+            fe_design_partition[[i]][["n_nz_fe"]],
+            re_design_partition[[i]][["n_nz_re"]],
+            counts_partition[[i]][["ints"]],
+            int_design_partition[[i]][["ints"]],
+            fe_design_partition[[i]][["ints"]],
+            re_design_partition[[i]][["ints"]]
+        )
+
+        list(reals = reals, ints = ints)
+    })
+
+    # Compute required padding
+    lengths <- sapply(data_partition, function(data_chunk) {
+        c(
+            length(data_chunk[["reals"]]),
+            length(data_chunk[["ints"]])
+        )
+    })
+
+    # Construct empty matrices for thread-specific real and integer data
+    reals <- matrix(0, n_threads, max(lengths[1, ]))
+    ints <- matrix(0, n_threads, max(lengths[2, ]))
+
+    # Fill in matrix
+    for (i in 1:n_threads) {
+        reals[i, 1:lengths[1, i]] <- data_partition[[i]][["reals"]]
+        ints[i, 1:lengths[2, i]] <- data_partition[[i]][["ints"]]
+    }
+
+    stan_data[["reals"]] <- reals
+    stan_data[["ints"]] <- ints
 
     # Construct Stan model
     model <- instantiate::stan_package_model(

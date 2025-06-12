@@ -1,19 +1,15 @@
 data {
     // Dimensions ----
-    int<lower=1> n_obs; // # of observations
-
     int<lower=0> n_int; // # of distinct intercept parameters
     int<lower=0> n_fe; // # of distinct fixed-effects parameters
     int<lower=0> n_re; // # of distinct random-effects parameters
-
-    int<lower=0> n_nz_int; // # of nonzero elements in the intercept design matrix
-    int<lower=0> n_nz_fe; // # of nonzero elements in the fixed-effects design matrix
-    int<lower=0> n_nz_re; // # of nonzero elements in the random-effects design matrix
 
     int<lower=0> n_re_terms; // # of random-effects terms in design formula
 
     int<lower=1> n_batches; // # of batches
     int<lower=1> n_feats; // # of original features
+
+    int<lower=1> n_threads; // # of threads to use
 
 
     // Index Variables ----
@@ -26,18 +22,24 @@ data {
     array[n_obs] int<lower=0> counts;
 
 
-    // Design Matrices ----
-    vector[n_nz_int] int_design_x;
-    array[n_nz_int] int int_design_j;
-    array[n_obs + 1] int int_design_p;
+    // Thread-specific Data ----
+    int<lower=1> reals_length;
+    int<lower=1> ints_length;
 
-    vector[n_nz_fe] fe_design_x;
-    array[n_nz_fe] int fe_design_j;
-    array[n_obs + 1] int fe_design_p;
+    array[n_threads, reals_length] real reals;
+    array[n_threads, ints_length] real ints;
 
-    vector[n_nz_re] re_design_x;
-    array[n_nz_re] int re_design_j;
-    array[n_obs + 1] int re_design_p;
+
+    int<lower=1> phi_size = 1 // tau
+                   + n_fe // lambda
+                   + n_int // int_coefs
+                   + n_fe // fe_coefs
+                   + n_re // re_coefs
+                   + n_re_terms // re_sigma
+                   + n_batches // sf
+                   + n_feats // iodisp
+                   + 1 // iodisp_mu
+                   + 1; // iodisp_sigma
 }
 parameters {
     // Shrinkage ----
@@ -68,6 +70,42 @@ transformed parameters {
     for (i in 1:n_re) {
         re_coefs[i] = z_re[i] * (re_sigma[re_id[i]] * tau);
     }
+
+
+    // Pack parameters ----
+    vector[phi_size] = phi;
+
+    int phi_idx = 1;
+
+    phi[phi_idx] = tau; // Pack tau
+    phi_idx += 1;
+
+    phi[phi_idx:(phi_idx + n_fe - 1)] = lambda; // Pack lambda
+    phi_idx += n_fe;
+
+    phi[phi_idx:(phi_idx + n_int - 1)] = int_coefs; // Pack int_coefs
+    phi_idx += n_int;
+
+    phi[phi_idx:(phi_idx + n_fe - 1)] = fe_coefs; // Pack fe_coefs
+    phi_idx += n_fe;
+
+    phi[phi_idx:(phi_idx + n_re - 1)] = re_coefs; // Pack re_coefs
+    phi_idx += n_re;
+
+    phi[phi_idx:(phi_idx + n_re_terms - 1)] = re_sigma; // Pack re_sigma
+    phi_idx += n_re_terms;
+
+    phi[phi_idx:(phi_idx + n_batches - 1)] = sf; // Pack sf
+    phi_idx += n_batches;
+
+    phi[phi_idx:(phi_idx + n_feats - 1)] = iodisp; // Pack iodisp
+    phi_idx += n_feats;
+
+    phi[phi_idx] = iodisp_mu; // Pack iodisp_mu
+    phi_idx += 1;
+
+    phi[phi_idx] = iodisp_sigma; // Pack iodisp_sigma
+    phi_idx += 1;
 }
 model {
     vector[n_obs] log_mu;
@@ -82,7 +120,7 @@ model {
     // Inverse overdispersion regularization
     iodisp ~ lognormal(iodisp_mu, iodisp_sigma);
 
-    // Computing observed negative binomial
+    // Computing log feature expression quantities
     log_mu = csr_matrix_times_vector(n_obs, n_int, int_design_x, int_design_j, int_design_p, int_coefs);
     if (n_fe != 0) {
         log_mu += csr_matrix_times_vector(n_obs, n_fe, fe_design_x, fe_design_j, fe_design_p, fe_coefs);
@@ -96,6 +134,6 @@ model {
         // Adjusting for batch-effect
         log_mu[i] += sf[batch_id[i]];
 
-        counts[i] ~ neg_binomial_2_log(log_mu[i], iodisp);
+        counts[i] ~ neg_binomial_2_log(log_mu[i], iodisp[feat_id[i]]);
     }
 }
