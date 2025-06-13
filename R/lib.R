@@ -117,7 +117,7 @@ disize <- function(
     batch_name = "batch_id",
     obs_name = "obs_id",
     feat_name = "feat_id",
-    n_feats = 500,
+    n_feats = 1000,
     n_subset = 50,
     verbose = 3,
     n_passes = 20,

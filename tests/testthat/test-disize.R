@@ -4,7 +4,7 @@ library(purrr)
 
 test_that("small-simple-bulk", {
     # Simulate data
-    n_g <- 500
+    n_g <- 1000
     n_d <- 2
     n_o <- 1
 
@@ -71,7 +71,7 @@ test_that("small-simple-bulk", {
 
 test_that("large-simple-bulk", {
     # Simulate data
-    n_g <- 500
+    n_g <- 1000
     n_d <- 12
     n_o <- 1
 
@@ -138,7 +138,7 @@ test_that("large-simple-bulk", {
 
 test_that("small-simple-sc", {
     # Simulate data
-    n_g <- 500
+    n_g <- 1000
     n_d <- 2
     n_p <- 3
     n_o <- 50
@@ -216,7 +216,7 @@ test_that("small-simple-sc", {
 
 test_that("large-simple-sc", {
     # Simulate data
-    n_g <- 500
+    n_g <- 1000
     n_d <- 12
     n_p <- 3
     n_o <- 50
@@ -293,7 +293,7 @@ test_that("large-simple-sc", {
 
 test_that("as-counts-matrix", {
     # Settings
-    n_g <- 500
+    n_g <- 1000
     n_d <- 6
     n_p <- 3
     n_o <- 50
