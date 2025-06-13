@@ -26,11 +26,11 @@ functions {
         pos += n_re;
         vector[n_batches] sf = phi[pos:(pos + n_batches - 1)];
         pos += n_batches;
-        vector[n_feats] iodisp = phi[pos:(pos + n_feats - 1)];
+        real iodisp = phi[pos];
 
         // Unpack Shard Data ----
         // Integers ----
-        int i_pos = 10; // Start after metadata (7) + n_batches/n_feats (2)
+        int i_pos = 10;
         array[n_obs_shard] int batch_id_shard = x_i[i_pos:(i_pos + n_obs_shard - 1)];
         i_pos += n_obs_shard;
         array[n_obs_shard] int feat_id_shard = x_i[i_pos:(i_pos + n_obs_shard - 1)];
@@ -65,15 +65,13 @@ functions {
         vector[n_nz_int_shard] int_design_x = to_vector(x_r[r_pos:(r_pos + n_nz_int_shard - 1)]);
         r_pos += n_nz_int_shard;
 
-        vector[n_nz_fe_shard] fe_design_x;
         if (n_fe > 0) {
-            fe_design_x = to_vector(x_r[r_pos:(r_pos + n_nz_fe_shard - 1)]);
+            vector[n_nz_fe_shard] fe_design_x = to_vector(x_r[r_pos:(r_pos + n_nz_fe_shard - 1)]);
             r_pos += n_nz_fe_shard;
         }
 
-        vector[n_nz_re_shard] re_design_x;
         if (n_re > 0) {
-            re_design_x = to_vector(x_r[r_pos:(r_pos + n_nz_re_shard - 1)]);
+            vector[n_nz_re_shard] re_design_x = to_vector(x_r[r_pos:(r_pos + n_nz_re_shard - 1)]);
         }
 
         // Compute negative binomial likelihood
@@ -94,7 +92,7 @@ functions {
             // Adjust for batch-effect size factor
             log_mu[i] += sf[batch_id_shard[i]];
 
-            log_lik += neg_binomial_2_log_lpmf(counts_shard[i] | log_mu[i], iodisp[feat_id_shard[i]]);
+            log_lik += neg_binomial_2_log_lpmf(counts_shard[i] | log_mu[i], iodisp);
         }
 
         return [log_lik]';
@@ -137,11 +135,8 @@ parameters {
     simplex[n_batches] raw_sf;
 
     // Feature-level Dispersion ----
-    vector<lower=0>[n_feats] iodisp;
-    real iodisp_mu;
-    real<lower=0> iodisp_sigma;
-    }
-
+    real<lower=0> iodisp;
+}
 transformed parameters {
     // Size Factors ----
     vector[n_batches] sf = log(raw_sf) + log(n_batches);
@@ -152,7 +147,7 @@ transformed parameters {
         re_coefs[i] = z_re[i] * (re_sigma[re_id[i]] * tau);
     }
 
-    vector[n_int + n_fe + n_re + n_batches + n_feats] phi =
+    vector[n_int + n_fe + n_re + n_batches + 1] phi =
         append_row(int_coefs,
             append_row(fe_coefs,
                 append_row(re_coefs,
@@ -165,9 +160,6 @@ model {
     // Horseshoe prior for fixed effects
     lambda ~ cauchy(0, 1);
     fe_coefs ~ normal(0, lambda * tau);
-
-    // Inverse overdispersion regularization
-    iodisp ~ lognormal(iodisp_mu, iodisp_sigma);
 
     // Likelihood ----
     target += sum(map_rect(shard_ll, phi, theta, x_r, x_i));

@@ -4,7 +4,7 @@ library(purrr)
 
 test_that("small-simple-bulk", {
     # Simulate data
-    n_g <- 500
+    n_g <- 1000
     n_d <- 2
     n_o <- 1
 
@@ -60,7 +60,8 @@ test_that("small-simple-bulk", {
     size_factors <- exp(disize(
         design_formula = ~ (1 | donor),
         model_data = data,
-        n_threads = 7
+        n_threads = 2,
+        n_iters = 50
     ))
 
     expect_equal(
@@ -207,7 +208,8 @@ test_that("small-simple-sc", {
     size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         model_data = data,
-        n_threads = 4
+        n_threads = 7,
+        n_iters = 50
     ))
 
     expect_equal(
@@ -285,7 +287,9 @@ test_that("large-simple-sc", {
     # Compute size factors
     size_factors <- exp(disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
-        model_data = data
+        model_data = data,
+        n_threads = 7,
+        n_iters = 100
     ))
 
     expect_equal(
