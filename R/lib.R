@@ -121,7 +121,7 @@ disize <- function(
     n_subset = 50,
     verbose = 3,
     n_passes = 20,
-    n_iters = 500,
+    n_iters = 100,
     tolerance = 1e-3
 ) {
     # Check design formula is correct

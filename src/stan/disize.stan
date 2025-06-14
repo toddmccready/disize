@@ -65,7 +65,7 @@ transformed parameters {
     // Actual Random Effects (Scaled) ----
     vector[n_re] re_coefs;
     for (i in 1:n_re) {
-        re_coefs[i] = z_re[i] * re_sigma[re_id[i]];
+        re_coefs[i] = z_re[i] * (re_sigma[re_id[i]] * tau);
     }
 }
 model {
