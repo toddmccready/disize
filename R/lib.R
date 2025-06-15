@@ -225,8 +225,7 @@ disize <- function(
     cur_fit <- model$optimize(
         stan_data,
         iter = n_iters,
-        show_messages = T,
-        refresh = 1000,
+        show_messages = FALSE,
         sig_figs = 18
     )
 
@@ -243,7 +242,7 @@ disize <- function(
             stan_data,
             init = cur_fit,
             iter = n_iters,
-            show_messages = F,
+            show_messages = FALSE,
             sig_figs = 18
         )
 
