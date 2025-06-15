@@ -2,7 +2,7 @@
 
 Leverage experimental design for size factor estimation by providing a `design_formula` to `disize`.
 
-Currently, `disize` accepts either a count matrix `counts` and a `metadata` dataframe containing observation-level metadata(the predictors in your design!), or an already formatted `model_data` dataframe.
+Currently, `disize` accepts either a count matrix `counts` and a `metadata` dataframe containing observation-level metadata(the predictors in your design!).
 
 Note: the rows of `counts` should have the same names as the `obs_name` column in `metadata`. If `counts` has no row names, `disize` assumes it is ordered such that the row indices correspond to the row indices of `metadata`.
 
@@ -38,4 +38,3 @@ Note: the rows of `counts` should have the same names as the `obs_name` column i
 ```
 
 # TODO
-- Figure out multithreading
