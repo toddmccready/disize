@@ -488,6 +488,7 @@ disize <- function(
         iter = n_iters,
         threads = n_threads,
         show_messages = T,
+        refresh = 1,
         sig_figs = 18
     )
 

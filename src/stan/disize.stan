@@ -5,94 +5,126 @@ functions {
                         array[] int x_i) {
         // Unpack Metadata ----
         // Shard Dimensions ----
-        int n_obs_shard = x_i[1];
+        int n_obs = x_i[1];
         int n_int = x_i[2];
         int n_fe = x_i[3];
         int n_re = x_i[4];
-        int n_nz_int_shard = x_i[5];
-        int n_nz_fe_shard = x_i[6];
-        int n_nz_re_shard = x_i[7];
+        int n_nz_int = x_i[5];
+        int n_nz_fe = x_i[6];
+        int n_nz_re = x_i[7];
         int n_batches = x_i[8];
         int n_feats = x_i[9];
 
-        // Unpack Parameters ----
+        // Index Parameters ----
         int pos = 1;
-        vector[n_int] int_coefs = phi[pos:(pos + n_int - 1)];
+
+        tuple(int, int) int_coefs = (pos, pos + n_int - 1);
         pos += n_int;
-        vector[n_fe] fe_coefs = phi[pos:(pos + n_fe - 1)];
+
+        tuple(int, int) fe_coefs = (pos, pos + n_fe - 1);
         pos += n_fe;
-        vector[n_re] re_coefs = phi[pos:(pos + n_re - 1)];
 
+        tuple(int, int) re_coefs = (pos, pos + n_re - 1);
         pos += n_re;
-        vector[n_batches] sf = phi[pos:(pos + n_batches - 1)];
-        pos += n_batches;
-        real iodisp = phi[pos];
 
-        // Unpack Shard Data ----
+        tuple(int, int) sf = (pos, pos + n_batches - 1);
+        pos += n_batches;
+
+        int iodisp = pos;
+
+        // Index Shard Data ----
         // Integers ----
         int i_pos = 10;
-        array[n_obs_shard] int batch_id_shard = x_i[i_pos:(i_pos + n_obs_shard - 1)];
-        i_pos += n_obs_shard;
-        array[n_obs_shard] int feat_id_shard = x_i[i_pos:(i_pos + n_obs_shard - 1)];
-        i_pos += n_obs_shard;
-        array[n_obs_shard] int counts_shard = x_i[i_pos:(i_pos + n_obs_shard - 1)];
-        i_pos += n_obs_shard;
+        tuple(int, int) batch_id = (i_pos, i_pos + n_obs - 1);
+        i_pos += n_obs;
 
-        array[n_nz_int_shard] int int_design_j = x_i[i_pos:(i_pos + n_nz_int_shard - 1)];
-        i_pos += n_nz_int_shard;
-        array[n_obs_shard + 1] int int_design_p = x_i[i_pos:(i_pos + n_obs_shard)];
-        i_pos += n_obs_shard + 1;
+        tuple(int, int) feat_id = (i_pos, i_pos + n_obs - 1);
+        i_pos += n_obs;
 
-        array[n_nz_fe_shard] int fe_design_j;
-        array[n_obs_shard + 1] int fe_design_p;
+        tuple(int, int) counts = (i_pos, i_pos + n_obs - 1);
+        i_pos += n_obs;
+
+        tuple(int, int) int_design_j = (i_pos, i_pos + n_nz_int - 1);
+        i_pos += n_nz_int;
+
+        tuple(int, int) int_design_p = (i_pos, i_pos + n_obs);
+        i_pos += n_obs + 1;
+
+        tuple (int, int) fe_design_j;
+        tuple (int, int) fe_design_p;
         if (n_fe > 0) {
-            fe_design_j = x_i[i_pos:(i_pos + n_nz_fe_shard - 1)];
-            i_pos += n_nz_fe_shard;
-            fe_design_p = x_i[i_pos:(i_pos + n_obs_shard)];
-            i_pos += n_obs_shard + 1;
+            fe_design_j.1 = i_pos; fe_design_j.2 = i_pos + n_nz_fe - 1;
+            i_pos += n_nz_fe;
+
+            fe_design_p.1 = i_pos; fe_design_p.2 = i_pos + n_obs;
+            i_pos += n_obs + 1;
         }
 
-        array[n_nz_re_shard] int re_design_j;
-        array[n_obs_shard + 1] int re_design_p;
+        tuple (int, int) re_design_j;
+        tuple (int, int) re_design_p;
         if (n_re > 0) {
-            re_design_j = x_i[i_pos:(i_pos + n_nz_re_shard - 1)];
-            i_pos += n_nz_re_shard;
-            re_design_p = x_i[i_pos:(i_pos + n_obs_shard)];
+            re_design_j.1 = i_pos; re_design_j.2 = i_pos + n_nz_re - 1;
+            i_pos += n_nz_re;
+
+            re_design_p.1 = i_pos; re_design_p.2 = i_pos + n_obs;
         }
 
         // Reals ----
         int r_pos = 1;
-        vector[n_nz_int_shard] int_design_x = to_vector(x_r[r_pos:(r_pos + n_nz_int_shard - 1)]);
-        r_pos += n_nz_int_shard;
+        tuple(int, int) int_design_x = (r_pos, r_pos + n_nz_int - 1);
+        r_pos += n_nz_int;
 
+        tuple(int, int) fe_design_x;
         if (n_fe > 0) {
-            vector[n_nz_fe_shard] fe_design_x = to_vector(x_r[r_pos:(r_pos + n_nz_fe_shard - 1)]);
-            r_pos += n_nz_fe_shard;
+            fe_design_x.1 = r_pos; fe_design_x.2 = r_pos + n_nz_fe - 1;
+            r_pos += n_nz_fe;
         }
 
+        tuple(int, int) re_design_x;
         if (n_re > 0) {
-            vector[n_nz_re_shard] re_design_x = to_vector(x_r[r_pos:(r_pos + n_nz_re_shard - 1)]);
+            re_design_x.1 = r_pos; re_design_x.2 = r_pos + n_nz_re - 1;
         }
 
         // Compute negative binomial likelihood
-        vector[n_obs_shard] log_mu;
+        vector[n_obs] log_mu;
         real log_lik = 0;
 
         // Compute log_mu from design matrices
-        log_mu = csr_matrix_times_vector(n_obs_shard, n_int, int_design_x, int_design_j, int_design_p, int_coefs);
+        log_mu = csr_matrix_times_vector(
+            n_obs,
+            n_int,
+            to_vector(x_r[(int_design_x.1):(int_design_x.2)]),
+            x_i[(int_design_j.1):(int_design_j.2)],
+            x_i[(int_design_p.1):(int_design_p.2)],
+            phi[(int_coefs.1):(int_coefs.2)]
+        );
         if (n_fe > 0) {
-            log_mu += csr_matrix_times_vector(n_obs_shard, n_fe, fe_design_x, fe_design_j, fe_design_p, fe_coefs);
+            log_mu += csr_matrix_times_vector(
+                n_obs,
+                n_fe,
+                to_vector(x_r[(fe_design_x.1):(fe_design_x.2)]),
+                x_i[(fe_design_j.1):(fe_design_j.2)],
+                x_i[(fe_design_p.1):(fe_design_p.2)],
+                phi[(fe_coefs.1):(fe_coefs.2)]
+            );
         }
         if (n_re > 0) {
-            log_mu += csr_matrix_times_vector(n_obs_shard, n_re, re_design_x, re_design_j, re_design_p, re_coefs);
+            log_mu += csr_matrix_times_vector(
+                n_obs,
+                n_re,
+                to_vector(x_r[(re_design_x.1):(re_design_x.2)]),
+                x_i[(re_design_j.1):(re_design_j.2)],
+                x_i[(re_design_p.1):(re_design_p.2)],
+                phi[(re_coefs.1):(re_coefs.2)]
+            );
         }
 
         // Likelihood loop
-        for (i in 1:n_obs_shard) {
+        for (i in 1:n_obs) {
             // Adjust for batch-effect size factor
-            log_mu[i] += sf[batch_id_shard[i]];
+            log_mu[i] += phi[(sf.1):(sf.2)][x_i[(batch_id.1):(batch_id.2)][i]];
 
-            log_lik += neg_binomial_2_log_lpmf(counts_shard[i] | log_mu[i], iodisp);
+            log_lik += neg_binomial_2_log_lpmf(x_i[(counts.1):(counts.2)][i] | log_mu[i], phi[iodisp]);
         }
 
         return [log_lik]';

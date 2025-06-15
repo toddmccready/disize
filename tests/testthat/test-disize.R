@@ -57,11 +57,12 @@ test_that("small-simple-bulk", {
     data[["donor"]] <- factor(data[["donor"]])
 
     # Compute size factors
-    size_factors <- exp(disize(
+    size_factors <- exp(disize::disize(
         design_formula = ~ (1 | donor),
         model_data = data,
-        n_threads = 2,
-        n_iters = 50
+        n_threads = 1,
+        n_iters = 100,
+        tolerance = 1e-3
     ))
 
     expect_equal(
@@ -73,7 +74,7 @@ test_that("small-simple-bulk", {
 
 test_that("large-simple-bulk", {
     # Simulate data
-    n_g <- 500
+    n_g <- 1000
     n_d <- 12
     n_o <- 1
 
@@ -126,11 +127,12 @@ test_that("large-simple-bulk", {
     data[["donor"]] <- factor(data[["donor"]])
 
     # Compute size factors
-    size_factors <- exp(disize(
+    size_factors <- exp(disize::disize(
         design_formula = ~ (1 | donor),
         model_data = data,
-        n_iters = 100,
-        n_threads = 4
+        n_iters = 200,
+        n_threads = 4,
+        tolerance = 1e-4
     ))
 
     expect_equal(
@@ -205,11 +207,12 @@ test_that("small-simple-sc", {
     data[["cell_type"]] <- factor(data[["cell_type"]])
 
     # Compute size factors
-    size_factors <- exp(disize(
+    size_factors <- exp(disize::disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         model_data = data,
-        n_threads = 7,
-        n_iters = 50
+        n_threads = 4,
+        n_iters = 100,
+        tolerance = 1e-3
     ))
 
     expect_equal(
