@@ -221,6 +221,7 @@ disize <- function(
     }
 
     # Estimate initial fit
+    options(cmdstanr_warn_inits = FALSE)
     cur_fit <- model$optimize(
         stan_data,
         iter = n_iters,
