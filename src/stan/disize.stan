@@ -71,14 +71,14 @@ transformed parameters {
 model {
     vector[n_obs] log_mu;
 
-    // --- Priors ---
+    // Priors ----
     z_re ~ std_normal();
 
     // Horseshoe prior for fixed effects
     lambda ~ cauchy(0, 1);
     fe_coefs ~ normal(0, lambda * tau);
 
-    // --- Linear Predictor ---
+    // Estimated Feature Expression ----
     log_mu = csr_matrix_times_vector(n_obs, n_int, int_design_x, int_design_j, int_design_p, int_coefs);
     if (n_fe != 0) {
         log_mu += csr_matrix_times_vector(n_obs, n_fe, fe_design_x, fe_design_j, fe_design_p, fe_coefs);
@@ -87,7 +87,7 @@ model {
         log_mu += csr_matrix_times_vector(n_obs, n_re, re_design_x, re_design_j, re_design_p, re_coefs);
     }
 
-    // --- Likelihood ----
+    // Likelihood ----
     for (i in 1:n_obs) {
         // Adjusting for batch-effect
         log_mu[i] += sf[batch_id[i]];
