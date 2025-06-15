@@ -1,6 +1,6 @@
 functions {
     real partial_sum_lpmf(
-        // Thread-specific
+        // Thread-specific ----
         array[,] int counts_slice,
         int start, int end,
         // Shared ----
@@ -19,10 +19,9 @@ functions {
         real iodisp
     ) {
         real log_prob = 0;
+        vector[n_obs] log_mu;
 
-        // Loop over the features assigned to this thread
         for (feat_i in start:end) {
-            vector[n_obs] log_mu;
 
             // Estimated Feature Expression ----
             log_mu = rep_vector(intercept[feat_i], n_obs);
@@ -122,13 +121,12 @@ model {
     }
 
     // Likelihood ----
-    // Parallelize the likelihood calculation over features
-    int grainsize = 1; // Auto-tunes partitioning, 1 is a good default
+    int grainsize = 1;
     target += reduce_sum(
         partial_sum_lpmf,
-        counts, // The data to be sliced for parallel processing
+        counts, // Thread-specific
         grainsize,
-        // ---- Pass shared arguments to the partial_sum function
+        // Shared ----
         n_obs,
         n_fe,
         fe_design,
