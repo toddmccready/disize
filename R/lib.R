@@ -28,6 +28,7 @@ split_formula <- function(design_formula) {
 #' Extract the parameters out of an optimized model.
 #'
 #' @param cur_fit A CmdStanMLE object
+#' @param stan_data The formatted Stan data used to fit the model.
 extract_sf <- function(cur_fit) {
     params <- cur_fit$mle()
 
@@ -40,6 +41,9 @@ extract_sf <- function(cur_fit) {
 #' @param design_formula The formula describing the experimental design.
 #' @param counts A (obsservation x feature) count matrix.
 #' @param metadata A dataframe containing sample metadata.
+#' @param model_data The model data if already constructed. Must contain the
+#'  'batch_name' and "feat_idx" identifiers as columns, and any
+#'  predictors used in 'design_formula'.
 #' @param batch_name The identifier for the batch column in 'metadata',
 #'  defaults to "batch_id".
 #' @param obs_name The identifier for the observation column in 'metadata',
@@ -51,6 +55,7 @@ extract_sf <- function(cur_fit) {
 #'  confidence in the size factors.
 #' @param n_subset The number of observations per experimental unit used during
 #'  estimation, defaults to 50.
+#' @param n_threads The number of threads to use for parallel processing.
 #' @param verbose The verbosity level.
 #' @param n_passes The number of optimization passes to go through.
 #' @param n_iters The number of iterations used for a single optimization pass.
@@ -68,6 +73,7 @@ disize <- function(
     feat_name = "feat_id",
     n_feats = 1000,
     n_subset = 50,
+    n_threads = 1,
     verbose = 3,
     n_passes = 20,
     n_iters = 100,
@@ -146,14 +152,13 @@ disize <- function(
 
     # Construct fixed-effects model matrix if present
     if (!is.null(design$fixed)) {
-        # Partition model data for conserving memory
         fe_design <- model.matrix(design$fixed, metadata)
 
         stan_data[["n_fe"]] <- ncol(fe_design)
         stan_data[["fe_design"]] <- fe_design
     } else {
         stan_data[["n_fe"]] <- 0L
-        stan_data[["fe_design"]] <- numeric(0)
+        stan_data[["fe_design"]] <- array(0, dim = c(stan_data$n_obs, 0))
     }
 
     # Construct random-effects matrix if present
@@ -197,12 +202,15 @@ disize <- function(
     }
 
     # Include counts for Stan
-    stan_data[["counts"]] <- counts |> Matrix::t()
+    stan_data[["counts"]] <- counts |> t()
 
     # Construct Stan model
     model <- instantiate::stan_package_model(
         name = "disize",
-        package = "disize"
+        package = "disize",
+        compile = TRUE,
+        force = TRUE,
+        cpp_options = list(stan_threads = TRUE)
     )
 
     # Estimate model parameters ----
@@ -219,10 +227,11 @@ disize <- function(
     # Estimate initial fit
     options(cmdstanr_warn_inits = FALSE)
     cur_fit <- model$optimize(
-        stan_data,
+        data = stan_data,
         iter = n_iters,
         show_messages = FALSE,
-        sig_figs = 18
+        sig_figs = 18,
+        threads = n_threads
     )
 
     # Extract size factors
@@ -235,11 +244,12 @@ disize <- function(
     for (i in 2:n_passes) {
         # Compute next fit
         cur_fit <- model$optimize(
-            stan_data,
+            data = stan_data,
             init = cur_fit,
             iter = n_iters,
             show_messages = FALSE,
-            sig_figs = 18
+            sig_figs = 18,
+            threads = n_threads
         )
 
         # Extract size factors

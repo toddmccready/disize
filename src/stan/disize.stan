@@ -1,3 +1,54 @@
+functions {
+    real partial_sum_lpmf(
+        // Thread-specific
+        array[,] int counts_slice,
+        int start, int end,
+        // Shared ----
+        int n_obs,
+        int n_fe,
+        matrix fe_design,
+        int n_re,
+        vector re_design_x,
+        array[] int re_design_j,
+        array[] int re_design_p,
+        array[] int batch_id,
+        vector intercept,
+        matrix fe_coefs,
+        matrix re_coefs,
+        vector sf,
+        real iodisp
+    ) {
+        real log_prob = 0;
+
+        // Loop over the features assigned to this thread
+        for (feat_i in start:end) {
+            vector[n_obs] log_mu;
+
+            // Estimated Feature Expression ----
+            log_mu = rep_vector(intercept[feat_i], n_obs);
+
+            if (n_fe != 0) {
+                log_mu += fe_design * col(fe_coefs, feat_i);
+            }
+
+            if (n_re != 0) {
+                log_mu += csr_matrix_times_vector(
+                    n_obs, n_re, re_design_x, re_design_j, re_design_p,
+                    col(re_coefs, feat_i)
+                );
+            }
+
+            // Batch-effect Adjustment ----
+            for (obs_i in 1:n_obs) {
+                log_mu[obs_i] += sf[batch_id[obs_i]];
+            }
+
+            // Likelihood ----
+            log_prob += neg_binomial_2_log_lpmf(counts_slice[i] | log_mu, iodisp);
+        }
+        return log_prob;
+    }
+}
 data {
     // Dimensions ----
     int<lower=1> n_obs; // # of observations
@@ -59,8 +110,6 @@ transformed parameters {
     }
 }
 model {
-    vector[n_obs] log_mu;
-
     // Priors ----
     fe_tau ~ exponential(1);
     re_tau ~ exponential(1);
@@ -69,28 +118,29 @@ model {
 
     for (fe_i in 1:n_fe) {
         lambda[fe_i, ] ~ cauchy(0, 1);
-
         fe_coefs[fe_i, ] ~ normal(0, lambda[fe_i, ] * fe_tau[fe_i]);
     }
 
-    for (feat_i in 1:n_feats) {
-        // Estimated Feature Expression ----
-        log_mu = rep_vector(intercept[feat_i], n_obs);
-
-        if (n_fe != 0) {
-            log_mu += fe_design * col(fe_coefs, feat_i);
-        }
-
-        if (n_re != 0) {
-            log_mu += csr_matrix_times_vector(n_obs, n_re, re_design_x, re_design_j, re_design_p, col(re_coefs, feat_i));
-        }
-
-        // Batch-effect Adjustment ----
-        for (obs_i in 1:n_obs) {
-            log_mu[obs_i] += sf[batch_id[obs_i]];
-        }
-
-        // Likelihood ----
-        counts[feat_i] ~ neg_binomial_2_log(log_mu, iodisp);
-    }
+    // Likelihood ----
+    // Parallelize the likelihood calculation over features
+    int grainsize = 1; // Auto-tunes partitioning, 1 is a good default
+    target += reduce_sum(
+        partial_sum_lpmf,
+        counts, // The data to be sliced for parallel processing
+        grainsize,
+        // ---- Pass shared arguments to the partial_sum function
+        n_obs,
+        n_fe,
+        fe_design,
+        n_re,
+        re_design_x,
+        re_design_j,
+        re_design_p,
+        batch_id,
+        intercept,
+        fe_coefs,
+        re_coefs,
+        sf,
+        iodisp
+    );
 }
