@@ -39,7 +39,9 @@ parameters {
     simplex[n_batches] raw_sf;
 
     // Shrinkage ----
-    real<lower=0> tau;
+    vector<lower=0>[n_fe] fe_tau;
+    vector<lower=0>[n_re_terms] re_tau;
+    matrix<lower=0>[n_fe, n_feats] lambda;
 
     // Inverse Overdispersion ----
     real<lower=0> iodisp;
@@ -50,9 +52,9 @@ transformed parameters {
 
     // Random Effects ----
     matrix[n_re, n_feats] re_coefs;
-    for (f_i in 1:n_feats) {
-        for (r_i in 1:n_re) {
-            re_coefs[r_i, f_i] = raw_re_coefs[r_i, f_i] * (re_sigma[re_id[r_i], f_i] * tau);
+    for (feat_i in 1:n_feats) {
+        for (re_i in 1:n_re) {
+            re_coefs[re_i, feat_i] = raw_re_coefs[re_i, feat_i] * (re_sigma[re_id[re_i], feat_i] * re_tau[re_id[re_i]]);
         }
     }
 }
@@ -60,30 +62,35 @@ model {
     vector[n_obs] log_mu;
 
     // Priors ----
-    raw_re_coefs ~ std_normal();
+    fe_tau ~ exponential(1);
+    re_tau ~ exponential(1);
 
-    // Horseshoe prior for fixed effects
-    lambda ~ cauchy(0, 1);
-    fe_coefs ~ normal(0, lambda * tau);
+    to_vector(raw_re_coefs) ~ std_normal();
 
-    for (f_i in 1:n_feats) {
+    for (fe_i in 1:n_fe) {
+        lambda[fe_i, ] ~ cauchy(0, 1);
+
+        fe_coefs[fe_i, ] ~ normal(0, lambda[fe_i, ] * fe_tau[fe_i]);
+    }
+
+    for (feat_i in 1:n_feats) {
         // Estimated Feature Expression ----
-        log_mu = intercept[f_i];
+        log_mu = rep_vector(intercept[feat_i], n_obs);
 
         if (n_fe != 0) {
-            log_mu += fe_design * col(fe_coefs, f_i);
+            log_mu += fe_design * col(fe_coefs, feat_i);
         }
 
         if (n_re != 0) {
-            log_mu += csr_matrix_times_vector(n_obs, n_re, re_design_x, re_design_j, re_design_p, col(re_coefs, f_i));
+            log_mu += csr_matrix_times_vector(n_obs, n_re, re_design_x, re_design_j, re_design_p, col(re_coefs, feat_i));
         }
 
-        // Batch-effect Adjustment
-        for (o_i in 1:n_obs) {
-            log_mu[o_i] += sf[batch_id[o_i]];
+        // Batch-effect Adjustment ----
+        for (obs_i in 1:n_obs) {
+            log_mu[obs_i] += sf[batch_id[obs_i]];
         }
 
         // Likelihood ----
-        counts[f_i] ~ neg_binomial_2_log(log_mu, iodisp);
+        counts[feat_i] ~ neg_binomial_2_log(log_mu, iodisp);
     }
 }

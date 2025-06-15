@@ -1,7 +1,7 @@
 #' Split design formula into fixed and random effects.
 #'
 #' @param design_formula The design formula
-modify_design <- function(design_formula) {
+split_formula <- function(design_formula) {
     # Extract terms
     terms <- attr(terms(design_formula), "term.labels")
 
@@ -28,48 +28,11 @@ modify_design <- function(design_formula) {
 #' Extract the parameters out of an optimized model.
 #'
 #' @param cur_fit A CmdStanMLE object
-extract_params <- function(cur_fit) {
+#' @param stan_data The formatted Stan data used to fit the model.
+extract_sf <- function(cur_fit) {
     params <- cur_fit$mle()
 
-    params_list <- list(
-        tau = unname(params["tau"]),
-        iodisp = unname(params["iodisp"]),
-        raw_sf = unname(params[grepl("^raw_sf", names(params))]),
-        int_coefs = unname(params[grepl("^int_coefs", names(params))]),
-        sf = unname(params[grepl("^sf", names(params))])
-    )
-
-    if (any(grepl("fe_", names(params)))) {
-        params_list[["lambda"]] <- unname(params[grepl(
-            "^lambda",
-            names(params)
-        )])
-        params_list[["fe_coefs"]] <- unname(params[grepl(
-            "^fe_coefs",
-            names(params)
-        )])
-    } else {
-        params_list[["lambda"]] <- numeric(0)
-        params_list[["fe_coefs"]] <- numeric(0)
-    }
-
-    if (any(grepl("re_", names(params)))) {
-        params_list[["z_re"]] <- unname(params[grepl("^z_re", names(params))])
-        params_list[["re_coefs"]] <- unname(params[grepl(
-            "^re_coefs",
-            names(params)
-        )])
-        params_list[["re_sigma"]] <- unname(params[grepl(
-            "^re_sigma",
-            names(params)
-        )])
-    } else {
-        params_list[["z_re"]] <- numeric(0)
-        params_list[["re_coefs"]] <- numeric(0)
-        params_list[["re_sigma"]] <- numeric(0)
-    }
-
-    params_list
+    unname(params[grepl("^sf", names(params))])
 }
 
 #' @title Design-infored size factor estimation.
@@ -167,72 +130,41 @@ disize <- function(
         counts <- as.matrix(counts)
     }
 
+    # Ensure relevant columns are factors
+    metadata[[batch_name]] <- as.factor(metadata[[batch_name]])
+
     # Formating Data For Stan ----
     if (2 < verbose) {
         message("Formatting data...")
     }
 
-    # Ensure relevant columns are factors
-    metadata[[batch_name]] <- as.factor(metadata[[batch_name]])
-
     # Allocate named list for Stan
-    stan_data <- list(n_obs = nrow(model_data))
-
-    # Include number of features
-    stan_data[["n_feats"]] <- length(levels(model_data[[feat_name]]))
-    stan_data[["feat_id"]] <- as.integer(model_data[[feat_name]])
+    stan_data <- list(n_obs = nrow(counts), n_feats = ncol(counts))
 
     # Include batch-level for Stan
-    stan_data[["n_batches"]] <- levels(model_data[[batch_name]]) |>
-        length()
-    stan_data[["batch_id"]] <- as.integer(model_data[[batch_name]])
+    stan_data[["n_batches"]] <- length(levels(metadata[[batch_name]]))
+    stan_data[["batch_id"]] <- as.integer(metadata[[batch_name]])
 
     # Modify the design formula
-    design <- modify_design(design_formula, feat_name)
-
-    # Construct intercept model matrix
-    int_design <- Matrix::sparse.model.matrix(design$intercept, model_data) |>
-        as("RsparseMatrix")
-
-    stan_data[["n_int"]] <- ncol(int_design)
-    stan_data[["n_nz_int"]] <- length(int_design@x)
-    stan_data[["int_design_x"]] <- int_design@x
-    stan_data[["int_design_j"]] <- int_design@j + 1L
-    stan_data[["int_design_p"]] <- int_design@p + 1L
+    design <- split_formula(design_formula)
 
     # Construct fixed-effects model matrix if present
     if (!is.null(design$fixed)) {
         # Partition model data for conserving memory
-        fe_design <- lapply(
-            X = split(1:nrow(model_data), ceiling(1:nrow(model_data) / 1e5)),
-            FUN = function(chunk_idxs) {
-                Matrix::sparse.model.matrix(
-                    design$fixed,
-                    model_data[chunk_idxs, ]
-                ) |>
-                    as("RsparseMatrix")
-            }
-        ) |>
-            do.call(rbind, args = _)
+        fe_design <- model.matrix(design$fixed, metadata)
 
         stan_data[["n_fe"]] <- ncol(fe_design)
-        stan_data[["n_nz_fe"]] <- length(fe_design@x)
-        stan_data[["fe_design_x"]] <- fe_design@x
-        stan_data[["fe_design_j"]] <- fe_design@j + 1L
-        stan_data[["fe_design_p"]] <- fe_design@p + 1L
+        stan_data[["fe_design"]] <- fe_design
     } else {
         stan_data[["n_fe"]] <- 0L
-        stan_data[["n_nz_fe"]] <- 0L
-        stan_data[["fe_design_x"]] <- numeric(0)
-        stan_data[["fe_design_j"]] <- integer(0)
-        stan_data[["fe_design_p"]] <- integer(stan_data[["n_obs"]] + 1)
+        stan_data[["fe_design"]] <- numeric(0)
     }
 
     # Construct random-effects matrix if present
     if (!is.null(design$random)) {
         remm <- reformulas::mkReTrms(
             bars = reformulas::findbars(design$random),
-            fr = model_data,
+            fr = metadata,
             calc.lambdat = FALSE,
             sparse = TRUE
         )
@@ -269,7 +201,7 @@ disize <- function(
     }
 
     # Include counts for Stan
-    stan_data[["counts"]] <- as.integer(model_data[["counts"]])
+    stan_data[["counts"]] <- counts |> Matrix::t()
 
     # Construct Stan model
     model <- instantiate::stan_package_model(
@@ -292,16 +224,14 @@ disize <- function(
     cur_fit <- model$optimize(
         stan_data,
         iter = n_iters,
-        show_messages = F,
+        show_messages = T,
+        refresh = 1000,
         sig_figs = 18
     )
 
-    # Extract parameters
-    cur_params <- extract_params(cur_fit)
-
     # Extract size factors
     sf_hist <- list()
-    sf_hist[[1]] <- cur_params[["sf"]]
+    sf_hist[[1]] <- extract_sf(cur_fit)
 
     if (2 < verbose) {
         pb$tick()
@@ -310,24 +240,21 @@ disize <- function(
         # Compute next fit
         cur_fit <- model$optimize(
             stan_data,
-            init = list(cur_params),
+            init = cur_fit,
             iter = n_iters,
             show_messages = F,
             sig_figs = 18
         )
 
-        # Extract parameters
-        cur_params <- extract_params(cur_fit)
-
         # Extract size factors
-        sf_hist[[i]] <- cur_params[["sf"]]
+        sf_hist[[i]] <- extract_sf(cur_fit)
 
         # Evaluate convergence
         # TODO: do something smart with the history
         if (all(abs(sf_hist[[i]] - sf_hist[[i - 1]]) < tolerance)) {
             # Name and return size factors
             sf <- as.vector(sf_hist[[i]])
-            names(sf) <- levels(model_data[[batch_name]])
+            names(sf) <- levels(metadata[[batch_name]])
 
             if (2 < verbose) {
                 pb$terminate()
@@ -349,7 +276,7 @@ disize <- function(
 
     # Name and return size factors
     sf <- as.vector(sf_hist[[i]])
-    names(sf) <- levels(model_data[[batch_name]])
+    names(sf) <- levels(metadata[[batch_name]])
 
     sf
 }
