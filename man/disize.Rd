@@ -8,15 +8,14 @@ disize(
   design_formula,
   counts = NULL,
   metadata = NULL,
-  model_data = NULL,
   batch_name = "batch_id",
   obs_name = "obs_id",
   feat_name = "feat_id",
-  n_feats = 500,
+  n_feats = 1000,
   n_subset = 50,
   verbose = 3,
   n_passes = 20,
-  n_iters = 500,
+  n_iters = 100,
   tolerance = 0.001
 )
 }
@@ -27,12 +26,14 @@ disize(
 
 \item{metadata}{A dataframe containing sample metadata.}
 
-\item{model_data}{The model data if already constructed. Must contain the
-'batch_name' and "feat_idx" identifiers as columns, and any
-predictors used in 'design_formula'.}
-
 \item{batch_name}{The identifier for the batch column in 'metadata',
-defaults to "batch".}
+defaults to "batch_id".}
+
+\item{obs_name}{The identifier for the observation column in 'metadata',
+defaults to "obs_id".}
+
+\item{feat_name}{The identifier for the feature column in 'metadata',
+defaults to "feat_id".}
 
 \item{n_feats}{The number of genes used during estimation, defaults to 500.
 Increasing this value will result in this function taking longer but more
@@ -41,10 +42,17 @@ confidence in the size factors.}
 \item{n_subset}{The number of observations per experimental unit used during
 estimation, defaults to 50.}
 
-\item{n_threads}{The number of threads to be used during estimation,
-defaults to 1. Increasing this value will generally decrease runtime.}
+\item{verbose}{The verbosity level.}
 
-\item{backend}{How to call Stan, defaults to "rstan".}
+\item{n_passes}{The number of optimization passes to go through.}
+
+\item{n_iters}{The number of iterations used for a single optimization pass.}
+
+\item{tolerance}{The tolerance used to evaluate convergence of the size factors.}
+
+\item{model_data}{The model data if already constructed. Must contain the
+'batch_name' and "feat_idx" identifiers as columns, and any
+predictors used in 'design_formula'.}
 }
 \value{
 A named numeric vector containing the size factor point estimates.

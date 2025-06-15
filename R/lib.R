@@ -28,7 +28,6 @@ split_formula <- function(design_formula) {
 #' Extract the parameters out of an optimized model.
 #'
 #' @param cur_fit A CmdStanMLE object
-#' @param stan_data The formatted Stan data used to fit the model.
 extract_sf <- function(cur_fit) {
     params <- cur_fit$mle()
 
@@ -41,9 +40,6 @@ extract_sf <- function(cur_fit) {
 #' @param design_formula The formula describing the experimental design.
 #' @param counts A (obsservation x feature) count matrix.
 #' @param metadata A dataframe containing sample metadata.
-#' @param model_data The model data if already constructed. Must contain the
-#'  'batch_name' and "feat_idx" identifiers as columns, and any
-#'  predictors used in 'design_formula'.
 #' @param batch_name The identifier for the batch column in 'metadata',
 #'  defaults to "batch_id".
 #' @param obs_name The identifier for the observation column in 'metadata',
