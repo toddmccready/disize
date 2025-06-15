@@ -21,7 +21,10 @@ functions {
         real log_prob = 0;
         vector[n_obs] log_mu;
 
-        for (feat_i in start:end) {
+
+        int n_slice_feats = end - start + 1; // # of features in slice
+        for (i in 1:n_slice_feats) {
+            int feat_i = start + i - 1;
 
             // Estimated Feature Expression ----
             log_mu = rep_vector(intercept[feat_i], n_obs);
@@ -124,7 +127,7 @@ model {
     int grainsize = 1;
     target += reduce_sum(
         partial_sum_lpmf,
-        counts, // Thread-specific
+        counts,
         grainsize,
         // Shared ----
         n_obs,
