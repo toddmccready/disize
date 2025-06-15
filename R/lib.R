@@ -1,20 +1,12 @@
-#' Modify the design by adding an interaction by genes
+#' Split design formula into fixed and random effects.
 #'
 #' @param design_formula The design formula
-#' @param feat_name The variable name for features
-modify_design <- function(design_formula, feat_name) {
+modify_design <- function(design_formula) {
     # Extract terms
     terms <- attr(terms(design_formula), "term.labels")
 
     # Identify random effects
     re <- grepl("\\| ", terms)
-
-    # Wrap random effects in brackets
-    terms <- gsub("\\| ", "\\| \\(", terms)
-    terms[re] <- paste0(terms[re], ")")
-
-    # Add interaction
-    terms <- paste0("(", terms, ":", feat_name, ")")
 
     fixed <- NULL
     if (length(terms[!re]) != 0) {
@@ -27,8 +19,7 @@ modify_design <- function(design_formula, feat_name) {
     }
 
     list(
-        formula = as.formula(paste0(" ~ 0 + ", paste(terms, collapse = " + "))),
-        intercept = as.formula(paste0("~ 0 + ", feat_name)),
+        formula = design_formula,
         fixed = fixed,
         random = random
     )
@@ -113,7 +104,6 @@ disize <- function(
     design_formula,
     counts = NULL,
     metadata = NULL,
-    model_data = NULL,
     batch_name = "batch_id",
     obs_name = "obs_id",
     feat_name = "feat_id",
@@ -131,70 +121,50 @@ disize <- function(
         stop("'design_formula' should be of the form '~ x + ...'")
     }
 
-    # 'counts' & 'metadata' specified
-    if (is.null(model_data) && (!is.null(counts) && !is.null(metadata))) {
-        # Check for the same number of samples
-        if (nrow(metadata) != nrow(counts)) {
-            stop(
-                "'counts' and 'metadata' should have the same # of ",
-                "observations(rows)."
-            )
-        }
-
-        # Include explicit observation names if not present
-        if (is.null(rownames(counts))) {
-            rownames(counts) <- 1:nrow(counts)
-        }
-        if (is.null(metadata[[obs_name]])) {
-            metadata[[obs_name]] <- 1:nrow(counts)
-        }
-
-        # Include explicit feature names if not present
-        if (is.null(colnames(counts))) {
-            colnames(counts) <- 1:ncol(counts)
-        }
-
-        # Ensure valid number of features selected
-        n_feats <- min(n_feats, ncol(counts))
-
-        # Subset features
-        ordering <- order(Matrix::colMeans(counts), decreasing = TRUE)
-        counts <- counts[, ordering[1:n_feats]]
-
-        # Extract predictor terms
-        predictors <- all.vars(design_formula)
-
-        # Subset observations
-        metadata <- metadata |>
-            dplyr::group_by(dplyr::across(dplyr::all_of(predictors))) |>
-            dplyr::slice_sample(n = n_subset, replace = FALSE) |>
-            dplyr::ungroup() |>
-            dplyr::select(dplyr::all_of(c(predictors, obs_name, batch_name)))
-        counts <- counts[metadata[[obs_name]], ]
-
-        # Convert to dense matrix if needed
-        if (is(counts, "sparseMatrix")) {
-            counts <- as.matrix(counts)
-        }
-
-        # Format counts to long format
-        counts <- reshape2::melt(
-            counts,
-            c(obs_name, feat_name),
-            value.name = "counts"
-        )
-
-        # Merge counts and metadata
-        model_data <- merge(counts, metadata, by = obs_name)
-    } else if (!is.null(model_data) && (is.null(counts) && is.null(metadata))) {
-        # 'model_data' specified
-        # TODO make n_subset work here
-    } else {
+    # Check for the same number of samples
+    if (nrow(metadata) != nrow(counts)) {
         stop(
-            "either 'counts', 'metadata' can be specified(and 'model_data' ",
-            "left NULL) or 'model_data' can be specified(and 'counts', ",
-            "'metadata' left NULL)"
+            "'counts' and 'metadata' should have the same # of ",
+            "observations(rows)."
         )
+    }
+
+    # Include explicit observation names if not present
+    if (is.null(rownames(counts)) & is.null(metadata[[obs_name]])) {
+        rownames(counts) <- 1:nrow(counts)
+        metadata[[obs_name]] <- 1:nrow(counts)
+    } else if (!is.null(rownames(counts)) & is.null(metadata[[obs_name]])) {
+        metadata[[obs_name]] <- rownames(counts)
+    } else if (is.null(rownames(counts)) & !is.null(metadata[[obs_name]])) {
+        rownames(counts) <- metadata[[obs_name]]
+    }
+
+    # Include explicit feature names if not present
+    if (is.null(colnames(counts))) {
+        colnames(counts) <- 1:ncol(counts)
+    }
+
+    # Ensure valid number of features selected
+    n_feats <- min(n_feats, ncol(counts))
+
+    # Subset features
+    ordering <- order(Matrix::colMeans(counts), decreasing = TRUE)
+    counts <- counts[, ordering[1:n_feats]]
+
+    # Extract predictor terms
+    predictors <- all.vars(design_formula)
+
+    # Subset observations
+    metadata <- metadata |>
+        dplyr::group_by(dplyr::across(dplyr::all_of(predictors))) |>
+        dplyr::slice_sample(n = n_subset, replace = FALSE) |>
+        dplyr::ungroup() |>
+        dplyr::select(dplyr::all_of(c(predictors, obs_name, batch_name)))
+    counts <- counts[metadata[[obs_name]], ]
+
+    # Convert to dense matrix if needed
+    if (is(counts, "sparseMatrix")) {
+        counts <- as.matrix(counts)
     }
 
     # Formating Data For Stan ----
@@ -203,12 +173,7 @@ disize <- function(
     }
 
     # Ensure relevant columns are factors
-    model_data[[batch_name]] <- as.factor(model_data[[batch_name]])
-    model_data[[feat_name]] <- as.factor(model_data[[feat_name]])
-
-    # Format characters to factors
-    model_data <- model_data |>
-        dplyr::mutate(dplyr::across(dplyr::where(is.character), as.factor))
+    metadata[[batch_name]] <- as.factor(metadata[[batch_name]])
 
     # Allocate named list for Stan
     stan_data <- list(n_obs = nrow(model_data))
