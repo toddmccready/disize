@@ -26,6 +26,11 @@ functions {
         for (i in 1:n_slice_feats) {
             int feat_i = start + i - 1;
 
+            // Priors ----
+            // Horseshoe prior over fixed-effects
+            lambda[, feat_i] ~ cauchy(0, 1);
+            fe_coefs[, feat_i] ~ normal(0, lambda[, feat_i] .* fe_tau);
+
             // Estimated Feature Expression ----
             log_mu = rep_vector(intercept[feat_i], n_obs);
 
@@ -117,11 +122,6 @@ model {
     re_tau ~ exponential(1);
 
     to_vector(raw_re_coefs) ~ std_normal();
-
-    for (fe_i in 1:n_fe) {
-        lambda[fe_i, ] ~ cauchy(0, 1);
-        fe_coefs[fe_i, ] ~ normal(0, lambda[fe_i, ] * fe_tau[fe_i]);
-    }
 
     // Likelihood ----
     int grainsize = 1;
