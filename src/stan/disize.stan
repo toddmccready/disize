@@ -15,6 +15,9 @@ functions {
         vector intercept,
         matrix fe_coefs,
         matrix re_coefs,
+        matrix lambda,
+        vector fe_tau,
+        vector re_tau,
         vector sf,
         real iodisp
     ) {
@@ -28,8 +31,8 @@ functions {
 
             // Priors ----
             // Horseshoe prior over fixed-effects
-            lambda[, feat_i] ~ cauchy(0, 1);
-            fe_coefs[, feat_i] ~ normal(0, lambda[, feat_i] .* fe_tau);
+            log_prob += cauchy_lpdf(lambda[, feat_i] | 0, 1);
+            log_prob += normal_lpdf(fe_coefs[, feat_i] | 0, lambda[, feat_i] .* fe_tau);
 
             // Estimated Feature Expression ----
             log_mu = rep_vector(intercept[feat_i], n_obs);
@@ -141,6 +144,9 @@ model {
         intercept,
         fe_coefs,
         re_coefs,
+        lambda,
+        fe_tau,
+        re_tau,
         sf,
         iodisp
     );
