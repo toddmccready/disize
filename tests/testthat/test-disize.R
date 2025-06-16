@@ -74,7 +74,7 @@ test_that("small-simple-bulk", {
         design_formula = ~ (1 | donor),
         counts = counts,
         metadata = metadata,
-        n_threads = 4
+        n_threads = parallel::detectCores() / 2
     ))
 
     expect_equal(
@@ -155,7 +155,7 @@ test_that("large-simple-bulk", {
         design_formula = ~ (1 | donor),
         counts = counts,
         metadata = metadata,
-        n_threads = 4
+        n_threads = parallel::detectCores() / 2
     ))
 
     expect_equal(
@@ -246,7 +246,7 @@ test_that("small-simple-sc", {
         design_formula = ~ cell_type + (1 | donor:cell_type),
         counts = counts,
         metadata = metadata,
-        n_threads = 4
+        n_threads = parallel::detectCores() / 2
     ))
 
     expect_equal(
@@ -338,7 +338,7 @@ test_that("large-simple-sc", {
         design_formula = ~ cell_type + (1 | cell_type:donor),
         counts = counts,
         metadata = metadata,
-        n_threads = 4
+        n_threads = parallel::detectCores() / 2
     ))
 
     expect_equal(
