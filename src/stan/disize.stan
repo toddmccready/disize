@@ -1,5 +1,5 @@
 functions {
-    real partial_sum_lpmf(
+    real partial_posterior(
         // Thread-specific ----
         array[,] int counts_slice,
         int start, int end,
@@ -11,10 +11,12 @@ functions {
         vector re_design_x,
         array[] int re_design_j,
         array[] int re_design_p,
+        array[] int re_id,
         array[] int batch_id,
         vector intercept,
         matrix fe_coefs,
-        matrix re_coefs,
+        matrix raw_re_coefs,
+        matrix re_sigma,
         matrix lambda,
         vector fe_tau,
         vector re_tau,
@@ -23,13 +25,24 @@ functions {
     ) {
         real log_prob = 0;
         vector[n_obs] log_mu;
+        vector[n_re] re_coefs_col;
 
 
         int n_slice_feats = end - start + 1; // # of features in slice
         for (i in 1:n_slice_feats) {
             int feat_i = start + i - 1;
 
+            // Scaling random-effects with horseshoe shrinkage
+            if (n_re != 0) {
+                for (re_i in 1:n_re) {
+                    re_coefs_col[re_i] = raw_re_coefs[re_i, feat_i] * (re_sigma[re_id[re_i], feat_i] * re_tau[re_id[re_i]]);
+                }
+            }
+
             // Priors ----
+            // Normal prior over (raw) random-effects
+            log_prob += std_normal_lpdf(raw_re_coefs[, feat_i]);
+
             // Horseshoe prior over fixed-effects
             log_prob += cauchy_lpdf(lambda[, feat_i] | 0, 1);
             log_prob += normal_lpdf(fe_coefs[, feat_i] | 0, lambda[, feat_i] .* fe_tau);
@@ -43,8 +56,7 @@ functions {
 
             if (n_re != 0) {
                 log_mu += csr_matrix_times_vector(
-                    n_obs, n_re, re_design_x, re_design_j, re_design_p,
-                    col(re_coefs, feat_i)
+                    n_obs, n_re, re_design_x, re_design_j, re_design_p, re_coefs_col
                 );
             }
 
@@ -110,26 +122,16 @@ parameters {
 transformed parameters {
     // Size Factors ----
     vector[n_batches] sf = log(raw_sf) + log(n_batches);
-
-    // Random Effects ----
-    matrix[n_re, n_feats] re_coefs;
-    for (feat_i in 1:n_feats) {
-        for (re_i in 1:n_re) {
-            re_coefs[re_i, feat_i] = raw_re_coefs[re_i, feat_i] * (re_sigma[re_id[re_i], feat_i] * re_tau[re_id[re_i]]);
-        }
-    }
 }
 model {
-    // Priors ----
+    // Constrain global shrinkage parameters ----
     fe_tau ~ exponential(1);
     re_tau ~ exponential(1);
 
-    to_vector(raw_re_coefs) ~ std_normal();
-
-    // Likelihood ----
+    // Parallel posterior eval ----
     int grainsize = 1;
     target += reduce_sum(
-        partial_sum_lpmf,
+        partial_posterior,
         counts,
         grainsize,
         // Shared ----
@@ -140,10 +142,12 @@ model {
         re_design_x,
         re_design_j,
         re_design_p,
+        re_id,
         batch_id,
         intercept,
         fe_coefs,
-        re_coefs,
+        raw_re_coefs,
+        re_sigma,
         lambda,
         fe_tau,
         re_tau,
