@@ -4,3 +4,7 @@
 ^rv\.lock$
 ^LICENSE\.md$
 ^old-README$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
