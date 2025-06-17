@@ -1,10 +1,62 @@
-# `disize`: A tool for size factor estimation
+# disize: A tool for size factor estimation
 
-Leverage experimental design for size factor estimation by providing a `design_formula` to `disize`.
+Leverage information from the experimental design during size factor estimation.
 
-Currently, `disize` accepts either a count matrix `counts` and a `metadata` dataframe containing observation-level metadata(the predictors in your design!).
+# Installation
 
-Note: the rows of `counts` should have the same names as the `obs_name` column in `metadata`. If `counts` has no row names, `disize` assumes it is ordered such that the row indices correspond to the row indices of `metadata`.
+As `disize` is not yet on CRAN, installation is not a one-liner with `install.packages`:
+
+## With `remotes`
+```R
+# Install disize
+remotes::install_github("https://github.com/toddmccready/disize")
+
+# Set up CmdStan toolchain
+cmdstanr::install_cmdstan()
+```
+
+## With `rv`
+
+Add the following to your `rproject.toml` file(if not already present):
+```
+repositories = [
+    # ...
+    { alias = "CRAN", url = "https://cloud.r-project.org" },
+    { alias = "STAN", url = "https://stan-dev.r-universe.dev" },
+    # ...
+]
+
+# ...
+
+dependencies = [
+    # ...
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.1" },
+    # ...
+]
+```
+
+Then sync your lockfile:
+```sh
+rv sync
+```
+
+And finally install the CmdStan toolchain in `R`:
+```R
+cmdstanr::install_cmdstan()
+```
+
+# Usage
+
+The only export is `disize::disize`! The required arguments are:
+
+- `design_formula`: An R formula that specifies the experimental design. This is the same R formula you would pass to something like `DESeq2` or `edgeR` including predictors like `condition`, `sex`, etc to estimate your expression quantities of interest(except we allow for random-effects). All terms used in this formula should be present in `metadata`.
+
+- `counts`: A (observation x features) matrix containing the transcript counts. This can be dense or sparse; an internal coercion to a dense matrix will be done after subsetting relevant features.
+
+- `metadata`: A dataframe containing the sample-level information(with observations as rows).
+
+The batch- and observation identifiers are specified by `batch_name` and `obs_name`, respectively. Ensure that your batch identifier is specified as a column in `metadata`, however `obs_name` is not required if the row indices of `counts` and `metadata` correspond to the same sample(i.e., if either `rownames(counts)` or `metadata[[obs_name]]` is `NULL` then the row indices of `counts` and `metadata` are assumed to correspond to the same sample).
+
 
 # Examples
 ```R

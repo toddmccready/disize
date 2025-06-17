@@ -39,7 +39,7 @@ extract_sf <- function(cur_fit) {
     unname(params[grepl("^sf", names(params))])
 }
 
-#' @title Design-infored size factor estimation.
+#' @title Design-informed size factor estimation.
 #'
 #'
 #' @param design_formula The formula describing the experimental design.
@@ -49,36 +49,33 @@ extract_sf <- function(cur_fit) {
 #'  defaults to "batch_id".
 #' @param obs_name The identifier for the observation column in 'metadata',
 #'  defaults to "obs_id".
-#' @param feat_name The identifier for the feature column in 'metadata',
-#'  defaults to "feat_id".
 #' @param n_feats The number of genes used during estimation, defaults to 500.
 #'  Increasing this value will result in this function taking longer but more
 #'  confidence in the size factors.
 #' @param n_subset The number of observations per experimental unit used during
 #'  estimation, defaults to 50.
-#' @param n_threads The number of threads to use for parallel processing.
-#' @param verbose The verbosity level.
 #' @param n_passes The number of optimization passes to go through.
 #' @param n_iters The number of iterations used for a single optimization pass.
+#' @param n_threads The number of threads to use for parallel processing.
 #' @param tolerance The tolerance used to evaluate convergence of the size factors.
+#' @param verbose The verbosity level.
 #'
 #' @returns A named numeric vector containing the size factor point estimates.
 #'
 #' @export
 disize <- function(
     design_formula,
-    counts = NULL,
-    metadata = NULL,
+    counts,
+    metadata,
     batch_name = "batch_id",
     obs_name = "obs_id",
-    feat_name = "feat_id",
     n_feats = 1000,
     n_subset = 50,
-    n_threads = 1,
-    verbose = 3,
     n_passes = 20,
     n_iters = 100,
-    tolerance = 1e-3
+    n_threads = 1,
+    tolerance = 1e-3,
+    verbose = 3
 ) {
     # Check design formula is correct
     if (!is(design_formula, "formula")) {
