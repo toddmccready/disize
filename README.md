@@ -21,7 +21,6 @@ Add the following to your `rproject.toml` file(if not already present):
 ```
 repositories = [
     # ...
-    { alias = "CRAN", url = "https://cloud.r-project.org" },
     { alias = "STAN", url = "https://stan-dev.r-universe.dev" },
     # ...
 ]
