@@ -30,7 +30,7 @@ repositories = [
 
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.1" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.2" },
     # ...
 ]
 ```
