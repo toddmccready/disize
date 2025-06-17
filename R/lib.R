@@ -207,10 +207,7 @@ disize <- function(
     # Construct Stan model
     model <- instantiate::stan_package_model(
         name = "disize",
-        package = "disize",
-        compile = TRUE,
-        force = TRUE,
-        cpp_options = list(stan_threads = TRUE)
+        package = "disize"
     )
 
     # Estimate model parameters ----
