@@ -1,6 +1,8 @@
 #' Split design formula into fixed and random effects.
 #'
 #' @param design_formula The design formula
+#'
+#' @noRd
 split_formula <- function(design_formula) {
     # Extract terms
     terms <- attr(terms(design_formula), "term.labels")
@@ -29,6 +31,8 @@ split_formula <- function(design_formula) {
 #'
 #' @param cur_fit A CmdStanMLE object
 #' @param stan_data The formatted Stan data used to fit the model.
+#'
+#' @noRd
 extract_sf <- function(cur_fit) {
     params <- cur_fit$mle()
 
