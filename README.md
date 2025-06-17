@@ -87,5 +87,3 @@ The batch- and observation identifiers are specified by `batch_name` and `obs_na
             1             2             3             4             5            6
  0.0020845603  0.0013157564 -0.0025107518 -0.0025500306  0.0006061994  0.0010440993
 ```
-
-# TODO
