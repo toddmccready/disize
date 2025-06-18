@@ -17,7 +17,7 @@ cmdstanr::install_cmdstan()
 
 ## With `rv`
 
-Add the following to your `rproject.toml` file(if not already present):
+Add the following entries to your `rproject.toml` file(if not already present):
 ```
 repositories = [
     # ...

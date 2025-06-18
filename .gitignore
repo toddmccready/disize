@@ -2,3 +2,4 @@ rv/
 .Rprofile
 .DS_Store
 docs
+inst/doc

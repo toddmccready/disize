@@ -7,6 +7,8 @@ r_version = "4.5"
 repositories = [
     { alias = "CRAN", url = "https://cran.r-project.org" },
     { alias = "STAN", url = "https://stan-dev.r-universe.dev" },
+    { alias = "BIOC-PAC", url = "https://bioconductor.org/packages/3.21/bioc" },
+    { alias = "BIOC-ANN", url = "https://bioconductor.org/packages/3.21/data/annotation" },
 ]
 
 # package to install and any specifications. Any descriptive dependency can have the `install_suggestions` specification
@@ -26,4 +28,6 @@ dependencies = [
     "dplyr",
     "tidyr",
     "purrr",
+    "getDEE2",
+    "R.utils",
 ]
