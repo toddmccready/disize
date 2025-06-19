@@ -27,17 +27,13 @@ split_formula <- function(design_formula) {
     )
 }
 
-#' Extract the parameters out of an optimized model.
-#'
-#' @param cur_fit A CmdStanMLE object
-#' @param stan_data The formatted Stan data used to fit the model.
-#'
-#' @noRd
-extract_sf <- function(cur_fit) {
-    params <- cur_fit$mle()
+extract_pars <- function(cur_fit) {
+    params <- list()
 
-    unname(params[grepl("^sf", names(params))])
+    params[["intercept"]] <- unname(cur_fit$mle("intercept"))
+    params[["iodisp"]] <- unname(cur_fit$mle("iodisp"))
 }
+
 
 #' @title Design-informed size factor estimation.
 #'
@@ -74,6 +70,7 @@ disize <- function(
     n_passes = 20,
     n_iters = 100,
     n_threads = 1,
+    init_alpha = 1e-5,
     tolerance = 1e-3,
     verbose = 3
 ) {
@@ -226,15 +223,17 @@ disize <- function(
     options(cmdstanr_warn_inits = FALSE)
     cur_fit <- model$optimize(
         data = stan_data,
+        init_alpha = init_alpha,
         iter = n_iters,
         show_messages = FALSE,
         sig_figs = 18,
-        threads = n_threads
+        threads = n_threads,
+        algorithm = "lbfgs"
     )
 
     # Extract size factors
     sf_hist <- list()
-    sf_hist[[1]] <- extract_sf(cur_fit)
+    sf_hist[[1]] <- unname(cur_fit$mle("sf"))
 
     if (2 < verbose) {
         pb$tick()
@@ -244,14 +243,16 @@ disize <- function(
         cur_fit <- model$optimize(
             data = stan_data,
             init = cur_fit,
+            init_alpha = init_alpha,
             iter = n_iters,
             show_messages = FALSE,
             sig_figs = 18,
-            threads = n_threads
+            threads = n_threads,
+            algorithm = "lbfgs"
         )
 
         # Extract size factors
-        sf_hist[[i]] <- extract_sf(cur_fit)
+        sf_hist[[i]] <- unname(cur_fit$mle("sf"))
 
         # Evaluate convergence
         # TODO: do something smart with the history
