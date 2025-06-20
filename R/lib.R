@@ -99,10 +99,14 @@ disize <- function(
 
     # Subset observations
     metadata <- metadata |>
-        dplyr::group_by(dplyr::across(dplyr::all_of(predictors))) |>
+        dplyr::group_by(dplyr::across(dplyr::all_of(c(
+            predictors,
+            batch_name
+        )))) |>
         dplyr::slice_sample(n = n_subset, replace = FALSE) |>
         dplyr::ungroup() |>
         dplyr::select(dplyr::all_of(c(predictors, obs_name, batch_name)))
+
     counts <- counts[metadata[[obs_name]], ]
 
     # Subset features out features with no counts
