@@ -27,14 +27,6 @@ split_formula <- function(design_formula) {
     )
 }
 
-extract_pars <- function(cur_fit) {
-    params <- list()
-
-    params[["intercept"]] <- unname(cur_fit$mle("intercept"))
-    params[["iodisp"]] <- unname(cur_fit$mle("iodisp"))
-}
-
-
 #' @title Design-informed size factor estimation.
 #'
 #'
@@ -65,13 +57,11 @@ disize <- function(
     metadata,
     batch_name = "batch_id",
     obs_name = "obs_id",
-    n_feats = 1000,
+    n_feats = 5000,
     n_subset = 50,
-    n_passes = 20,
-    n_iters = 100,
-    n_threads = 1,
+    n_iters = "auto",
+    n_threads = parallel::detectCores() / 2,
     init_alpha = 1e-5,
-    tolerance = 1e-3,
     verbose = 3
 ) {
     # Check design formula is correct
@@ -104,15 +94,36 @@ disize <- function(
         colnames(counts) <- 1:ncol(counts)
     }
 
-    # Ensure valid number of features selected
-    n_feats <- min(n_feats, ncol(counts))
-
-    # Subset features
-    ordering <- order(Matrix::colMeans(counts), decreasing = TRUE)
-    counts <- counts[, ordering[1:n_feats]]
-
     # Extract predictor terms
     predictors <- all.vars(design_formula)
+
+    # Subset observations
+    metadata <- metadata |>
+        dplyr::group_by(dplyr::across(dplyr::all_of(predictors))) |>
+        dplyr::slice_sample(n = n_subset, replace = FALSE) |>
+        dplyr::ungroup() |>
+        dplyr::select(dplyr::all_of(c(predictors, obs_name, batch_name)))
+    counts <- counts[metadata[[obs_name]], ]
+
+    # Subset features out features with no counts
+    subset <- Matrix::colSums(counts) != 0
+    counts <- counts[, subset]
+
+    # Ensure valid number of features selected
+    if (1 < verbose & ncol(counts) < n_feats) {
+        warning(
+            "Insufficient number of features after subsetting observations (",
+            ncol(counts),
+            ") to satisfy n_feats = ",
+            n_feats,
+            "."
+        )
+    }
+    n_feats <- min(n_feats, ncol(counts))
+
+    # Preferentially subset features with sufficient counts
+    ordering <- order(Matrix::colMeans(counts), decreasing = TRUE)
+    counts <- counts[, ordering[1:n_feats]]
 
     # Subset observations
     metadata <- metadata |>
@@ -199,6 +210,21 @@ disize <- function(
     # Include counts for Stan
     stan_data[["counts"]] <- counts |> t()
 
+    # Compute heuristic for maximum # of iterations
+    if (n_iters == "auto") {
+        n_iters <- as.integer(
+            500 *
+                log10(
+                    sqrt(
+                        stan_data[["n_batches"]] +
+                            stan_data[["n_fe"]] +
+                            stan_data[["n_re"]]
+                    ) *
+                        stan_data[["n_feats"]]
+                )
+        )
+    }
+
     # Construct Stan model
     model <- instantiate::stan_package_model(
         name = "disize",
@@ -208,79 +234,39 @@ disize <- function(
         cpp_options = list(stan_threads = TRUE)
     )
 
+    # Estimate maximum time-to-fit
+    fit <- model$optimize(
+        data = stan_data,
+        init_alpha = init_alpha,
+        iter = 10,
+        show_messages = FALSE,
+        sig_figs = 4,
+        threads = n_threads,
+        algorithm = "lbfgs"
+    )
+
     # Estimate model parameters ----
     if (verbose) {
-        message("Estimating size factors...")
-    }
-
-    # Construct progress bar
-    if (2 < verbose) {
-        pb <- progress::progress_bar$new(total = n_passes)
-        pb$tick(0)
+        message(
+            "Estimating size factors... (Max ETA: ",
+            round(n_iters * (fit$time()$total / 10), 1),
+            "s)"
+        )
     }
 
     # Estimate initial fit
-    options(cmdstanr_warn_inits = FALSE)
-    cur_fit <- model$optimize(
+    fit <- model$optimize(
         data = stan_data,
         init_alpha = init_alpha,
         iter = n_iters,
-        show_messages = FALSE,
-        sig_figs = 18,
+        show_messages = (3 < verbose),
+        sig_figs = 16,
         threads = n_threads,
         algorithm = "lbfgs"
     )
 
     # Extract size factors
-    sf_hist <- list()
-    sf_hist[[1]] <- unname(cur_fit$mle("sf"))
-
-    if (2 < verbose) {
-        pb$tick()
-    }
-    for (i in 2:n_passes) {
-        # Compute next fit
-        cur_fit <- model$optimize(
-            data = stan_data,
-            init = cur_fit,
-            init_alpha = init_alpha,
-            iter = n_iters,
-            show_messages = FALSE,
-            sig_figs = 18,
-            threads = n_threads,
-            algorithm = "lbfgs"
-        )
-
-        # Extract size factors
-        sf_hist[[i]] <- unname(cur_fit$mle("sf"))
-
-        # Evaluate convergence
-        # TODO: do something smart with the history
-        if (all(abs(sf_hist[[i]] - sf_hist[[i - 1]]) < tolerance)) {
-            # Name and return size factors
-            sf <- as.vector(sf_hist[[i]])
-            names(sf) <- levels(metadata[[batch_name]])
-
-            if (2 < verbose) {
-                pb$terminate()
-            }
-            return(sf)
-        }
-
-        if (2 < verbose) pb$tick()
-    }
-
-    if (1 < verbose) {
-        warning("Model did not converge, size factors may be imprecise.")
-    }
-
-    # Terminate progress bar
-    if (2 < verbose) {
-        pb$terminate()
-    }
-
-    # Name and return size factors
-    sf <- as.vector(sf_hist[[i]])
+    sf <- fit$mle("sf")
     names(sf) <- levels(metadata[[batch_name]])
 
     sf
