@@ -22,7 +22,7 @@ library(R.utils)
 library(data.table)
 ```
 
-# The Dataset
+# The dataset
 
 This dataset consists of a purified macrophage subtype("Mac2", supposedly in 
 an 'activated' state) that has been partitioned into four groups exposed to 
@@ -35,12 +35,12 @@ The TruSeq RNA Library Prep Kit involves "tagging" transcripts with barcodes
 that identify distinct samples, allowing all prepared cDNA libraries to 
 be pooled together before sequencing. Since batch-effects are usually 
 attributed to separate sequencing runs, then we expect very small 
-batch-effects to be present in this dataset (even though some 
-sample preparation was done prior to this pooling).
+batch-effects to be present in this dataset if we define a "batch" as the unit 
+subjected to both RNA extraction and all further library prep.
 
 Let us test this hypothesis:
 
-# Downloading The Data
+# Downloading the data
 
 ```{r}
 # Download counts and construct metadata
@@ -94,3 +94,7 @@ We can confirm these estimates by rerunning `disize` with a larger `n_feats`:
 ```
 
 Indeed the estimates remain largely the same.
+
+# Downstream analysis
+
+WIP
