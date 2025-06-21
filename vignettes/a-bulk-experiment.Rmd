@@ -66,7 +66,6 @@ colnames(counts) <- gene_names
 
 The `metadata` contains the information for the experimental design:
 
-```
 ```{r}
 print(metadata)
 ```
@@ -84,7 +83,9 @@ We can finally run `disize` to get the estimated size factors:
 (size_factors <- disize(design_formula, counts, metadata))
 ```
 
-Evidently the batch-effect is indeed small! 
+Evidently the batch-effect is indeed small! The third batch seems to have been
+processed slightly worse, but the estimated size factors are close together 
+(within ~0.1).
 
 We can confirm these estimates by rerunning `disize` with a larger `n_feats`:
 
@@ -92,4 +93,4 @@ We can confirm these estimates by rerunning `disize` with a larger `n_feats`:
 (size_factors_2 <- disize(design_formula, counts, metadata, n_feats = 15000))
 ```
 
-The estimates remain largely the same, though it seems `batch-3` was processed slightly worse.
+Indeed the estimates remain largely the same.
