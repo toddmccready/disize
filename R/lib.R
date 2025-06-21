@@ -27,8 +27,7 @@ split_formula <- function(design_formula) {
     )
 }
 
-#' @title Design-informed size factor estimation.
-#'
+#' @title Design-informed size factor estimation
 #'
 #' @param design_formula The formula describing the experimental design.
 #' @param counts A (obsservation x feature) count matrix.
@@ -37,15 +36,12 @@ split_formula <- function(design_formula) {
 #'  defaults to "batch_id".
 #' @param obs_name The identifier for the observation column in 'metadata',
 #'  defaults to "obs_id".
-#' @param n_feats The number of genes used during estimation, defaults to 500.
-#'  Increasing this value will result in this function taking longer but more
-#'  confidence in the size factors.
+#' @param n_feats The number of features used during estimation, defaults to
+#'  automatically choosing based on a heuristic.
 #' @param n_subset The number of observations per experimental unit used during
 #'  estimation, defaults to 50.
-#' @param n_passes The number of optimization passes to go through.
 #' @param n_iters The number of iterations used for a single optimization pass.
 #' @param n_threads The number of threads to use for parallel processing.
-#' @param tolerance The tolerance used to evaluate convergence of the size factors.
 #' @param verbose The verbosity level.
 #'
 #' @returns A named numeric vector containing the size factor point estimates.

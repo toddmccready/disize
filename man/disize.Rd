@@ -2,7 +2,7 @@
 % Please edit documentation in R/lib.R
 \name{disize}
 \alias{disize}
-\title{Design-informed size factor estimation.}
+\title{Design-informed size factor estimation}
 \usage{
 disize(
   design_formula,
@@ -31,9 +31,8 @@ defaults to "batch_id".}
 \item{obs_name}{The identifier for the observation column in 'metadata',
 defaults to "obs_id".}
 
-\item{n_feats}{The number of genes used during estimation, defaults to 500.
-Increasing this value will result in this function taking longer but more
-confidence in the size factors.}
+\item{n_feats}{The number of features used during estimation, defaults to
+automatically choosing based on a heuristic.}
 
 \item{n_subset}{The number of observations per experimental unit used during
 estimation, defaults to 50.}
@@ -43,14 +42,10 @@ estimation, defaults to 50.}
 \item{n_threads}{The number of threads to use for parallel processing.}
 
 \item{verbose}{The verbosity level.}
-
-\item{n_passes}{The number of optimization passes to go through.}
-
-\item{tolerance}{The tolerance used to evaluate convergence of the size factors.}
 }
 \value{
 A named numeric vector containing the size factor point estimates.
 }
 \description{
-Design-informed size factor estimation.
+Design-informed size factor estimation
 }
