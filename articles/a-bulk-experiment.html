@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -177,9 +177,9 @@ factors:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">size_factors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span><span class="va">design_formula</span>, <span class="va">counts</span>, <span class="va">metadata</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: 354.3s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: 340.2s)</span></span>
 <span><span class="co">#&gt;      batch-1      batch-2      batch-3      batch-4 </span></span>
-<span><span class="co">#&gt;  0.005643104  0.066177026 -0.107423066  0.027400638</span></span></code></pre></div>
+<span><span class="co">#&gt;  0.007598643  0.066992674 -0.109143369  0.026138305</span></span></code></pre></div>
 <p>Evidently the batch-effect is indeed small! The third batch seems to
 have been processed slightly worse, but the estimated size factors are
 close together (within ~0.1).</p>
@@ -188,9 +188,9 @@ a larger <code>n_feats</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span><span class="va">design_formula</span>, <span class="va">counts</span>, <span class="va">metadata</span>, n_feats <span class="op">=</span> <span class="fl">15000</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: 527.6s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: 527.4s)</span></span>
 <span><span class="co">#&gt;     batch-1     batch-2     batch-3     batch-4 </span></span>
-<span><span class="co">#&gt;  0.01729606  0.05360651 -0.13359581  0.05120677</span></span></code></pre></div>
+<span><span class="co">#&gt;  0.02139176  0.04882669 -0.14549295  0.06179425</span></span></code></pre></div>
 <p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level2">
