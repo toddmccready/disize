@@ -393,7 +393,7 @@ dependencies = []
 
 [[packages]]
 name = "data.table"
-version = "1.17.4"
+version = "1.17.6"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
@@ -515,7 +515,7 @@ dependencies = [
 
 [[packages]]
 name = "evaluate"
-version = "1.0.3"
+version = "1.0.4"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []

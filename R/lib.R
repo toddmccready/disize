@@ -250,7 +250,7 @@ disize <- function(
     # Estimate model parameters ----
     if (verbose) {
         message(
-            "Estimating size factors... (Max ETA: ",
+            "Estimating size factors... (Max ETA: ~",
             round(n_iters * fit$time()$total / 30, 1),
             "s)"
         )

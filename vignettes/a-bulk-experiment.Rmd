@@ -24,18 +24,18 @@ library(data.table)
 
 # The dataset
 
-This dataset consists of a purified macrophage subtype("Mac2", supposedly in 
-an 'activated' state) that has been partitioned into four groups exposed to 
-different conditions. The authors offer this information on how the samples 
+This dataset consists of a purified macrophage subtype("Mac2", supposedly in
+an 'activated' state) that has been partitioned into four groups exposed to
+different conditions. The authors offer this information on how the samples
 were processed:
 
 > The sorted Mac2 cells were divided into four groups and stimulated at the 3-h time point with the same concentrations as previously described. Then, the RNA was extracted using the RNeasy Plus Micro Kit as per manufacturer instructions. Poly(A)mRNA was isolated using mRNA Capture Beads 2.0 (Yeasen Cat.12629ES, CHN) with two rounds of purification, followed by RNA fragmentation with magnesium ions at 94°C (Yeasen Cat.12340ES97, CHN). RNA sequencing library preparation was performed using the TruSeq RNA Library Prep Kit v2 (Illumina). Sequencing was carried out as paired-end 2×150 bp (PE150) on an Illumina Novaseq™ X Plus (LC-Bio Technologies).
 
-The TruSeq RNA Library Prep Kit involves "tagging" transcripts with barcodes 
-that identify distinct samples, allowing all prepared cDNA libraries to 
-be pooled together before sequencing. Since batch-effects are usually 
-attributed to separate sequencing runs, then we expect very small 
-batch-effects to be present in this dataset if we define a "batch" as the unit 
+The TruSeq RNA Library Prep Kit involves "tagging" transcripts with barcodes
+that identify distinct samples, allowing all prepared cDNA libraries to
+be pooled together before sequencing. Since batch-effects are usually
+attributed to separate sequencing runs, then we expect very small
+batch-effects to be present in this dataset if we define a "batch" as the unit
 subjected to both RNA extraction and all further library prep.
 
 Let us test this hypothesis:
@@ -70,7 +70,7 @@ The `metadata` contains the information for the experimental design:
 print(metadata)
 ```
 
-For this dataset, the study was primarily interested in the effect of 
+For this dataset, the study was primarily interested in the effect of
 `condition` on expression, thus the formula we would input into `disize` is:
 
 ```{r}
@@ -80,17 +80,30 @@ design_formula <- ~ condition
 We can finally run `disize` to get the estimated size factors:
 
 ```{r}
-(size_factors <- disize(design_formula, counts, metadata))
+size_factors <- disize(
+    design_formula,
+    counts,
+    metadata,
+    n_threads = max(1, parallel::detectCores() - 1)
+)
+print(size_factors)
 ```
 
 Evidently the batch-effect is indeed small! The third batch seems to have been
-processed slightly worse, but the estimated size factors are close together 
+processed slightly worse, but the estimated size factors are close together
 (within ~0.1).
 
 We can confirm these estimates by rerunning `disize` with a larger `n_feats`:
 
 ```{r}
-(size_factors_2 <- disize(design_formula, counts, metadata, n_feats = 15000))
+size_factors <- disize(
+    design_formula,
+    counts,
+    metadata,
+    n_feats = 15000,
+    n_threads = max(1, parallel::detectCores() - 1)
+)
+print(size_factors)
 ```
 
 Indeed the estimates remain largely the same.

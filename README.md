@@ -50,11 +50,11 @@ The only export is `disize::disize`! The required arguments are:
 
 - `design_formula`: An R formula that specifies the experimental design. This is the same R formula you would pass to something like `DESeq2` or `edgeR` including predictors like `condition`, `sex`, etc to estimate your expression quantities of interest(except we allow for random-effects). All terms used in this formula should be present in `metadata`.
 
-- `counts`: A (observation x features) matrix containing the transcript counts. This can be dense or sparse; an internal coercion to a dense matrix will be done after subsetting relevant features.
+- `counts`: A (observation x features) matrix containing the transcript counts. This can be dense or sparse; an internal coercion to a dense matrix will be done after subsetting relevant features and observations.
 
-- `metadata`: A dataframe containing the sample-level information(with observations as rows).
+- `metadata`: A dataframe containing the observation-level information(with observations as rows).
 
-The batch- and observation identifiers are specified by `batch_name` and `obs_name`, respectively. Ensure that your batch identifier is specified as a column in `metadata`, however `obs_name` is not required if the row indices of `counts` and `metadata` correspond to the same sample(i.e., if either `rownames(counts)` or `metadata[[obs_name]]` is `NULL` then the row indices of `counts` and `metadata` are assumed to correspond to the same sample).
+The batch- and observation identifiers are specified by `batch_name` and `obs_name`, respectively. Ensure that your batch identifier is specified as a column in `metadata`, however `obs_name` is not required if the row indices of `counts` and `metadata` correspond to the same observation(i.e., if either `rownames(counts)` or `metadata[[obs_name]]` is `NULL` then the row indices of `counts` and `metadata` are assumed to correspond to the same observation).
 
 
 # Examples
