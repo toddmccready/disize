@@ -841,6 +841,17 @@ dependencies = [
 ]
 
 [[packages]]
+name = "pandoc"
+version = "0.2.0"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "fs",
+    "rappdirs",
+    { name = "rlang", requirement = "(>= 1.0.1)" },
+]
+
+[[packages]]
 name = "pillar"
 version = "1.10.2"
 source = { repository = "https://cran.r-project.org/" }

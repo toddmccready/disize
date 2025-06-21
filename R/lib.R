@@ -57,7 +57,7 @@ disize <- function(
     metadata,
     batch_name = "batch_id",
     obs_name = "obs_id",
-    n_feats = 5000,
+    n_feats = min(10000, ncol(counts)),
     n_subset = 50,
     n_iters = "auto",
     n_threads = parallel::detectCores() / 2,
@@ -217,15 +217,13 @@ disize <- function(
     # Compute heuristic for maximum # of iterations
     if (n_iters == "auto") {
         n_iters <- as.integer(
-            500 *
-                log10(
-                    sqrt(
-                        stan_data[["n_batches"]] +
-                            stan_data[["n_fe"]] +
-                            stan_data[["n_re"]]
-                    ) *
-                        stan_data[["n_feats"]]
-                )
+            100 *
+                sqrt(
+                    stan_data[["n_batches"]] +
+                        stan_data[["n_fe"]] +
+                        stan_data[["n_re"]]
+                ) +
+                1000 * log10(stan_data[["n_feats"]])
         )
     }
 
@@ -242,7 +240,7 @@ disize <- function(
     fit <- model$optimize(
         data = stan_data,
         init_alpha = init_alpha,
-        iter = 10,
+        iter = 30,
         show_messages = FALSE,
         sig_figs = 4,
         threads = n_threads,
@@ -253,12 +251,12 @@ disize <- function(
     if (verbose) {
         message(
             "Estimating size factors... (Max ETA: ",
-            round(n_iters * (fit$time()$total / 10), 1),
+            round(n_iters * fit$time()$total / 30, 1),
             "s)"
         )
     }
 
-    # Estimate initial fit
+    # Estimate fit
     fit <- model$optimize(
         data = stan_data,
         init_alpha = init_alpha,

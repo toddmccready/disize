@@ -30,4 +30,6 @@ dependencies = [
     "purrr",
     "getDEE2",
     "R.utils",
+    "rmarkdown",
+    "pandoc",
 ]

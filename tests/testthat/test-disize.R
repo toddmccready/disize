@@ -243,8 +243,7 @@ test_that("small-simple-sc", {
     size_factors <- exp(disize::disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         counts = counts,
-        metadata = metadata,
-        n_threads = parallel::detectCores() / 2
+        metadata = metadata
     ))
 
     expect_equal(
@@ -336,7 +335,7 @@ test_that("large-simple-sc", {
         design_formula = ~ cell_type + (1 | cell_type:donor),
         counts = counts,
         metadata = metadata,
-        n_subset = 10
+        n_subset = 50
     ))
 
     expect_equal(
