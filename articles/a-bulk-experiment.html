@@ -98,7 +98,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="the-dataset">The Dataset<a class="anchor" aria-label="anchor" href="#the-dataset"></a>
+<h2 id="the-dataset">The dataset<a class="anchor" aria-label="anchor" href="#the-dataset"></a>
 </h2>
 <p>This dataset consists of a purified macrophage subtype(“Mac2”,
 supposedly in an ‘activated’ state) that has been partitioned into four
@@ -120,12 +120,13 @@ Plus (LC-Bio Technologies).</p>
 barcodes that identify distinct samples, allowing all prepared cDNA
 libraries to be pooled together before sequencing. Since batch-effects
 are usually attributed to separate sequencing runs, then we expect very
-small batch-effects to be present in this dataset (even though some
-sample preparation was done prior to this pooling).</p>
+small batch-effects to be present in this dataset if we define a “batch”
+as the unit subjected to both RNA extraction and all further library
+prep.</p>
 <p>Let us test this hypothesis:</p>
 </div>
 <div class="section level2">
-<h2 id="downloading-the-data">Downloading The Data<a class="anchor" aria-label="anchor" href="#downloading-the-data"></a>
+<h2 id="downloading-the-data">Downloading the data<a class="anchor" aria-label="anchor" href="#downloading-the-data"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Download counts and construct metadata</span></span>
@@ -151,22 +152,21 @@ sample preparation was done prior to this pooling).</p>
 </h2>
 <p>The <code>metadata</code> contains the information for the
 experimental design:</p>
-<pre><code>
-``` r
-print(metadata)
-#&gt;    sample_id condition batch_id
-#&gt; 1      Ctrl1   control  batch-1
-#&gt; 2      Ctrl2   control  batch-1
-#&gt; 3      Ctrl3   control  batch-1
-#&gt; 4       LPS1       lps  batch-2
-#&gt; 5       LPS2       lps  batch-2
-#&gt; 6       LPS3       lps  batch-2
-#&gt; 7     NELPS1     nelps  batch-3
-#&gt; 8     NELPS2     nelps  batch-3
-#&gt; 9     NELPS3     nelps  batch-3
-#&gt; 10       NE1        ne  batch-4
-#&gt; 11       NE2        ne  batch-4
-#&gt; 12       NE3        ne  batch-4</code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    sample_id condition batch_id</span></span>
+<span><span class="co">#&gt; 1      Ctrl1   control  batch-1</span></span>
+<span><span class="co">#&gt; 2      Ctrl2   control  batch-1</span></span>
+<span><span class="co">#&gt; 3      Ctrl3   control  batch-1</span></span>
+<span><span class="co">#&gt; 4       LPS1       lps  batch-2</span></span>
+<span><span class="co">#&gt; 5       LPS2       lps  batch-2</span></span>
+<span><span class="co">#&gt; 6       LPS3       lps  batch-2</span></span>
+<span><span class="co">#&gt; 7     NELPS1     nelps  batch-3</span></span>
+<span><span class="co">#&gt; 8     NELPS2     nelps  batch-3</span></span>
+<span><span class="co">#&gt; 9     NELPS3     nelps  batch-3</span></span>
+<span><span class="co">#&gt; 10       NE1        ne  batch-4</span></span>
+<span><span class="co">#&gt; 11       NE2        ne  batch-4</span></span>
+<span><span class="co">#&gt; 12       NE3        ne  batch-4</span></span></code></pre></div>
 <p>For this dataset, the study was primarily interested in the effect of
 <code>condition</code> on expression, thus the formula we would input
 into <code>disize</code> is:</p>
@@ -177,20 +177,26 @@ factors:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">size_factors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span><span class="va">design_formula</span>, <span class="va">counts</span>, <span class="va">metadata</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: 354.1s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: 354.3s)</span></span>
 <span><span class="co">#&gt;      batch-1      batch-2      batch-3      batch-4 </span></span>
-<span><span class="co">#&gt;  0.001140953  0.067954315 -0.103982691  0.026935061</span></span></code></pre></div>
-<p>Evidently the batch-effect is indeed small!</p>
+<span><span class="co">#&gt;  0.005643104  0.066177026 -0.107423066  0.027400638</span></span></code></pre></div>
+<p>Evidently the batch-effect is indeed small! The third batch seems to
+have been processed slightly worse, but the estimated size factors are
+close together (within ~0.1).</p>
 <p>We can confirm these estimates by rerunning <code>disize</code> with
 a larger <code>n_feats</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span><span class="va">design_formula</span>, <span class="va">counts</span>, <span class="va">metadata</span>, n_feats <span class="op">=</span> <span class="fl">15000</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: 542.4s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: 527.6s)</span></span>
 <span><span class="co">#&gt;     batch-1     batch-2     batch-3     batch-4 </span></span>
-<span><span class="co">#&gt;  0.01962999  0.04879726 -0.13295696  0.05322399</span></span></code></pre></div>
-<p>The estimates remain largely the same, though it seems
-<code>batch-3</code> was processed slightly worse.</p>
+<span><span class="co">#&gt;  0.01729606  0.05360651 -0.13359581  0.05120677</span></span></code></pre></div>
+<p>Indeed the estimates remain largely the same.</p>
+</div>
+<div class="section level2">
+<h2 id="downstream-analysis">Downstream analysis<a class="anchor" aria-label="anchor" href="#downstream-analysis"></a>
+</h2>
+<p>WIP</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
