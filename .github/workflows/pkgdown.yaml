@@ -33,8 +33,26 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          # `any::pkgdown` will install pkgdown.
+          # `local::.` will install your package and its declared dependencies
+          # (from Imports, Depends, Suggests, and Remotes in DESCRIPTION).
+          # Ensure cmdstanr is listed in Remotes in your DESCRIPTION file.
+          # Ensure R.utils is listed in Imports or Suggests.
           extra-packages: any::pkgdown, local::.
           needs: website
+
+      # Add this step to install CmdStan
+      - name: Install CmdStan
+        run: |
+          # Load cmdstanr to make its functions available
+          # This should be safe as setup-r-dependencies would have installed it.
+          library(cmdstanr)
+          # Install CmdStan. Use overwrite=TRUE for clean CI builds.
+          # Use cores to speed up compilation if multiple cores are available.
+          install_cmdstan(overwrite = TRUE, cores = 2)
+          # Verify the path is set (optional, for debugging)
+          message("CmdStan path after installation: ", cmdstan_path())
+        shell: Rscript {0}
 
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
