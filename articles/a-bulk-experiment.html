@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -175,22 +175,35 @@ into <code>disize</code> is:</p>
 <p>We can finally run <code>disize</code> to get the estimated size
 factors:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">(</span><span class="va">size_factors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span><span class="va">design_formula</span>, <span class="va">counts</span>, <span class="va">metadata</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">size_factors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
+<span>    <span class="va">design_formula</span>,</span>
+<span>    <span class="va">counts</span>,</span>
+<span>    <span class="va">metadata</span>,</span>
+<span>    n_threads <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: 340.2s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~455.9s)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      batch-1      batch-2      batch-3      batch-4 </span></span>
-<span><span class="co">#&gt;  0.007598643  0.066992674 -0.109143369  0.026138305</span></span></code></pre></div>
+<span><span class="co">#&gt;  0.005997942  0.060476065 -0.098878037  0.025461763</span></span></code></pre></div>
 <p>Evidently the batch-effect is indeed small! The third batch seems to
 have been processed slightly worse, but the estimated size factors are
 close together (within ~0.1).</p>
 <p>We can confirm these estimates by rerunning <code>disize</code> with
 a larger <code>n_feats</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">(</span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span><span class="va">design_formula</span>, <span class="va">counts</span>, <span class="va">metadata</span>, n_feats <span class="op">=</span> <span class="fl">15000</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">size_factors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
+<span>    <span class="va">design_formula</span>,</span>
+<span>    <span class="va">counts</span>,</span>
+<span>    <span class="va">metadata</span>,</span>
+<span>    n_feats <span class="op">=</span> <span class="fl">15000</span>,</span>
+<span>    n_threads <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: 527.4s)</span></span>
-<span><span class="co">#&gt;     batch-1     batch-2     batch-3     batch-4 </span></span>
-<span><span class="co">#&gt;  0.02139176  0.04882669 -0.14549295  0.06179425</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~617.8s)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      batch-1      batch-2      batch-3      batch-4 </span></span>
+<span><span class="co">#&gt;  0.007844584  0.097578935 -0.179256960  0.052341016</span></span></code></pre></div>
 <p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level2">

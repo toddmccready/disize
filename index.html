@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,7 +85,7 @@
 
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.6" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.7" },
     # ...
 ]</code></pre>
 <p>Then sync your lockfile:</p>
@@ -101,10 +101,10 @@ dependencies = [
 <p>The only export is <code><a href="reference/disize.html">disize::disize</a></code>! The required arguments are:</p>
 <ul>
 <li><p><code>design_formula</code>: An R formula that specifies the experimental design. This is the same R formula you would pass to something like <code>DESeq2</code> or <code>edgeR</code> including predictors like <code>condition</code>, <code>sex</code>, etc to estimate your expression quantities of interest(except we allow for random-effects). All terms used in this formula should be present in <code>metadata</code>.</p></li>
-<li><p><code>counts</code>: A (observation x features) matrix containing the transcript counts. This can be dense or sparse; an internal coercion to a dense matrix will be done after subsetting relevant features.</p></li>
-<li><p><code>metadata</code>: A dataframe containing the sample-level information(with observations as rows).</p></li>
+<li><p><code>counts</code>: A (observation x features) matrix containing the transcript counts. This can be dense or sparse; an internal coercion to a dense matrix will be done after subsetting relevant features and observations.</p></li>
+<li><p><code>metadata</code>: A dataframe containing the observation-level information(with observations as rows).</p></li>
 </ul>
-<p>The batch- and observation identifiers are specified by <code>batch_name</code> and <code>obs_name</code>, respectively. Ensure that your batch identifier is specified as a column in <code>metadata</code>, however <code>obs_name</code> is not required if the row indices of <code>counts</code> and <code>metadata</code> correspond to the same sample(i.e., if either <code>rownames(counts)</code> or <code>metadata[[obs_name]]</code> is <code>NULL</code> then the row indices of <code>counts</code> and <code>metadata</code> are assumed to correspond to the same sample).</p>
+<p>The batch- and observation identifiers are specified by <code>batch_name</code> and <code>obs_name</code>, respectively. Ensure that your batch identifier is specified as a column in <code>metadata</code>, however <code>obs_name</code> is not required if the row indices of <code>counts</code> and <code>metadata</code> correspond to the same observation(i.e., if either <code>rownames(counts)</code> or <code>metadata[[obs_name]]</code> is <code>NULL</code> then the row indices of <code>counts</code> and <code>metadata</code> are assumed to correspond to the same observation).</p>
 </div>
 <div class="section level1">
 <h1 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
