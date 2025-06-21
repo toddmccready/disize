@@ -83,8 +83,7 @@ We can finally run `disize` to get the estimated size factors:
 size_factors <- disize(
     design_formula,
     counts,
-    metadata,
-    n_threads = max(1, parallel::detectCores() - 1)
+    metadata
 )
 print(size_factors)
 ```
@@ -100,8 +99,7 @@ size_factors <- disize(
     design_formula,
     counts,
     metadata,
-    n_feats = 15000,
-    n_threads = max(1, parallel::detectCores() - 1)
+    n_feats = 15000
 )
 print(size_factors)
 ```

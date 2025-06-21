@@ -223,7 +223,7 @@ disize <- function(
                         stan_data[["n_fe"]] +
                         stan_data[["n_re"]]
                 ) +
-                1000 * log10(stan_data[["n_feats"]])
+                500 * log10(stan_data[["n_feats"]])
         )
     }
 
