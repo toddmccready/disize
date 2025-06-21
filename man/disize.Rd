@@ -2,21 +2,20 @@
 % Please edit documentation in R/lib.R
 \name{disize}
 \alias{disize}
-\title{Design-infored size factor estimation.}
+\title{Design-informed size factor estimation.}
 \usage{
 disize(
   design_formula,
-  counts = NULL,
-  metadata = NULL,
+  counts,
+  metadata,
   batch_name = "batch_id",
   obs_name = "obs_id",
-  feat_name = "feat_id",
-  n_feats = 1000,
+  n_feats = min(10000, ncol(counts)),
   n_subset = 50,
-  verbose = 3,
-  n_passes = 20,
-  n_iters = 100,
-  tolerance = 0.001
+  n_iters = "auto",
+  n_threads = parallel::detectCores()/2,
+  init_alpha = 1e-05,
+  verbose = 3
 )
 }
 \arguments{
@@ -32,9 +31,6 @@ defaults to "batch_id".}
 \item{obs_name}{The identifier for the observation column in 'metadata',
 defaults to "obs_id".}
 
-\item{feat_name}{The identifier for the feature column in 'metadata',
-defaults to "feat_id".}
-
 \item{n_feats}{The number of genes used during estimation, defaults to 500.
 Increasing this value will result in this function taking longer but more
 confidence in the size factors.}
@@ -42,21 +38,19 @@ confidence in the size factors.}
 \item{n_subset}{The number of observations per experimental unit used during
 estimation, defaults to 50.}
 
+\item{n_iters}{The number of iterations used for a single optimization pass.}
+
+\item{n_threads}{The number of threads to use for parallel processing.}
+
 \item{verbose}{The verbosity level.}
 
 \item{n_passes}{The number of optimization passes to go through.}
 
-\item{n_iters}{The number of iterations used for a single optimization pass.}
-
 \item{tolerance}{The tolerance used to evaluate convergence of the size factors.}
-
-\item{model_data}{The model data if already constructed. Must contain the
-'batch_name' and "feat_idx" identifiers as columns, and any
-predictors used in 'design_formula'.}
 }
 \value{
 A named numeric vector containing the size factor point estimates.
 }
 \description{
-Design-infored size factor estimation.
+Design-informed size factor estimation.
 }
