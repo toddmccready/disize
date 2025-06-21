@@ -28,7 +28,6 @@ dependencies = [
     "dplyr",
     "tidyr",
     "purrr",
-    "getDEE2",
     "R.utils",
     "rmarkdown",
     "pandoc",
