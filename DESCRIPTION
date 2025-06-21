@@ -23,7 +23,10 @@ Suggests:
     tidyr (>= 1.3.1),
     tibble (>= 3.3.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    R.utils,
+    data.table,
+    curl
 Remotes:
     stan-dev/cmdstanr
 Config/testthat/edition: 3
