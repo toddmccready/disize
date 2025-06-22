@@ -32,11 +32,11 @@ were processed:
 > The sorted Mac2 cells were divided into four groups and stimulated at the 3-h time point with the same concentrations as previously described. Then, the RNA was extracted using the RNeasy Plus Micro Kit as per manufacturer instructions. Poly(A)mRNA was isolated using mRNA Capture Beads 2.0 (Yeasen Cat.12629ES, CHN) with two rounds of purification, followed by RNA fragmentation with magnesium ions at 94°C (Yeasen Cat.12340ES97, CHN). RNA sequencing library preparation was performed using the TruSeq RNA Library Prep Kit v2 (Illumina). Sequencing was carried out as paired-end 2×150 bp (PE150) on an Illumina Novaseq™ X Plus (LC-Bio Technologies).
 
 The TruSeq RNA Library Prep Kit involves "tagging" transcripts with barcodes
-that identify distinct samples, allowing all prepared cDNA libraries to
+that identify distinct *samples*, allowing all prepared cDNA libraries to
 be pooled together before sequencing. Since batch-effects are usually
 attributed to separate sequencing runs, then we expect very small
 batch-effects to be present in this dataset if we define a "batch" as the unit
-subjected to both RNA extraction and all further library prep.
+subjected to RNA extraction(and all further processing).
 
 Let us test this hypothesis:
 
@@ -52,8 +52,7 @@ counts <- data.table::fread(counts_path)
 
 metadata <- data.frame(
     "sample_id" = c(colnames(counts)[-1]),
-    "condition" = factor(rep(c("control", "lps", "nelps", "ne"), each = 3)),
-    "batch_id" = factor(rep(c("batch-1", "batch-2", "batch-3", "batch-4"), each = 3))
+    "condition" = factor(rep(c("control", "lps", "nelps", "ne"), each = 3))
 )
 
 # Coerce to formatted matrix
@@ -83,25 +82,27 @@ We can finally run `disize` to get the estimated size factors:
 size_factors <- disize(
     design_formula,
     counts,
-    metadata
+    metadata,
+    batch_name = "sample_id"
 )
 print(size_factors)
 ```
 
-Evidently the batch-effect is indeed small! The third batch seems to have been
-processed slightly worse, but the estimated size factors are close together
-(within ~0.1).
+Evidently the batch-effect is indeed small across most samples! The samples
+"NELPS1" and "NELPS2" seem to have been processed slightly worse, but otherwise
+the estimated size factors are approximately the same (within ~0.1).
 
 We can confirm these estimates by rerunning `disize` with a larger `n_feats`:
 
 ```{r}
-size_factors <- disize(
+size_factors_2 <- disize(
     design_formula,
     counts,
     metadata,
-    n_feats = 15000
+    n_feats = 15000,
+    batch_name = "sample_id"
 )
-print(size_factors)
+print(size_factors_2)
 ```
 
 Indeed the estimates remain largely the same.
