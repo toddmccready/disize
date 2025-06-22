@@ -117,12 +117,12 @@ carried out as paired-end 2×150 bp (PE150) on an Illumina Novaseq™ X
 Plus (LC-Bio Technologies).</p>
 </blockquote>
 <p>The TruSeq RNA Library Prep Kit involves “tagging” transcripts with
-barcodes that identify distinct samples, allowing all prepared cDNA
-libraries to be pooled together before sequencing. Since batch-effects
-are usually attributed to separate sequencing runs, then we expect very
-small batch-effects to be present in this dataset if we define a “batch”
-as the unit subjected to both RNA extraction and all further library
-prep.</p>
+barcodes that identify distinct <em>samples</em>, allowing all prepared
+cDNA libraries to be pooled together before sequencing. Since
+batch-effects are usually attributed to separate sequencing runs, then
+we expect very small batch-effects to be present in this dataset if we
+define a “batch” as the unit subjected to RNA extraction(and all further
+processing).</p>
 <p>Let us test this hypothesis:</p>
 </div>
 <div class="section level2">
@@ -138,8 +138,7 @@ prep.</p>
 <span></span>
 <span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    <span class="st">"sample_id"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
-<span>    <span class="st">"condition"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"control"</span>, <span class="st">"lps"</span>, <span class="st">"nelps"</span>, <span class="st">"ne"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="st">"batch_id"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"batch-1"</span>, <span class="st">"batch-2"</span>, <span class="st">"batch-3"</span>, <span class="st">"batch-4"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="st">"condition"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"control"</span>, <span class="st">"lps"</span>, <span class="st">"nelps"</span>, <span class="st">"ne"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Coerce to formatted matrix</span></span>
@@ -154,19 +153,19 @@ prep.</p>
 experimental design:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    sample_id condition batch_id</span></span>
-<span><span class="co">#&gt; 1      Ctrl1   control  batch-1</span></span>
-<span><span class="co">#&gt; 2      Ctrl2   control  batch-1</span></span>
-<span><span class="co">#&gt; 3      Ctrl3   control  batch-1</span></span>
-<span><span class="co">#&gt; 4       LPS1       lps  batch-2</span></span>
-<span><span class="co">#&gt; 5       LPS2       lps  batch-2</span></span>
-<span><span class="co">#&gt; 6       LPS3       lps  batch-2</span></span>
-<span><span class="co">#&gt; 7     NELPS1     nelps  batch-3</span></span>
-<span><span class="co">#&gt; 8     NELPS2     nelps  batch-3</span></span>
-<span><span class="co">#&gt; 9     NELPS3     nelps  batch-3</span></span>
-<span><span class="co">#&gt; 10       NE1        ne  batch-4</span></span>
-<span><span class="co">#&gt; 11       NE2        ne  batch-4</span></span>
-<span><span class="co">#&gt; 12       NE3        ne  batch-4</span></span></code></pre></div>
+<span><span class="co">#&gt;    sample_id condition</span></span>
+<span><span class="co">#&gt; 1      Ctrl1   control</span></span>
+<span><span class="co">#&gt; 2      Ctrl2   control</span></span>
+<span><span class="co">#&gt; 3      Ctrl3   control</span></span>
+<span><span class="co">#&gt; 4       LPS1       lps</span></span>
+<span><span class="co">#&gt; 5       LPS2       lps</span></span>
+<span><span class="co">#&gt; 6       LPS3       lps</span></span>
+<span><span class="co">#&gt; 7     NELPS1     nelps</span></span>
+<span><span class="co">#&gt; 8     NELPS2     nelps</span></span>
+<span><span class="co">#&gt; 9     NELPS3     nelps</span></span>
+<span><span class="co">#&gt; 10       NE1        ne</span></span>
+<span><span class="co">#&gt; 11       NE2        ne</span></span>
+<span><span class="co">#&gt; 12       NE3        ne</span></span></code></pre></div>
 <p>For this dataset, the study was primarily interested in the effect of
 <code>condition</code> on expression, thus the formula we would input
 into <code>disize</code> is:</p>
@@ -178,30 +177,37 @@ factors:</p>
 <code class="sourceCode R"><span><span class="va">size_factors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
 <span>    <span class="va">design_formula</span>,</span>
 <span>    <span class="va">counts</span>,</span>
-<span>    <span class="va">metadata</span></span>
+<span>    <span class="va">metadata</span>,</span>
+<span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~196.5s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~190.5s)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      batch-1      batch-2      batch-3      batch-4 </span></span>
-<span><span class="co">#&gt;  0.003470564  0.065449058 -0.101048361  0.024688456</span></span></code></pre></div>
-<p>Evidently the batch-effect is indeed small! The third batch seems to
-have been processed slightly worse, but the estimated size factors are
-close together (within ~0.1).</p>
+<span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
+<span><span class="co">#&gt;  0.085321087  0.007576646 -0.083496134  0.084339781  0.010026911  0.098985163 </span></span>
+<span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
+<span><span class="co">#&gt; -0.069935148  0.035506886  0.107078557 -0.164600955 -0.136252006 -0.021395374</span></span></code></pre></div>
+<p>Evidently the batch-effect is indeed small across most samples! The
+samples “NELPS1” and “NELPS2” seem to have been processed slightly
+worse, but otherwise the estimated size factors are approximately the
+same (within ~0.1).</p>
 <p>We can confirm these estimates by rerunning <code>disize</code> with
 a larger <code>n_feats</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">size_factors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
 <span>    <span class="va">design_formula</span>,</span>
 <span>    <span class="va">counts</span>,</span>
 <span>    <span class="va">metadata</span>,</span>
-<span>    n_feats <span class="op">=</span> <span class="fl">15000</span></span>
+<span>    n_feats <span class="op">=</span> <span class="fl">15000</span>,</span>
+<span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~296.4s)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     batch-1     batch-2     batch-3     batch-4 </span></span>
-<span><span class="co">#&gt;  0.01502411  0.05241043 -0.12121431  0.04421802</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~319.7s)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
+<span><span class="co">#&gt;  0.090713372  0.008009099 -0.076182221  0.069889428 -0.006829605  0.081864578 </span></span>
+<span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
+<span><span class="co">#&gt; -0.041900669  0.051422369  0.116387584 -0.171019106 -0.142456673 -0.026066902</span></span></code></pre></div>
 <p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level2">
