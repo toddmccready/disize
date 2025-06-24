@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -181,12 +181,12 @@ factors:</p>
 <span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~190.5s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~198.6s)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.085321087  0.007576646 -0.083496134  0.084339781  0.010026911  0.098985163 </span></span>
+<span><span class="co">#&gt;  0.084371257  0.006221379 -0.085431627  0.084680682  0.009910037  0.099538684 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.069935148  0.035506886  0.107078557 -0.164600955 -0.136252006 -0.021395374</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.067898841  0.037492469  0.107845058 -0.165392007 -0.136816931 -0.021739602</span></span></code></pre></div>
 <p>Evidently the batch-effect is indeed small across most samples! The
 samples “NELPS1” and “NELPS2” seem to have been processed slightly
 worse, but otherwise the estimated size factors are approximately the
@@ -202,12 +202,12 @@ a larger <code>n_feats</code>:</p>
 <span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~319.7s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~344.3s)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.090713372  0.008009099 -0.076182221  0.069889428 -0.006829605  0.081864578 </span></span>
+<span><span class="co">#&gt;  0.099263629  0.008905249 -0.080289189  0.072653611 -0.010607585  0.085354620 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.041900669  0.051422369  0.116387584 -0.171019106 -0.142456673 -0.026066902</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.045612509  0.054349635  0.121089986 -0.180212951 -0.150111294 -0.026095910</span></span></code></pre></div>
 <p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level2">
