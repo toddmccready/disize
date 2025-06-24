@@ -85,9 +85,10 @@ data {
     int<lower=1> n_batches; // # of batches
 
     // Design Matrices ----
-    matrix[n_obs, n_fe] fe_design; // fixed-effects model matrix
+    // fixed-effects
+    matrix[n_obs, n_fe] fe_design;
 
-    // Random-effects model matrix
+    // random-effects
     vector[n_nz_re] re_design_x;
     array[n_nz_re] int re_design_j;
     array[n_obs + 1] int re_design_p;
