@@ -219,7 +219,7 @@ disize <- function(
                         stan_data[["n_fe"]] +
                         stan_data[["n_re"]]
                 ) +
-                500 * log10(stan_data[["n_feats"]])
+                1000 * log10(stan_data[["n_feats"]])
         )
     }
 
@@ -296,7 +296,7 @@ disize <- function(
         max(abs(attr(gradient, "log_prob")), 1.0)
 
     # Check gradient for size factors
-    if (norm > 100 & 2L <= verbose) {
+    if (norm > 1 & 2L <= verbose) {
         warning(
             "Size factor gradient not sufficiently small (avg |sf_gradient| : ",
             mean(abs(sf_gradient)),
