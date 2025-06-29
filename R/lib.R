@@ -229,7 +229,8 @@ disize <- function(
         package = "disize",
         compile = TRUE,
         force = TRUE,
-        cpp_options = list(stan_threads = TRUE)
+        cpp_options = list(stan_threads = TRUE),
+        compile_model_methods = TRUE
     )
 
     # Estimate maximum time-to-fit
@@ -262,6 +263,48 @@ disize <- function(
         threads = n_threads,
         algorithm = "lbfgs"
     )
+
+    # Extract parameter estimates
+    params <- fit$mle()
+
+    # Remove transformed size factors
+    params <- params[!grepl("^sf", names(params))]
+
+    # Extract variable skeleton
+    skeleton <- fit$variable_skeleton(FALSE)
+
+    # Extract unconstrained variable
+    uc_params <- fit$unconstrain_variables(relist(params, skeleton))
+
+    # Compute gradient
+    gradient <- fit$grad_log_prob(uc_params)
+    names(gradient) <- names(params)[
+        names(params) != paste0("raw_sf[", stan_data[["n_batches"]], "]")
+    ]
+
+    # Extract size factor terms
+    end <- length(uc_params) -
+        (length(skeleton$fe_tau) +
+            length(skeleton$re_tau) +
+            length(skeleton$lambda) +
+            1)
+    start <- end - (length(skeleton$raw_sf) - 1) + 1
+    sf_gradient <- gradient[start:end]
+
+    # Calculate norm
+    norm <- sum(sf_gradient^2) /
+        max(abs(attr(gradient, "log_prob")), 1.0)
+
+    # Check gradient for size factors
+    if (norm > 100 & 2L <= verbose) {
+        warning(
+            "Size factor gradient not sufficiently small (avg |sf_gradient| : ",
+            mean(abs(sf_gradient)),
+            "), estimates may not have converged. Try increasing 'n_iters' from current value:.",
+            n_iters,
+            "."
+        )
+    }
 
     # Extract size factors
     sf <- fit$mle("sf")
