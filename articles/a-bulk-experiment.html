@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -181,12 +181,51 @@ factors:</p>
 <span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~198.6s)</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_nvecserial.a</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_cvodes.a</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a</span></span>
+<span><span class="co">#&gt; /home/runner/.cmdstan/cmdstan-2.36.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.11.0</span></span>
+<span><span class="co">#&gt; In file included from ../tbb_2020.3/src/tbb/concurrent_hash_map.cpp:17:</span></span>
+<span><span class="co">#&gt; ../tbb_2020.3/include/tbb/concurrent_hash_map.h:347:23: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
+<span><span class="co">#&gt;   347 |         : public std::iterator&lt;std::forward_iterator_tag,Value&gt;</span></span>
+<span><span class="co">#&gt;       |                       ^~~~~~~~</span></span>
+<span><span class="co">#&gt; In file included from /usr/include/c++/13/bits/stl_construct.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/bits/stl_tempbuf.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/memory:66,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/include/tbb/tbb_stddef.h:452,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/include/tbb/concurrent_hash_map.h:23:</span></span>
+<span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
+<span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
+<span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
+<span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
+<span><span class="co">#&gt; In file included from ../tbb_2020.3/src/tbb/concurrent_queue.cpp:22:</span></span>
+<span><span class="co">#&gt; ../tbb_2020.3/include/tbb/internal/_concurrent_queue_impl.h:749:21: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
+<span><span class="co">#&gt;   749 |         public std::iterator&lt;std::forward_iterator_tag,Value&gt; {</span></span>
+<span><span class="co">#&gt;       |                     ^~~~~~~~</span></span>
+<span><span class="co">#&gt; In file included from /usr/include/c++/13/bits/stl_construct.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/bits/stl_tempbuf.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/memory:66,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/include/tbb/tbb_stddef.h:452,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/src/tbb/concurrent_queue.cpp:17:</span></span>
+<span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
+<span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
+<span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
+<span><span class="co">#&gt; ../tbb_2020.3/include/tbb/internal/_concurrent_queue_impl.h:1013:21: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
+<span><span class="co">#&gt;  1013 |         public std::iterator&lt;std::forward_iterator_tag,Value&gt; {</span></span>
+<span><span class="co">#&gt;       |                     ^~~~~~~~</span></span>
+<span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
+<span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
+<span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
+<span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~189.3s)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.084371257  0.006221379 -0.085431627  0.084680682  0.009910037  0.099538684 </span></span>
-<span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.067898841  0.037492469  0.107845058 -0.165392007 -0.136816931 -0.021739602</span></span></code></pre></div>
+<span><span class="co">#&gt;         Ctrl1         Ctrl2         Ctrl3          LPS1          LPS2 </span></span>
+<span><span class="co">#&gt;  0.1061996691  0.0068983253 -0.0900315702  0.0892140682  0.0006018074 </span></span>
+<span><span class="co">#&gt;          LPS3           NE1           NE2           NE3        NELPS1 </span></span>
+<span><span class="co">#&gt;  0.0957428598 -0.0719134035  0.0366143907  0.1136448480 -0.1693046212 </span></span>
+<span><span class="co">#&gt;        NELPS2        NELPS3 </span></span>
+<span><span class="co">#&gt; -0.1465985567 -0.0236904211</span></span></code></pre></div>
 <p>Evidently the batch-effect is indeed small across most samples! The
 samples “NELPS1” and “NELPS2” seem to have been processed slightly
 worse, but otherwise the estimated size factors are approximately the
@@ -202,12 +241,12 @@ a larger <code>n_feats</code>:</p>
 <span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~344.3s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~370s)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.099263629  0.008905249 -0.080289189  0.072653611 -0.010607585  0.085354620 </span></span>
+<span><span class="co">#&gt;  0.089369795  0.008115476 -0.073322627  0.068453147 -0.006076348  0.080949519 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.045612509  0.054349635  0.121089986 -0.180212951 -0.150111294 -0.026095910</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.040680270  0.050515136  0.111677952 -0.167841289 -0.139017072 -0.026185698</span></span></code></pre></div>
 <p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level2">
