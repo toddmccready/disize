@@ -83,8 +83,7 @@ size_factors <- disize(
     design_formula,
     counts,
     metadata,
-    batch_name = "sample_id",
-    verbose = 4
+    batch_name = "sample_id"
 )
 print(size_factors)
 ```
