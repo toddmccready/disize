@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.13</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -178,7 +178,8 @@ factors:</p>
 <span>    <span class="va">design_formula</span>,</span>
 <span>    <span class="va">counts</span>,</span>
 <span>    <span class="va">metadata</span>,</span>
-<span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
+<span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span>,</span>
+<span>    verbose <span class="op">=</span> <span class="fl">4</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
 <span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_nvecserial.a</span></span>
@@ -218,12 +219,112 @@ factors:</p>
 <span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
 <span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
 <span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~332.1s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~154.3s)</span></span>
+<span><span class="co">#&gt; Initial log joint probability = -1.34801e+09 </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt; Exception: Exception: neg_binomial_2_log_lpmf: Log location parameter[7] is -inf, but must be finite! (in '/tmp/RtmpxoCj8Q/model-1f9579c0e23c.stan', line 69, column 12 to column 82) (in '/tmp/RtmpxoCj8Q/model-1f9579c0e23c.stan', line 136, column 4 to line 159, column 6) </span></span>
+<span><span class="co">#&gt; Error evaluating model log probability: Non-finite function evaluation. </span></span>
+<span><span class="co">#&gt; Error evaluating model log probability: Non-finite function evaluation. </span></span>
+<span><span class="co">#&gt; Error evaluating model log probability: Non-finite function evaluation. </span></span>
+<span><span class="co">#&gt; Error evaluating model log probability: Non-finite function evaluation. </span></span>
+<span><span class="co">#&gt;       99  -1.51953e+06       4.93869       1159.75           1           1      114    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;      199   -1.4431e+06       2.67787       1355.79           1           1      228    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;      299  -1.39484e+06       1.11649       3509.37       0.485           1      346    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;      399  -1.35993e+06      0.921902       2118.35           1           1      460    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;      499  -1.30412e+06      0.321548       3808.91      0.8728      0.8728      572    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;      599  -1.26664e+06      0.777107       5807.63           1           1      676    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;      699  -1.24231e+06      0.120545       5845.52           1           1      779    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;      799  -1.23398e+06      0.305046       10048.1           1           1      882    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;      899  -1.22131e+06     0.0992477       13676.3           1           1      987    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;      999   -1.2084e+06     0.0611465       14138.1           1           1     1088    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     1099  -1.20353e+06     0.0239288       13635.6           1           1     1192    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     1199  -1.20135e+06     0.0265295       9314.15           1           1     1296    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     1299  -1.19994e+06     0.0110841       8124.52           1           1     1400    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     1399  -1.19776e+06     0.0300346       11687.5       0.957       0.957     1505    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     1499  -1.19607e+06      0.051812       14033.4           1           1     1612    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     1599  -1.19449e+06    0.00965062         12991      0.4055      0.4055     1717    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     1699   -1.1914e+06     0.0363222       16037.1           1           1     1821    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     1799  -1.18709e+06     0.0253724       24012.3       0.358       0.358     1928    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     1899  -1.18319e+06      0.104005       20725.7           1           1     2031    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     1999  -1.18007e+06     0.0298623       19321.9           1           1     2134    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     2099  -1.17897e+06    0.00626227       8099.58           1           1     2239    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     2199  -1.17841e+06      0.023341       12909.2           1           1     2345    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     2299  -1.17755e+06     0.0188638       18222.7           1           1     2448    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     2399  -1.17646e+06     0.0275234       16376.5           1           1     2554    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     2499  -1.17513e+06      0.021773       14205.6           1           1     2658    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     2599  -1.17356e+06     0.0130616       16762.3           1           1     2764    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     2699  -1.17125e+06     0.0170061       24111.8           1           1     2869    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     2799  -1.16951e+06     0.0136775       39642.4       0.645       0.645     2975    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     2899   -1.1677e+06     0.0233559       33040.9      0.7613      0.7613     3079    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     2999  -1.16588e+06   0.000677477       13225.4           1           1     3184    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     3099  -1.16507e+06   0.000989494       14055.1           1           1     3290    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     3199  -1.16459e+06    0.00655321       15777.2           1           1     3395    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     3299   -1.1643e+06     0.0142248       14685.4           1           1     3500    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     3399  -1.16385e+06    0.00219167       12745.9      0.8922      0.8922     3601    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     3499   -1.1631e+06    0.00646666       29385.5       0.277           1     3706    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     3599  -1.16261e+06    0.00206358       9671.35           1           1     3808    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     3699  -1.16237e+06     0.0123516         16592           1           1     3912    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     3799  -1.16189e+06    0.00753053       11319.9           1           1     4020    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     3899  -1.16137e+06    0.00367207       25136.7      0.6488      0.6488     4124    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     3999  -1.16089e+06     0.0100906       36815.7           1           1     4229    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     4099  -1.16029e+06     0.0201944       35798.7           1           1     4331    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     4199  -1.15952e+06     0.0141487       21558.7           1           1     4434    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     4299  -1.15888e+06     0.0281153       21374.9           1           1     4538    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     4399  -1.15782e+06     0.0083623       28059.1           1           1     4641    </span></span>
+<span><span class="co">#&gt;     Iter      log prob        ||dx||      ||grad||       alpha      alpha0  # evals  Notes  </span></span>
+<span><span class="co">#&gt;     4400  -1.15781e+06     0.0171211       44754.9      0.3865           1     4643    </span></span>
+<span><span class="co">#&gt; Optimization terminated normally:  </span></span>
+<span><span class="co">#&gt;   Maximum number of iterations hit, may not be at an optima </span></span>
+<span><span class="co">#&gt; Finished in  97.6 seconds.</span></span>
+<span><span class="co">#&gt; Relative size factor gradient: 0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.087272190  0.009660867 -0.081264195  0.082433835  0.008289145  0.097092790 </span></span>
+<span><span class="co">#&gt;  0.102787309  0.008243609 -0.097799268  0.094457536  0.003253017  0.111584703 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.070354618  0.034973301  0.106136348 -0.163524317 -0.135049676 -0.021746336</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.079098467  0.046881015  0.133142755 -0.195826004 -0.163659035 -0.029716770</span></span></code></pre></div>
 <p>Evidently the batch-effect is indeed small across most samples! The
 samples “NELPS1” and “NELPS2” seem to have been processed slightly
 worse, but otherwise the estimated size factors are approximately the
@@ -239,12 +340,12 @@ a larger <code>n_feats</code>:</p>
 <span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~665.4s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~234.1s)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.091897332  0.008407157 -0.074218912  0.068467424 -0.007379656  0.080452788 </span></span>
+<span><span class="co">#&gt;  0.115498877  0.006439391 -0.086853987  0.074064636 -0.009014388  0.094281506 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.041666112  0.050247577  0.112062422 -0.170163361 -0.138423724 -0.024308009</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.054210290  0.051809260  0.123565190 -0.190552796 -0.158029576 -0.025045117</span></span></code></pre></div>
 <p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level2">

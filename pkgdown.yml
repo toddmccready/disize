@@ -3,7 +3,7 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   a-bulk-experiment: a-bulk-experiment.html
-last_built: 2025-06-29T18:59Z
+last_built: 2025-07-03T00:58Z
 urls:
   reference: https://toddmccready.github.io/disize/reference
   article: https://toddmccready.github.io/disize/articles
