@@ -99,8 +99,8 @@ size_factors_2 <- disize(
     design_formula,
     counts,
     metadata,
-    n_feats = 15000,
-    batch_name = "sample_id"
+    batch_name = "sample_id",
+    n_feats = 15000
 )
 print(size_factors_2)
 ```

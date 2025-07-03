@@ -53,13 +53,13 @@ disize <- function(
     metadata,
     batch_name = "batch_id",
     obs_name = "obs_id",
-    n_feats = min(10000, ncol(counts)),
-    n_subset = 50,
+    n_feats = min(10000L, ncol(counts)),
+    n_subset = 50L,
     n_iters = "auto",
-    n_threads = parallel::detectCores() / 2,
-    grainsize = ceiling(n_feats / n_threads / 4),
+    n_threads = ceiling(parallel::detectCores() / 2),
+    grainsize = ceiling(n_feats / n_threads),
     init_alpha = 1e-6,
-    verbose = 3
+    verbose = 3L
 ) {
     # Check design formula is correct
     if (!is(design_formula, "formula")) {
@@ -240,32 +240,35 @@ disize <- function(
     # Estimate maximum time-to-fit
     fit <- model$optimize(
         data = stan_data,
-        init_alpha = init_alpha,
-        iter = 30,
-        show_messages = FALSE,
-        sig_figs = 4,
+        iter = 50L,
         threads = n_threads,
-        algorithm = "lbfgs"
+        algorithm = "lbfgs",
+        init_alpha = init_alpha,
+        history_size = 8L,
+        sig_figs = 16L,
+        show_messages = FALSE
     )
 
     # Estimate model parameters ----
-    if (verbose) {
+    if (3L <= verbose) {
         message(
             "Estimating size factors... (Max ETA: ~",
-            round(n_iters * fit$time()$total / 30, 1),
+            round(n_iters * fit$time()$total / 50, 1),
             "s)"
         )
-    }
+    } else if (4L <= verbose) {}
 
     # Estimate fit
     fit <- model$optimize(
         data = stan_data,
-        init_alpha = init_alpha,
         iter = n_iters,
-        show_messages = (3 < verbose),
-        sig_figs = 16,
         threads = n_threads,
-        algorithm = "lbfgs"
+        algorithm = "lbfgs",
+        init_alpha = init_alpha,
+        history_size = 8L,
+        sig_figs = 16L,
+        show_messages = (4L <= verbose),
+        refresh = ceiling(n_iters / 10)
     )
 
     # Extract parameter estimates
