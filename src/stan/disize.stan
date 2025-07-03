@@ -99,6 +99,9 @@ data {
 
     // Response ----
     array[n_feats, n_obs] int<lower=0> counts; // counts matrix
+
+    // Configuration for Multi-threading ----
+    int<lower=1> grainsize;
 }
 parameters {
     // Feature Expression ----
@@ -130,7 +133,6 @@ model {
     re_tau ~ exponential(1);
 
     // Parallel posterior eval ----
-    int grainsize = 1;
     target += reduce_sum(
         partial_posterior,
         counts,

@@ -57,7 +57,8 @@ disize <- function(
     n_subset = 50,
     n_iters = "auto",
     n_threads = parallel::detectCores() / 2,
-    init_alpha = 1e-5,
+    grainsize = ceiling(n_feats / n_threads / 4),
+    init_alpha = 1e-6,
     verbose = 3
 ) {
     # Check design formula is correct
@@ -76,12 +77,12 @@ disize <- function(
     }
 
     # Include explicit observation names if not present
-    if (is.null(rownames(counts)) & is.null(metadata[[obs_name]])) {
+    if (is.null(rownames(counts)) && is.null(metadata[[obs_name]])) {
         rownames(counts) <- 1:nrow(counts)
         metadata[[obs_name]] <- 1:nrow(counts)
-    } else if (!is.null(rownames(counts)) & is.null(metadata[[obs_name]])) {
+    } else if (!is.null(rownames(counts)) && is.null(metadata[[obs_name]])) {
         metadata[[obs_name]] <- rownames(counts)
-    } else if (is.null(rownames(counts)) & !is.null(metadata[[obs_name]])) {
+    } else if (is.null(rownames(counts)) && !is.null(metadata[[obs_name]])) {
         rownames(counts) <- metadata[[obs_name]]
     }
 
@@ -110,7 +111,7 @@ disize <- function(
     counts <- counts[, subset]
 
     # Ensure valid number of features selected
-    if (1 < verbose & ncol(counts) < n_feats) {
+    if (1 < verbose && ncol(counts) < n_feats) {
         warning(
             "Insufficient number of features after subsetting observations (",
             ncol(counts),
@@ -210,6 +211,9 @@ disize <- function(
     # Include counts for Stan
     stan_data[["counts"]] <- counts |> t()
 
+    # Include grainsize
+    stan_data[["grainsize"]] <- grainsize
+
     # Compute heuristic for maximum # of iterations
     if (n_iters == "auto") {
         n_iters <- as.integer(
@@ -296,14 +300,18 @@ disize <- function(
         max(abs(attr(gradient, "log_prob")), 1.0)
 
     # Check gradient for size factors
-    if (norm > 1 & 2L <= verbose) {
+    if (1 < norm && 2L <= verbose) {
         warning(
-            "Size factor gradient not sufficiently small (avg |sf_gradient| : ",
-            mean(abs(sf_gradient)),
-            "), estimates may not have converged. Try increasing 'n_iters' from current value:.",
+            "Relative size factor gradient (",
+            norm,
+            ") not sufficiently small, estimates may not have converged. Try ",
+            "increasing 'n_iters' from ",
+            "current value:.",
             n_iters,
             "."
         )
+    } else if (4L <= verbose) {
+        message("Relative size factor gradient: ", norm)
     }
 
     # Extract size factors
