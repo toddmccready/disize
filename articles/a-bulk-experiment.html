@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -218,12 +218,12 @@ factors:</p>
 <span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
 <span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
 <span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~155.1s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~136.9s)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.102787309  0.008243609 -0.097799268  0.094457536  0.003253017  0.111584703 </span></span>
+<span><span class="co">#&gt;  0.083669772  0.006310745 -0.084195936  0.082579667  0.009338343  0.097111532 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.079098467  0.046881015  0.133142755 -0.195826004 -0.163659035 -0.029716770</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.067945893  0.037065500  0.108348076 -0.162993192 -0.134548412 -0.020730701</span></span></code></pre></div>
 <p>Evidently the batch-effect is indeed small across most samples! The
 samples “NELPS1” and “NELPS2” seem to have been processed slightly
 worse, but otherwise the estimated size factors are approximately the
@@ -235,16 +235,16 @@ a larger <code>n_feats</code>:</p>
 <span>    <span class="va">design_formula</span>,</span>
 <span>    <span class="va">counts</span>,</span>
 <span>    <span class="va">metadata</span>,</span>
-<span>    n_feats <span class="op">=</span> <span class="fl">15000</span>,</span>
-<span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
+<span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span>,</span>
+<span>    n_feats <span class="op">=</span> <span class="fl">15000</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~234s)</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~196.1s)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.115498877  0.006439391 -0.086853987  0.074064636 -0.009014388  0.094281506 </span></span>
+<span><span class="co">#&gt;  0.088837822  0.003963651 -0.079985557  0.070996970 -0.005390439  0.083194582 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.054210290  0.051809260  0.123565190 -0.190552796 -0.158029576 -0.025045117</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.044090306  0.048444473  0.111008852 -0.165248151 -0.136276272 -0.019339974</span></span></code></pre></div>
 <p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level2">
