@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.19</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.20</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/a-bulk-experiment.html">A Bulk Experiment</a></li>
     <li><a class="dropdown-item" href="../articles/derivation.html">Derivation of disize</a></li>
+    <li><a class="dropdown-item" href="../articles/single-cell-experiment.html">Running disize on a Single-cell Experiment</a></li>
   </ul>
 </li>
       </ul>
@@ -220,13 +221,13 @@ factors:</p>
 <span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
 <span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
 <span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~113s)</span></span>
-<span><span class="co">#&gt; Finised in 95s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~109.2s)</span></span>
+<span><span class="co">#&gt; Finised in 95.2s!</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.083998985  0.002732072 -0.090450611  0.088927202  0.011636255  0.102810100 </span></span>
+<span><span class="co">#&gt;  0.082340728  0.003553523 -0.086471855  0.085881138  0.012432106  0.100065963 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.073140845  0.035808140  0.109979445 -0.165740232 -0.136182999 -0.019183333</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.069011169  0.036273935  0.106796358 -0.162830180 -0.134203900 -0.021313770</span></span></code></pre></div>
 <p>Evidently the batch-effect is indeed small across most samples! The
 samples “NELPS1” and “NELPS2” seem to have been processed slightly
 worse, but otherwise the estimated size factors are approximately the
@@ -242,13 +243,13 @@ a larger <code>n_feats</code>:</p>
 <span>    n_feats <span class="op">=</span> <span class="fl">15000</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~159.7s)</span></span>
-<span><span class="co">#&gt; Finised in 138.7s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~160.6s)</span></span>
+<span><span class="co">#&gt; Finised in 139.7s!</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.088502986  0.006466531 -0.077392195  0.072490546 -0.003179056  0.085305488 </span></span>
+<span><span class="co">#&gt;  0.095303742  0.005168706 -0.083965484  0.073874335 -0.008215053  0.087963097 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.042719062  0.050157278  0.113043576 -0.170497216 -0.140294432 -0.027633918</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.044352619  0.055490226  0.123255579 -0.181307332 -0.149171063 -0.025856786</span></span></code></pre></div>
 <p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level2">

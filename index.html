@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.19</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.20</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/a-bulk-experiment.html">A Bulk Experiment</a></li>
     <li><a class="dropdown-item" href="articles/derivation.html">Derivation of disize</a></li>
+    <li><a class="dropdown-item" href="articles/single-cell-experiment.html">Running disize on a Single-cell Experiment</a></li>
   </ul>
 </li>
       </ul>
@@ -87,7 +88,7 @@
 
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.19" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.20" },
     # ...
 ]</code></pre>
 <p>Then sync your project:</p>
@@ -96,6 +97,22 @@ dependencies = [
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">cmdstanr</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/cmdstanr/reference/install_cmdstan.html" class="external-link">install_cmdstan</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
+</div>
+<div class="section level1">
+<h1 id="implementation">Implementation<a class="anchor" aria-label="anchor" href="#implementation"></a>
+</h1>
+<p>Internally, <code>disize</code> uses Stan to fit a Bayesian model that jointly estimates the effect of covariates(structured according to <code>design_formula</code>) on expression <em>and</em> any confounding batch-effects:</p>
+<p><span class="math display">$$\begin{aligned}
+    \vec{Y}_g &amp;\sim \text{NegBinom}(\vec{\mu}_g, \phi) \\
+    \log \vec{\mu}_g &amp;= \vec{\alpha} + \bold{X} \vec{\beta}_g + \bold{Z}\vec{b}_g + \vec{o} \\
+        &amp;= \vec{\alpha} + \bold{X} \vec{\beta}_g + \bold{Z}\vec{b}_g + \bold{B} \vec{s} \\
+    \vec{\beta}_g &amp;\sim \text{Normal}(\vec{0}, \bold{G})
+\end{aligned}$$</span></p>
+<p>Where <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>Y</mi><mo accent="true">→</mo></mover><mi>g</mi></msub><annotation encoding="application/x-tex">\vec{Y}_g</annotation></semantics></math> denotes the vector of counts of a gene <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>g</mi><annotation encoding="application/x-tex">g</annotation></semantics></math> for all observations, which is realized from the distribution parameterized by the effect of the covariates (<span class="math inline">$\vec{\alpha} + \bold{X} \vec{\beta}_g + \bold{Z}\vec{b}_g$</span>) and any batch-effects (<span class="math inline">$\bold{B} \vec{s}$</span>).</p>
+<p>The experimental design is specified by an R formula (<code>design_formula</code>) that constructs a “fixed-effects” model matrix <span class="math inline">$\bold{X}$</span> (without an intercept) and a “random-effects” model matrix <span class="math inline">$\bold{Z}$</span>; this by itself is a regular GLMM.</p>
+<p>The confounding batch-effect is essentially an unknown offset <span class="math inline">$\vec{o} = \bold{B} \vec{s}$</span>, where <span class="math inline">$\bold{B}$</span> specifies the batch membership for each observation and <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>s</mi><mo accent="true">→</mo></mover><annotation encoding="application/x-tex">\vec{s}</annotation></semantics></math> contains the “size factors” which scale the true magnitude of expression.</p>
+<p>At its face, however, this model should not be identifiable for most experimental designs (often the batch ID is perfectly collinear with a predictor or interaction between predictors). This identifiability issue is overcome by assuming only a fraction of features are significantly affected by the covariates measured in the experiment; in other words, the estimated coefficients for the model matrices specifying the experimental design are <em>sparse</em>.</p>
+<p>This assumption is encoded in the final model by placing distinct horseshoe priors on each of the model coefficients (both the fixed- and random-effects), and allowing the priors to be independently learned from the large number of features common in RNAseq experiments.</p>
 </div>
 
   </main><aside class="col-md-3"><div class="license">
