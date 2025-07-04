@@ -104,15 +104,15 @@ dependencies = [
 </h1>
 <p>Internally, <code>disize</code> uses Stan to fit a Bayesian model that jointly estimates the effect of covariates(structured according to <code>design_formula</code>) on expression <em>and</em> any confounding batch-effects:</p>
 <p><span class="math display">\begin{aligned}
-    \vec{Y}_g &amp;\sim \text{NegBinom}(\vec{\mu}_g, \phi) \\
-    \log \vec{\mu}_g &amp;= \vec{\alpha} + \mathbf{X} \vec{\beta}_g + \mathbf{Z}\vec{b}_g + \vec{o} \\
-        &amp;= \vec{\alpha} + \mathbf{X} \vec{\beta}_g + \mathbf{Z}\vec{b}_g + \mathbf{B} \vec{s} \\
-    \vec{\beta}_g &amp;\sim \text{Normal}(\vec{0}, \mathbf{G})
+    \mathbf{y}_g &amp;\sim \text{NegBinom}(\mathbf{\mu}_g, \phi) \\
+    \log \mathbf{\mu}_g &amp;= \mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{o} \\
+        &amp;= \mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{B} \mathbf{s} \\
+    \mathbf{\beta}_g &amp;\sim \text{Normal}(\mathbf{0}, \mathbf{G})
 \end{aligned}</span></p>
-<p>Where <span class="math inline">\vec{Y}_g</span> denotes the vector of counts of a gene <span class="math inline">g</span> for all observations, which is realized from the distribution parameterized by the effect of the covariates (<span class="math inline">\vec{\alpha} + \mathbf{X} \vec{\beta}_g + \mathbf{Z}\vec{b}_g</span>) and any batch-effects (<span class="math inline">\mathbf{B} \vec{s}</span>).</p>
+<p>Where <span class="math inline">\mathbf{y}_g</span> denotes the vector of counts of a gene <span class="math inline">g</span> for all observations, which is realized from the distribution parameterized by the effect of the covariates (<span class="math inline">\mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g</span>) and any batch-effects (<span class="math inline">\mathbf{B} \mathbf{s}</span>).</p>
 <p>The experimental design is specified by an R formula (<code>design_formula</code>) that constructs a “fixed-effects” model matrix <span class="math inline">\mathbf{X}</span> (without an intercept) and a “random-effects” model matrix <span class="math inline">\mathbf{Z}</span>; this by itself is a regular GLMM.</p>
-<p>The confounding batch-effect is essentially an unknown offset <span class="math inline">\vec{o} = \mathbf{B} \vec{s}</span>, where <span class="math inline">\mathbf{B}</span> specifies the batch membership for each observation and <span class="math inline">\vec{s}</span> contains the “size factors” which scale the true magnitude of expression.</p>
-<p>At its face, however, this model should not be identifiable for most experimental designs (often the batch ID is perfectly collinear with a predictor or interaction between predictors). This identifiability issue is overcome by assuming only a fraction of features are significantly affected by the covariates measured in the experiment; in other words, the estimated coefficients for the model matrices specifying the experimental design are <em>sparse</em>.</p>
+<p>The confounding batch-effect is essentially an unknown offset <span class="math inline">\mathbf{o} = \mathbf{B} \mathbf{s}</span>, where <span class="math inline">\mathbf{B}</span> specifies the batch membership for each observation and <span class="math inline">\mathbf{s}</span> contains the “size factors” which scale the true magnitude of expression.</p>
+<p>At its face, however, this model should not be identifiable for most experimental designs (often the batch ID is perfectly collinear with a predictor or interaction between predictors). This identifiability issue is overcome by assuming only a fraction of features are significantly affected by the covariates measured in the experiment; in other words, the estimated coefficients <span class="math inline">\mathbf{\beta}_g, \mathbf{b}_g</span> (excluding the intercept) are <em>sparse</em> across genes.</p>
 <p>This assumption is encoded in the final model by placing distinct horseshoe priors on each of the model coefficients (both the fixed- and random-effects). This allows the priors to be learned independently of each other using the large number of features measured in RNAseq experiments.</p>
 </div>
 
