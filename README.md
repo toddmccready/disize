@@ -43,3 +43,24 @@ And finally install the CmdStan toolchain in `R`:
 ```R
 cmdstanr::install_cmdstan()
 ```
+
+# Implementation
+
+Internally, `disize` uses Stan to fit a Bayesian model that jointly estimates the effect of covariates(structured according to `design_formula`) on expression *and* any confounding batch-effects:
+
+$$\begin{aligned}
+    \vec{Y}_g &\sim \text{NegBinom}(\vec{\mu}_g, \phi) \\
+    \log \vec{\mu}_g &= \vec{\alpha} + \bold{X} \vec{\beta}_g + \bold{Z}\vec{b}_g + \vec{o} \\
+        &= \vec{\alpha} + \bold{X} \vec{\beta}_g + \bold{Z}\vec{b}_g + \bold{B} \vec{s} \\
+    \vec{\beta}_g &\sim \text{Normal}(\vec{0}, \bold{G})
+\end{aligned}$$
+
+Where $\vec{Y}_g$ denotes the vector of counts of a gene $g$ for all observations, which is realized from the distribution parameterized by the effect of the covariates ($\vec{\alpha} + \bold{X} \vec{\beta}_g + \bold{Z}\vec{b}_g$) and any batch-effects ($\bold{B} \vec{s}$).
+
+The experimental design is specified by an R formula (`design_formula`) that constructs a "fixed-effects" model matrix $\bold{X}$ (without an intercept) and a "random-effects" model matrix $\bold{Z}$; this by itself is a regular GLMM.
+
+The confounding batch-effect is essentially an unknown offset $\vec{o} = \bold{B} \vec{s}$, where $\bold{B}$ specifies the batch membership for each observation and $\vec{s}$ contains the "size factors" which scale the true magnitude of expression.
+
+At its face, however, this model should not be identifiable for most experimental designs (often the batch ID is perfectly collinear with a predictor or interaction between predictors). This identifiability issue is overcome by assuming only a fraction of features are significantly affected by the covariates measured in the experiment; in other words, the estimated coefficients for the model matrices specifying the experimental design are *sparse*.
+
+This assumption is encoded in the final model by placing distinct horseshoe priors on each of the model coefficients (both the fixed- and random-effects), and allowing the priors to be independently learned from the large number of features common in RNAseq experiments.

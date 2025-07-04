@@ -1,0 +1,19 @@
+---
+title: "Running disize on a Single-cell Experiment"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Running disize on a Single-cell Experiment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(disize)
+```

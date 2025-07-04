@@ -36,9 +36,9 @@ split_formula <- function(design_formula) {
 #' @param obs_name The identifier for the observation column in 'metadata',
 #'  defaults to "obs_id".
 #' @param n_feats The number of features used during estimation, defaults to
-#'  automatically choosing based on a heuristic.
+#'  all features (which will cap to 10000).
 #' @param n_subset The number of observations per experimental unit used during
-#'  estimation, defaults to 50.
+#'  estimation, defaults to 50 (useful for scRNA-seq experiments).
 #' @param n_iters The number of iterations used for a single optimization pass.
 #' @param n_threads The number of threads to use for parallel processing.
 #' @param grainsize The grainsize used for partitioning data across threads (
@@ -56,14 +56,17 @@ disize <- function(
     metadata,
     batch_name,
     obs_name = "obs_id",
-    n_feats = min(10000L, ncol(counts)),
+    n_feats = 10000L,
     n_subset = 50L,
     n_iters = "auto",
     n_threads = max(1, parallel::detectCores() - 2L),
     grainsize = ceiling(n_feats / n_threads),
-    init_alpha = 1e-5,
+    init_alpha = 1e-6,
     verbose = 3L
 ) {
+    # Cap n_feats
+    n_feats <- min(n_feats, ncol(counts))
+
     # Check design formula is correct
     if (!is(design_formula, "formula")) {
         stop("'design_formula' should be an R formula")
@@ -107,6 +110,7 @@ disize <- function(
         dplyr::ungroup() |>
         dplyr::select(dplyr::all_of(c(predictors, obs_name, batch_name)))
 
+    # Re-order counts
     counts <- counts[metadata[[obs_name]], ]
 
     # Filter out features with no counts
@@ -261,7 +265,7 @@ disize <- function(
     for (i in 1:3) {
         dummy_fit <- model$optimize(
             data = stan_data,
-            iter = 30L,
+            iter = 50L,
             threads = n_threads,
             algorithm = "lbfgs",
             init_alpha = init_alpha,
@@ -274,7 +278,7 @@ disize <- function(
     }
 
     max_eta <- mean(init_times) +
-        (mean(iter_times) - mean(init_times)) / 29 * n_iters
+        (mean(iter_times) - mean(init_times)) / 49 * n_iters
 
     # Estimate model parameters ----
     if (3L <= verbose) {
@@ -283,7 +287,7 @@ disize <- function(
             round(max_eta, 1),
             "s)"
         )
-    } else if (4L <= verbose) {}
+    }
 
     # Estimate fit
     fit <- model$optimize(
