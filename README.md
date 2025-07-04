@@ -55,7 +55,7 @@ $$\begin{aligned}
     \mathbf{\beta}_g &\sim \text{Normal}(\mathbf{0}, \mathbf{G})
 \end{aligned}$$
 
-Where $\mathbf{y}_g$ denotes the vector of counts of a gene $g$ for all observations, which is realized from the distribution parameterized by the effect of the covariates ($\mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g$) and any batch-effects ($\mathbf{B} \vec{s}$).
+Where $\mathbf{y}_g$ denotes the vector of counts of a gene $g$ for all observations, which is realized from the distribution parameterized by the effect of the covariates ($\mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g$) and any batch-effects ($\mathbf{B} \mathbf{s}$).
 
 The experimental design is specified by an R formula (`design_formula`) that constructs a "fixed-effects" model matrix $\mathbf{X}$ (without an intercept) and a "random-effects" model matrix $\mathbf{Z}$; this by itself is a regular GLMM.
 
