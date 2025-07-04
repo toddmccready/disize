@@ -30,10 +30,9 @@ split_formula <- function(design_formula) {
 #' @title Design-informed size factor estimation
 #'
 #' @param design_formula The formula describing the experimental design.
-#' @param counts A (obsservation x feature) count matrix.
-#' @param metadata A dataframe containing sample metadata.
-#' @param batch_name The identifier for the batch column in 'metadata',
-#'  defaults to "batch_id".
+#' @param counts A (observation x feature) count matrix.
+#' @param metadata A dataframe containing observation-level metadata.
+#' @param batch_name The identifier for the batch column in 'metadata'.
 #' @param obs_name The identifier for the observation column in 'metadata',
 #'  defaults to "obs_id".
 #' @param n_feats The number of features used during estimation, defaults to
@@ -42,23 +41,27 @@ split_formula <- function(design_formula) {
 #'  estimation, defaults to 50.
 #' @param n_iters The number of iterations used for a single optimization pass.
 #' @param n_threads The number of threads to use for parallel processing.
-#' @param verbose The verbosity level.
+#' @param grainsize The grainsize used for partitioning data across threads (
+#' highly encouraged to leave to its default value).
+#' @param verbose The verbosity level (`1`: only errors, `2`: also allows warnings,
+#'  `3`: also allows messages, `4`: also prints additional output useful for
+#'  debugging).
 #'
-#' @returns A named numeric vector containing the size factor point estimates.
+#' @returns A named numeric vector containing the size factor estimates.
 #'
 #' @export
 disize <- function(
     design_formula,
     counts,
     metadata,
-    batch_name = "batch_id",
+    batch_name,
     obs_name = "obs_id",
     n_feats = min(10000L, ncol(counts)),
     n_subset = 50L,
     n_iters = "auto",
-    n_threads = ceiling(parallel::detectCores() / 2),
+    n_threads = max(1, parallel::detectCores() - 2L),
     grainsize = ceiling(n_feats / n_threads),
-    init_alpha = 1e-6,
+    init_alpha = 1e-5,
     verbose = 3L
 ) {
     # Check design formula is correct
@@ -106,7 +109,7 @@ disize <- function(
 
     counts <- counts[metadata[[obs_name]], ]
 
-    # Subset features out features with no counts
+    # Filter out features with no counts
     subset <- Matrix::colSums(counts) != 0
     counts <- counts[, subset]
 
@@ -237,23 +240,47 @@ disize <- function(
         compile_model_methods = TRUE
     )
 
-    # Estimate maximum time-to-fit
-    fit <- model$optimize(
-        data = stan_data,
-        iter = 50L,
-        threads = n_threads,
-        algorithm = "lbfgs",
-        init_alpha = init_alpha,
-        history_size = 8L,
-        sig_figs = 16L,
-        show_messages = FALSE
-    )
+    # Estimate maximum time-to-fit ----
+    init_times <- numeric(3)
+    for (i in 1:3) {
+        dummy_fit <- model$optimize(
+            data = stan_data,
+            iter = 1L,
+            threads = n_threads,
+            algorithm = "lbfgs",
+            init_alpha = init_alpha,
+            history_size = 8L,
+            sig_figs = 16L,
+            show_messages = FALSE
+        )
+
+        init_times[i] <- dummy_fit$time()$total
+    }
+
+    iter_times <- numeric(3)
+    for (i in 1:3) {
+        dummy_fit <- model$optimize(
+            data = stan_data,
+            iter = 30L,
+            threads = n_threads,
+            algorithm = "lbfgs",
+            init_alpha = init_alpha,
+            history_size = 8L,
+            sig_figs = 16L,
+            show_messages = FALSE
+        )
+
+        iter_times[i] <- dummy_fit$time()$total
+    }
+
+    max_eta <- mean(init_times) +
+        (mean(iter_times) - mean(init_times)) / 29 * n_iters
 
     # Estimate model parameters ----
     if (3L <= verbose) {
         message(
             "Estimating size factors... (Max ETA: ~",
-            round(n_iters * fit$time()$total / 50, 1),
+            round(max_eta, 1),
             "s)"
         )
     } else if (4L <= verbose) {}
@@ -270,6 +297,10 @@ disize <- function(
         show_messages = (4L <= verbose),
         refresh = ceiling(n_iters / 10)
     )
+
+    if (3L <= verbose) {
+        message("Finised in ", round(fit$time()$total, 1), "s!")
+    }
 
     # Extract parameter estimates
     params <- fit$mle()
@@ -305,16 +336,15 @@ disize <- function(
     # Check gradient for size factors
     if (1 < norm && 2L <= verbose) {
         warning(
-            "Relative size factor gradient (",
+            "Magnitude of relative size factor gradient (",
             norm,
             ") not sufficiently small, estimates may not have converged. Try ",
-            "increasing 'n_iters' from ",
-            "current value:.",
+            "increasing 'n_iters' from current value: ",
             n_iters,
             "."
         )
     } else if (4L <= verbose) {
-        message("Relative size factor gradient: ", norm)
+        message("Magnitude of relative size factor gradient: ", norm)
     }
 
     # Extract size factors

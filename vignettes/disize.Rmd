@@ -1,0 +1,160 @@
+---
+title: "An Introduction to disize"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to disize}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+`disize` revolves around its only export: `disize::disize`! It has the
+following required arguments:
+
+- `design_formula`: An R formula that specifies the experimental design. This
+is essentially describing the model that you would've liked to fit in the
+*absence* of batch-effects; it is the same R formula you would pass to
+tools like `DESeq2` or `edgeR` for differential expression analysis (including
+predictors like `condition`, `sex`, etc measured in your study). All terms
+used in this formula should be present in `metadata`.
+
+- `counts`: A (observation x features) matrix containing the transcript counts.
+This can be dense or sparse; an internal coercion to a dense matrix will be
+done after subsetting relevant features and observations.
+
+- `metadata`: A dataframe containing the observation-level information(with
+observations as rows).
+
+- `batch_name`: The name of the column in `metadata` containing the batch
+identifier.
+
+> If the row indices of `counts` and `metadata` do not correspond to the same observation but are named in `counts`, you can specify `obs_name` which will automatically re-order `counts` to match the indices in `metadata`.
+
+# An example with DESeq2
+
+To see `disize` in action, we will be analyzing the following dataset from the `pasilla` package with `DESeq2`.
+
+```{r}
+suppressPackageStartupMessages({
+    library(pasilla)
+    library(dplyr)
+    library(disize)
+    library(DESeq2)
+})
+```
+
+## Reading in data
+
+```{r}
+# Grab filepaths
+counts_path <- system.file(
+    "extdata",
+    "pasilla_gene_counts.tsv",
+    package="pasilla",
+    mustWork=TRUE
+)
+metadata_path <- system.file(
+    "extdata",
+    "pasilla_sample_annotation.csv",
+    package="pasilla",
+    mustWork=TRUE
+)
+
+# Read in data
+counts <- as.matrix(read.csv(counts_path, sep = "\t", row.names = "gene_id")) |>
+    t()
+
+metadata <- read.csv(metadata_path)
+metadata <- metadata |>
+    dplyr::mutate(obs_id = sub("fb", "", metadata$file)) |>
+    dplyr::select(obs_id, condition, type) |>
+    dplyr::mutate(across(c(condition, type), as.factor)) |>
+    dplyr::mutate(
+        id_1 = interaction(metadata$type, metadata$condition, sep = ":"),
+        id_2 = obs_id
+    )
+```
+
+## Inspecting the study design
+
+The dataset is derived from a study investigating the effect of various RNA binding proteins (RBPs) on alternative splicing regulation.
+The authors partitioned *D. melanogaster* cells into two different conditions: observations with `condition = treated` were treated with dsRNAs to knockdown expression via RNAi, while `condition = untreated` were left alone as a control.
+Additionally, two sets of duplicates were processed in parallel for each condition with different kits used for library preparation (producing single-read vs paired-end reads).
+Thus, a suitable definition of "batch" might be the interaction between `type` and `condition`. However, it is easy to double-check by making the batch definition as granular as possible (where each sample denotes a batch).
+
+The `metadata` object contains the information from the experimental design:
+
+```{r}
+print(metadata)
+```
+
+Evidently, one sample was thrown away!
+
+In the absence of batch-effects we are interested in the effects of `condition`, so our `design_formula` should be:
+
+```{r}
+design_formula <- ~ condition
+```
+
+## Estimating size factors
+
+```{r}
+# First batch definition
+size_factors_1 <- disize::disize(
+    design_formula,
+    counts,
+    metadata,
+    batch_name = "id_1",
+    obs_name = "obs_id" # needed to order 'counts' correctly
+)
+
+# Second batch definition
+size_factors_2 <- disize::disize(
+    design_formula,
+    counts,
+    metadata,
+    batch_name = "id_2",
+    obs_name = "obs_id"
+)
+```
+
+### Comparing batch definitions
+```{r}
+size_factors <- data.frame(
+    obs_id = metadata$obs_id,
+    def_1 = unname(size_factors_1[metadata$id_1]),
+    def_2 = unname(size_factors_2[metadata$id_2])
+)
+
+print(size_factors)
+```
+
+Although there are some similarities, there is enough of a difference for
+some observations that using the more granular definition may bring some
+needed precision.
+
+## Running DESeq
+
+Once the size factors are inserted into the `DESeqDataSet` object, the analysis then proceeds normally.
+
+```{r}
+# Constructing DESeqDataSet object
+dds <- DESeq2::DESeqDataSetFromMatrix(
+    countData = t(counts[metadata$obs_id, ]),
+    colData = metadata,
+    design = design_formula
+)
+DESeq2::sizeFactors(dds) <- exp(size_factors_2) # Insert size factors
+
+# Run analysis
+dds <- DESeq2::DESeq(dds)
+
+# Print results
+print(results(dds))
+```

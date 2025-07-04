@@ -10,12 +10,13 @@ disize(
   metadata,
   batch_name = "batch_id",
   obs_name = "obs_id",
-  n_feats = min(10000, ncol(counts)),
-  n_subset = 50,
+  n_feats = min(10000L, ncol(counts)),
+  n_subset = 50L,
   n_iters = "auto",
-  n_threads = parallel::detectCores()/2,
-  init_alpha = 1e-05,
-  verbose = 3
+  n_threads = max(1, parallel::detectCores() - 2L),
+  grainsize = ceiling(n_feats/n_threads),
+  init_alpha = 1e-06,
+  verbose = 3L
 )
 }
 \arguments{
@@ -41,7 +42,12 @@ estimation, defaults to 50.}
 
 \item{n_threads}{The number of threads to use for parallel processing.}
 
-\item{verbose}{The verbosity level.}
+\item{grainsize}{The grainsize used for partitioning data across threads (
+highly encouraged to leave to its default value).}
+
+\item{verbose}{The verbosity level (\code{1}: only errors, \code{2}: also allows warnings,
+\code{3}: also allows messages, \code{4}: also prints additional output useful for
+debugging).}
 }
 \value{
 A named numeric vector containing the size factor point estimates.

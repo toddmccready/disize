@@ -4,12 +4,232 @@ version = 2
 r_version = "4.5"
 
 [[packages]]
+name = "AnnotationDbi"
+version = "1.70.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "BiocGenerics", requirement = "(>= 0.29.2)" },
+    { name = "Biobase", requirement = "(>= 1.17.0)" },
+    "IRanges",
+    "DBI",
+    "RSQLite",
+    { name = "S4Vectors", requirement = "(>= 0.9.25)" },
+    "KEGGREST",
+]
+
+[[packages]]
+name = "BH"
+version = "1.87.0-1"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "Biobase"
+version = "2.68.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "BiocGenerics", requirement = "(>= 0.27.1)" },
+]
+
+[[packages]]
+name = "BiocFileCache"
+version = "2.16.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "dbplyr", requirement = "(>= 1.0.0)" },
+    "dplyr",
+    "RSQLite",
+    "DBI",
+    "filelock",
+    "curl",
+    "httr",
+]
+
+[[packages]]
+name = "BiocGenerics"
+version = "0.54.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    "generics",
+]
+
+[[packages]]
+name = "BiocParallel"
+version = "1.42.1"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    "futile.logger",
+    "snow",
+    "codetools",
+    { name = "BH", requirement = "(>= 1.87.0)" },
+    "cpp11",
+]
+
+[[packages]]
+name = "Biostrings"
+version = "2.76.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "BiocGenerics", requirement = "(>= 0.37.0)" },
+    { name = "S4Vectors", requirement = "(>= 0.27.12)" },
+    { name = "IRanges", requirement = "(>= 2.31.2)" },
+    { name = "XVector", requirement = "(>= 0.37.1)" },
+    "GenomeInfoDb",
+    "crayon",
+]
+
+[[packages]]
+name = "DBI"
+version = "1.2.3"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "DESeq2"
+version = "1.48.1"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "S4Vectors", requirement = "(>= 0.23.18)" },
+    "IRanges",
+    "GenomicRanges",
+    { name = "SummarizedExperiment", requirement = "(>= 1.1.6)" },
+    { name = "BiocGenerics", requirement = "(>= 0.7.5)" },
+    "Biobase",
+    "BiocParallel",
+    "matrixStats",
+    "locfit",
+    { name = "ggplot2", requirement = "(>= 3.4.0)" },
+    { name = "Rcpp", requirement = "(>= 0.11.0)" },
+    "MatrixGenerics",
+    "RcppArmadillo",
+]
+
+[[packages]]
+name = "DEXSeq"
+version = "1.54.1"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    "BiocParallel",
+    "Biobase",
+    "SummarizedExperiment",
+    { name = "IRanges", requirement = "(>= 2.5.17)" },
+    { name = "GenomicRanges", requirement = "(>= 1.23.7)" },
+    { name = "DESeq2", requirement = "(>= 1.39.6)" },
+    "AnnotationDbi",
+    "RColorBrewer",
+    { name = "S4Vectors", requirement = "(>= 0.23.18)" },
+    "BiocGenerics",
+    "biomaRt",
+    "hwriter",
+    "stringr",
+    "Rsamtools",
+    "statmod",
+    "geneplotter",
+    "genefilter",
+]
+
+[[packages]]
+name = "DelayedArray"
+version = "0.34.1"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    "Matrix",
+    { name = "BiocGenerics", requirement = "(>= 0.53.3)" },
+    { name = "MatrixGenerics", requirement = "(>= 1.1.3)" },
+    { name = "S4Vectors", requirement = "(>= 0.27.2)" },
+    { name = "IRanges", requirement = "(>= 2.17.3)" },
+    { name = "S4Arrays", requirement = "(>= 1.5.4)" },
+    { name = "SparseArray", requirement = "(>= 1.7.5)" },
+]
+
+[[packages]]
+name = "GenomeInfoDb"
+version = "1.44.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "BiocGenerics", requirement = "(>= 0.53.2)" },
+    { name = "S4Vectors", requirement = "(>= 0.45.2)" },
+    { name = "IRanges", requirement = "(>= 2.41.1)" },
+    "UCSC.utils",
+    "GenomeInfoDbData",
+]
+
+[[packages]]
+name = "GenomeInfoDbData"
+version = "1.2.14"
+source = { repository = "https://bioconductor.org/packages/3.21/data/annotation" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "GenomicRanges"
+version = "1.60.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "BiocGenerics", requirement = "(>= 0.53.2)" },
+    { name = "S4Vectors", requirement = "(>= 0.45.2)" },
+    { name = "IRanges", requirement = "(>= 2.41.1)" },
+    { name = "GenomeInfoDb", requirement = "(>= 1.43.1)" },
+    { name = "XVector", requirement = "(>= 0.29.2)" },
+]
+
+[[packages]]
+name = "IRanges"
+version = "2.42.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "BiocGenerics", requirement = "(>= 0.53.2)" },
+    { name = "S4Vectors", requirement = "(>= 0.45.4)" },
+]
+
+[[packages]]
+name = "KEGGREST"
+version = "1.48.1"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    "httr",
+    "png",
+    "Biostrings",
+]
+
+[[packages]]
+name = "MASS"
+version = "7.3-65"
+source = { builtin = true }
+force_source = false
+dependencies = []
+
+[[packages]]
 name = "Matrix"
 version = "1.7-3"
 source = { builtin = true }
 force_source = false
 dependencies = [
     "lattice",
+]
+
+[[packages]]
+name = "MatrixGenerics"
+version = "1.20.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "matrixStats", requirement = "(>= 1.4.1)" },
 ]
 
 [[packages]]
@@ -46,11 +266,43 @@ force_source = false
 dependencies = []
 
 [[packages]]
+name = "RColorBrewer"
+version = "1.1-3"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "RSQLite"
+version = "2.4.1"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "bit64",
+    { name = "blob", requirement = "(>= 1.2.0)" },
+    { name = "DBI", requirement = "(>= 1.2.0)" },
+    "memoise",
+    "pkgconfig",
+    "rlang",
+    { name = "plogr", requirement = "(>= 0.2.0)" },
+    { name = "cpp11", requirement = "(>= 0.4.0)" },
+]
+
+[[packages]]
 name = "Rcpp"
 version = "1.0.14"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
+
+[[packages]]
+name = "RcppArmadillo"
+version = "14.4.3-1"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    { name = "Rcpp", requirement = "(>= 1.0.12)" },
+]
 
 [[packages]]
 name = "Rdpack"
@@ -62,11 +314,140 @@ dependencies = [
 ]
 
 [[packages]]
+name = "Rhtslib"
+version = "3.4.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "Rsamtools"
+version = "2.24.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "GenomeInfoDb", requirement = "(>= 1.1.3)" },
+    { name = "GenomicRanges", requirement = "(>= 1.31.8)" },
+    { name = "Biostrings", requirement = "(>= 2.47.6)" },
+    { name = "BiocGenerics", requirement = "(>= 0.25.1)" },
+    { name = "S4Vectors", requirement = "(>= 0.17.25)" },
+    { name = "IRanges", requirement = "(>= 2.13.12)" },
+    { name = "XVector", requirement = "(>= 0.19.7)" },
+    "bitops",
+    "BiocParallel",
+    { name = "Rhtslib", requirement = "(>= 3.3.1)" },
+]
+
+[[packages]]
+name = "S4Arrays"
+version = "1.8.1"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    "Matrix",
+    "abind",
+    { name = "BiocGenerics", requirement = "(>= 0.45.2)" },
+    "S4Vectors",
+    "IRanges",
+    "crayon",
+]
+
+[[packages]]
+name = "S4Vectors"
+version = "0.46.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "BiocGenerics", requirement = "(>= 0.53.2)" },
+]
+
+[[packages]]
+name = "SparseArray"
+version = "1.8.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    "Matrix",
+    { name = "BiocGenerics", requirement = "(>= 0.43.1)" },
+    { name = "MatrixGenerics", requirement = "(>= 1.11.1)" },
+    { name = "S4Vectors", requirement = "(>= 0.43.2)" },
+    { name = "S4Arrays", requirement = "(>= 1.5.11)" },
+    "matrixStats",
+    "IRanges",
+    "XVector",
+]
+
+[[packages]]
+name = "SummarizedExperiment"
+version = "1.38.1"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "MatrixGenerics", requirement = "(>= 1.1.3)" },
+    { name = "GenomicRanges", requirement = "(>= 1.55.2)" },
+    "Biobase",
+    "Matrix",
+    { name = "BiocGenerics", requirement = "(>= 0.51.3)" },
+    { name = "S4Vectors", requirement = "(>= 0.33.7)" },
+    { name = "IRanges", requirement = "(>= 2.23.9)" },
+    { name = "GenomeInfoDb", requirement = "(>= 1.13.1)" },
+    { name = "S4Arrays", requirement = "(>= 1.1.1)" },
+    { name = "DelayedArray", requirement = "(>= 0.31.12)" },
+]
+
+[[packages]]
+name = "UCSC.utils"
+version = "1.4.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    "httr",
+    "jsonlite",
+    "S4Vectors",
+]
+
+[[packages]]
+name = "XML"
+version = "3.99-0.18"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "XVector"
+version = "0.48.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "BiocGenerics", requirement = "(>= 0.37.0)" },
+    { name = "S4Vectors", requirement = "(>= 0.27.12)" },
+    { name = "IRanges", requirement = "(>= 2.23.9)" },
+    "BiocGenerics",
+    "S4Vectors",
+    "IRanges",
+]
+
+[[packages]]
 name = "abind"
 version = "1.4-8"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
+
+[[packages]]
+name = "annotate"
+version = "1.86.1"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "AnnotationDbi", requirement = "(>= 1.27.5)" },
+    "XML",
+    "Biobase",
+    "DBI",
+    "xtable",
+    { name = "BiocGenerics", requirement = "(>= 0.13.8)" },
+    "httr",
+]
 
 [[packages]]
 name = "askpass"
@@ -90,6 +471,56 @@ version = "0.1-3"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
+
+[[packages]]
+name = "biomaRt"
+version = "2.64.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    "AnnotationDbi",
+    "progress",
+    "stringr",
+    "httr2",
+    "digest",
+    "BiocFileCache",
+    "rappdirs",
+    "xml2",
+    "curl",
+]
+
+[[packages]]
+name = "bit"
+version = "4.6.0"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "bit64"
+version = "4.6.0-1"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    { name = "bit", requirement = "(>= 4.0.0)" },
+]
+
+[[packages]]
+name = "bitops"
+version = "1.0-9"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "blob"
+version = "1.2.4"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "rlang",
+    { name = "vctrs", requirement = "(>= 0.2.1)" },
+]
 
 [[packages]]
 name = "brew"
@@ -184,6 +615,13 @@ dependencies = [
 ]
 
 [[packages]]
+name = "codetools"
+version = "0.2-20"
+source = { builtin = true }
+force_source = false
+dependencies = []
+
+[[packages]]
 name = "commonmark"
 version = "1.9.5"
 source = { repository = "https://cran.r-project.org/" }
@@ -230,6 +668,30 @@ version = "1.17.6"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
+
+[[packages]]
+name = "dbplyr"
+version = "2.5.0"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    { name = "blob", requirement = "(>= 1.2.0)" },
+    { name = "cli", requirement = "(>= 3.6.1)" },
+    { name = "DBI", requirement = "(>= 1.1.3)" },
+    { name = "dplyr", requirement = "(>= 1.1.2)" },
+    { name = "glue", requirement = "(>= 1.6.2)" },
+    { name = "lifecycle", requirement = "(>= 1.0.3)" },
+    "magrittr",
+    { name = "pillar", requirement = "(>= 1.9.0)" },
+    { name = "purrr", requirement = "(>= 1.0.1)" },
+    { name = "R6", requirement = "(>= 2.2.2)" },
+    { name = "rlang", requirement = "(>= 1.1.1)" },
+    { name = "tibble", requirement = "(>= 3.2.1)" },
+    { name = "tidyr", requirement = "(>= 1.3.0)" },
+    { name = "tidyselect", requirement = "(>= 1.2.1)" },
+    { name = "vctrs", requirement = "(>= 0.6.3)" },
+    { name = "withr", requirement = "(>= 2.5.0)" },
+]
 
 [[packages]]
 name = "desc"
@@ -361,8 +823,22 @@ force_source = false
 dependencies = []
 
 [[packages]]
+name = "farver"
+version = "2.1.2"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
 name = "fastmap"
 version = "1.2.0"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "filelock"
+version = "1.0.3"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
@@ -378,11 +854,62 @@ dependencies = [
 ]
 
 [[packages]]
+name = "formatR"
+version = "1.14"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
 name = "fs"
 version = "1.6.6"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
+
+[[packages]]
+name = "futile.logger"
+version = "1.4.3"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    { name = "lambda.r", requirement = "(>= 1.1.0)" },
+    "futile.options",
+]
+
+[[packages]]
+name = "futile.options"
+version = "1.0.1"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "genefilter"
+version = "1.90.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    { name = "MatrixGenerics", requirement = "(>= 1.11.1)" },
+    "AnnotationDbi",
+    "annotate",
+    "Biobase",
+    "survival",
+]
+
+[[packages]]
+name = "geneplotter"
+version = "1.86.0"
+source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
+force_source = false
+dependencies = [
+    "Biobase",
+    "BiocGenerics",
+    "lattice",
+    "annotate",
+    "AnnotationDbi",
+    "RColorBrewer",
+]
 
 [[packages]]
 name = "generics"
@@ -403,6 +930,26 @@ dependencies = [
     { name = "rstudioapi", requirement = "(>= 0.11)" },
     "sys",
     { name = "zip", requirement = "(>= 2.1.0)" },
+]
+
+[[packages]]
+name = "ggplot2"
+version = "3.5.2"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "cli",
+    "glue",
+    { name = "gtable", requirement = "(>= 0.1.1)" },
+    "isoband",
+    { name = "lifecycle", requirement = "(> 1.0.1)" },
+    "MASS",
+    "mgcv",
+    { name = "rlang", requirement = "(>= 1.1.0)" },
+    { name = "scales", requirement = "(>= 1.3.0)" },
+    "tibble",
+    { name = "vctrs", requirement = "(>= 0.6.0)" },
+    { name = "withr", requirement = "(>= 2.5.0)" },
 ]
 
 [[packages]]
@@ -434,6 +981,18 @@ version = "1.8.0"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
+
+[[packages]]
+name = "gtable"
+version = "0.3.6"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "cli",
+    "glue",
+    "lifecycle",
+    { name = "rlang", requirement = "(>= 1.1.0)" },
+]
 
 [[packages]]
 name = "highr"
@@ -494,6 +1053,19 @@ dependencies = [
 ]
 
 [[packages]]
+name = "httr"
+version = "1.4.7"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    { name = "curl", requirement = "(>= 5.0.2)" },
+    "jsonlite",
+    "mime",
+    { name = "openssl", requirement = "(>= 0.8)" },
+    "R6",
+]
+
+[[packages]]
 name = "httr2"
 version = "1.1.2"
 source = { repository = "https://cran.r-project.org/" }
@@ -513,6 +1085,13 @@ dependencies = [
 ]
 
 [[packages]]
+name = "hwriter"
+version = "1.3.2.1"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
 name = "ini"
 version = "0.3.1"
 source = { repository = "https://cran.r-project.org/" }
@@ -529,6 +1108,13 @@ dependencies = [
     "fs",
     "rlang",
 ]
+
+[[packages]]
+name = "isoband"
+version = "0.2.7"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
 
 [[packages]]
 name = "jquerylib"
@@ -559,6 +1145,22 @@ dependencies = [
 ]
 
 [[packages]]
+name = "labeling"
+version = "0.4.3"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "lambda.r"
+version = "1.2.4"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "formatR",
+]
+
+[[packages]]
 name = "later"
 version = "1.4.2"
 source = { repository = "https://cran.r-project.org/" }
@@ -570,7 +1172,7 @@ dependencies = [
 
 [[packages]]
 name = "lattice"
-version = "0.22-6"
+version = "0.22-7"
 source = { builtin = true }
 force_source = false
 dependencies = []
@@ -584,6 +1186,15 @@ dependencies = [
     { name = "cli", requirement = "(>= 3.4.0)" },
     "glue",
     { name = "rlang", requirement = "(>= 1.1.0)" },
+]
+
+[[packages]]
+name = "locfit"
+version = "1.5-9.12"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "lattice",
 ]
 
 [[packages]]
@@ -611,6 +1222,16 @@ dependencies = [
 ]
 
 [[packages]]
+name = "mgcv"
+version = "1.9-3"
+source = { builtin = true }
+force_source = false
+dependencies = [
+    { name = "nlme", requirement = "(>= 3.1-64)" },
+    "Matrix",
+]
+
+[[packages]]
 name = "mime"
 version = "0.13"
 source = { repository = "https://cran.r-project.org/" }
@@ -625,6 +1246,15 @@ force_source = false
 dependencies = [
     { name = "shiny", requirement = "(>= 0.13)" },
     { name = "htmltools", requirement = "(>= 0.3)" },
+]
+
+[[packages]]
+name = "nlme"
+version = "3.1-168"
+source = { builtin = true }
+force_source = false
+dependencies = [
+    "lattice",
 ]
 
 [[packages]]
@@ -652,6 +1282,15 @@ dependencies = [
     "fs",
     "rappdirs",
     { name = "rlang", requirement = "(>= 1.0.1)" },
+]
+
+[[packages]]
+name = "pasilla"
+version = "1.36.0"
+source = { repository = "https://bioconductor.org/packages/3.21/data/experiment" }
+force_source = false
+dependencies = [
+    "DEXSeq",
 ]
 
 [[packages]]
@@ -734,6 +1373,13 @@ dependencies = [
 ]
 
 [[packages]]
+name = "plogr"
+version = "0.2.0"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
 name = "plyr"
 version = "1.8.9"
 source = { repository = "https://cran.r-project.org/" }
@@ -741,6 +1387,13 @@ force_source = false
 dependencies = [
     { name = "Rcpp", requirement = "(>= 0.11.0)" },
 ]
+
+[[packages]]
+name = "png"
+version = "0.1-8"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
 
 [[packages]]
 name = "posterior"
@@ -997,6 +1650,23 @@ dependencies = [
 ]
 
 [[packages]]
+name = "scales"
+version = "1.4.0"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "cli",
+    { name = "farver", requirement = "(>= 2.0.3)" },
+    "glue",
+    "labeling",
+    "lifecycle",
+    "R6",
+    "RColorBrewer",
+    { name = "rlang", requirement = "(>= 1.1.0)" },
+    "viridisLite",
+]
+
+[[packages]]
 name = "sessioninfo"
 version = "1.2.3"
 source = { repository = "https://cran.r-project.org/" }
@@ -1033,8 +1703,22 @@ dependencies = [
 ]
 
 [[packages]]
+name = "snow"
+version = "0.4-4"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
 name = "sourcetools"
 version = "0.1.7-1"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
+
+[[packages]]
+name = "statmod"
+version = "1.5.0"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
@@ -1059,6 +1743,15 @@ dependencies = [
     { name = "rlang", requirement = "(>= 1.0.0)" },
     { name = "stringi", requirement = "(>= 1.5.3)" },
     { name = "vctrs", requirement = "(>= 0.4.0)" },
+]
+
+[[packages]]
+name = "survival"
+version = "3.8-3"
+source = { builtin = true }
+force_source = false
+dependencies = [
+    "Matrix",
 ]
 
 [[packages]]
@@ -1238,6 +1931,13 @@ dependencies = [
     { name = "lifecycle", requirement = "(>= 1.0.3)" },
     { name = "rlang", requirement = "(>= 1.1.0)" },
 ]
+
+[[packages]]
+name = "viridisLite"
+version = "0.4.2"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = []
 
 [[packages]]
 name = "waldo"

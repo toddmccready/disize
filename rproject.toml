@@ -9,6 +9,7 @@ repositories = [
     { alias = "STAN", url = "https://stan-dev.r-universe.dev" },
     { alias = "BIOC-PAC", url = "https://bioconductor.org/packages/3.21/bioc" },
     { alias = "BIOC-ANN", url = "https://bioconductor.org/packages/3.21/data/annotation" },
+    { alias = "BIOC-EXP", url = "https://bioconductor.org/packages/3.21/data/experiment" },
 ]
 
 # package to install and any specifications. Any descriptive dependency can have the `install_suggestions` specification
@@ -31,4 +32,5 @@ dependencies = [
     "R.utils",
     "rmarkdown",
     "pandoc",
+    "pasilla",
 ]

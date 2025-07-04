@@ -334,8 +334,7 @@ test_that("large-simple-sc", {
     size_factors <- exp(disize::disize(
         design_formula = ~ cell_type + (1 | cell_type:donor),
         counts = counts,
-        metadata = metadata,
-        n_subset = 50
+        metadata = metadata
     ))
 
     expect_equal(

@@ -79,7 +79,7 @@ design_formula <- ~ condition
 We can finally run `disize` to get the estimated size factors:
 
 ```{r}
-size_factors <- disize(
+size_factors <- disize::disize(
     design_formula,
     counts,
     metadata,
@@ -95,7 +95,7 @@ the estimated size factors are approximately the same (within ~0.1).
 We can confirm these estimates by rerunning `disize` with a larger `n_feats`:
 
 ```{r}
-size_factors_2 <- disize(
+size_factors_2 <- disize::disize(
     design_formula,
     counts,
     metadata,
