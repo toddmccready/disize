@@ -1,8 +1,8 @@
 ---
-title: "An Introduction to disize"
+title: "An introduction to disize"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to disize}
+  %\VignetteIndexEntry{An introduction to disize}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -34,7 +34,7 @@ observations as rows).
 - `batch_name`: The name of the column in `metadata` containing the batch
 identifier.
 
-> If the row indices of `counts` and `metadata` do not correspond to the same observation but are named in `counts`, you can specify `obs_name` which will automatically re-order `counts` to match the indices in `metadata`.
+> If the row indices of `counts` and `metadata` do not correspond to the same observation but are named, you can specify `obs_name` which will automatically re-order `counts` to match the indices in `metadata`.
 
 # An example with DESeq2
 
