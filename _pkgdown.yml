@@ -1,4 +1,4 @@
 url: https://toddmccready.github.io/disize/
 template:
   bootstrap: 5
-
+  math-rendering: katex
