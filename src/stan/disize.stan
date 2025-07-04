@@ -40,6 +40,9 @@ functions {
             }
 
             // Priors ----
+            // Half-cauchy prior over random-effects variance
+            log_prob += cauchy_lpdf(re_sigma[, feat_i] | 0, 1);
+
             // Normal prior over (raw) random-effects
             log_prob += std_normal_lpdf(raw_re_coefs[, feat_i]);
 
