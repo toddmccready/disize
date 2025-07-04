@@ -73,7 +73,8 @@ test_that("small-simple-bulk", {
     size_factors <- exp(disize::disize(
         design_formula = ~ (1 | donor),
         counts = counts,
-        metadata = metadata
+        metadata = metadata,
+        batch_name = "batch_id"
     ))
 
     expect_equal(
@@ -153,7 +154,8 @@ test_that("large-simple-bulk", {
     size_factors <- exp(disize::disize(
         design_formula = ~ (1 | donor),
         counts = counts,
-        metadata = metadata
+        metadata = metadata,
+        batch_name = "batch_id"
     ))
 
     expect_equal(
@@ -243,7 +245,8 @@ test_that("small-simple-sc", {
     size_factors <- exp(disize::disize(
         design_formula = ~ cell_type + (1 | donor:cell_type),
         counts = counts,
-        metadata = metadata
+        metadata = metadata,
+        batch_name = "batch_id"
     ))
 
     expect_equal(
@@ -334,7 +337,8 @@ test_that("large-simple-sc", {
     size_factors <- exp(disize::disize(
         design_formula = ~ cell_type + (1 | cell_type:donor),
         counts = counts,
-        metadata = metadata
+        metadata = metadata,
+        batch_name = "batch_id"
     ))
 
     expect_equal(
