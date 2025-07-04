@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,11 +31,13 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/disize.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/a-bulk-experiment.html">A Bulk Experiment</a></li>
+    <li><a class="dropdown-item" href="articles/derivation.html">Derivation of disize</a></li>
   </ul>
 </li>
       </ul>
@@ -51,9 +53,9 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="disize-a-tool-for-size-factor-estimation">disize: A tool for size factor estimation<a class="anchor" aria-label="anchor" href="#disize-a-tool-for-size-factor-estimation"></a>
+<div class="page-header"><h1 id="disize">disize<a class="anchor" aria-label="anchor" href="#disize"></a>
 </h1></div>
-<p>Leverage information from the experimental design during size factor estimation.</p>
+<p><strong>D</strong>esign <strong>i</strong>nformed <strong>size</strong> factor estimation (or <code>disize</code>) is a normalization method meant to be an alternative to <code>DESeq2</code>’s <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106" class="external-link">median of rations</a> and <code>edgeR</code>’s <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25" class="external-link">trimmed mean of M values</a></p>
 </div>
 <div class="section level1">
 <h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -71,7 +73,7 @@
 <span><span class="fu">cmdstanr</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/cmdstanr/reference/install_cmdstan.html" class="external-link">install_cmdstan</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="with-rv">With <code>rv</code>
+<h2 id="with-rv">With <a href="https://a2-ai.github.io/rv-docs/" class="external-link"><code>rv</code></a>
 <a class="anchor" aria-label="anchor" href="#with-rv"></a>
 </h2>
 <p>Add the following entries to your <code>rproject.toml</code> file(if not already present):</p>
@@ -85,57 +87,15 @@
 
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.15" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.17" },
     # ...
 ]</code></pre>
-<p>Then sync your lockfile:</p>
+<p>Then sync your project:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">rv</span> sync</span></code></pre></div>
 <p>And finally install the CmdStan toolchain in <code>R</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">cmdstanr</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/cmdstanr/reference/install_cmdstan.html" class="external-link">install_cmdstan</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
-</div>
-<div class="section level1">
-<h1 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
-</h1>
-<p>The only export is <code><a href="reference/disize.html">disize::disize</a></code>! The required arguments are:</p>
-<ul>
-<li><p><code>design_formula</code>: An R formula that specifies the experimental design. This is the same R formula you would pass to something like <code>DESeq2</code> or <code>edgeR</code> including predictors like <code>condition</code>, <code>sex</code>, etc to estimate your expression quantities of interest(except we allow for random-effects). All terms used in this formula should be present in <code>metadata</code>.</p></li>
-<li><p><code>counts</code>: A (observation x features) matrix containing the transcript counts. This can be dense or sparse; an internal coercion to a dense matrix will be done after subsetting relevant features and observations.</p></li>
-<li><p><code>metadata</code>: A dataframe containing the observation-level information(with observations as rows).</p></li>
-</ul>
-<p>The batch- and observation identifiers are specified by <code>batch_name</code> and <code>obs_name</code>, respectively. Ensure that your batch identifier is specified as a column in <code>metadata</code>, however <code>obs_name</code> is not required if the row indices of <code>counts</code> and <code>metadata</code> correspond to the same observation(i.e., if either <code>rownames(counts)</code> or <code>metadata[[obs_name]]</code> is <code>NULL</code> then the row indices of <code>counts</code> and <code>metadata</code> are assumed to correspond to the same observation).</p>
-</div>
-<div class="section level1">
-<h1 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
-</h1>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">dim</span>(counts)</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>[<span class="dv">1</span>] <span class="dv">900</span> <span class="dv">500</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="sc">&gt;</span> metadata</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co"># A tibble: 900 × 4</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>   obs_id batch_id donor cell_type</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>   <span class="sc">&lt;</span>fct<span class="sc">&gt;</span>  <span class="er">&lt;</span>fct<span class="sc">&gt;</span>    <span class="er">&lt;</span>fct<span class="sc">&gt;</span> <span class="er">&lt;</span>fct<span class="sc">&gt;</span></span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a> <span class="dv">1</span> <span class="dv">1</span>      <span class="dv">1</span>        <span class="dv">1</span>     <span class="dv">1</span></span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a> <span class="dv">2</span> <span class="dv">2</span>      <span class="dv">1</span>        <span class="dv">1</span>     <span class="dv">2</span></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a> <span class="dv">3</span> <span class="dv">3</span>      <span class="dv">1</span>        <span class="dv">1</span>     <span class="dv">3</span></span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a> <span class="dv">4</span> <span class="dv">4</span>      <span class="dv">1</span>        <span class="dv">1</span>     <span class="dv">1</span></span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a> <span class="dv">5</span> <span class="dv">5</span>      <span class="dv">1</span>        <span class="dv">1</span>     <span class="dv">2</span></span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a> <span class="dv">6</span> <span class="dv">6</span>      <span class="dv">1</span>        <span class="dv">1</span>     <span class="dv">3</span></span>
-<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a> <span class="dv">7</span> <span class="dv">7</span>      <span class="dv">1</span>        <span class="dv">1</span>     <span class="dv">1</span></span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a> <span class="dv">8</span> <span class="dv">8</span>      <span class="dv">1</span>        <span class="dv">1</span>     <span class="dv">2</span></span>
-<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a> <span class="dv">9</span> <span class="dv">9</span>      <span class="dv">1</span>        <span class="dv">1</span>     <span class="dv">3</span></span>
-<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="dv">10</span> <span class="dv">10</span>     <span class="dv">1</span>        <span class="dv">1</span>     <span class="dv">1</span></span>
-<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co"># ℹ 890 more rows</span></span>
-<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co"># ℹ Use `print(n = ...)` to see more rows</span></span>
-<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="sc">&gt;</span> (size_factors <span class="ot">&lt;-</span> <span class="fu">disize</span>(</span>
-<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="sc">+</span>     <span class="at">design_formula =</span> <span class="sc">~</span> cell_type <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> cell_type<span class="sc">:</span>donor),</span>
-<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="sc">+</span>     <span class="at">counts =</span> counts,</span>
-<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="sc">+</span>     <span class="at">metadata =</span> metadata</span>
-<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="sc">+</span> ))</span>
-<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a>            <span class="dv">1</span>             <span class="dv">2</span>             <span class="dv">3</span>             <span class="dv">4</span>             <span class="dv">5</span>            <span class="dv">6</span></span>
-<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a> <span class="fl">0.0020845603</span>  <span class="fl">0.0013157564</span> <span class="sc">-</span><span class="fl">0.0025107518</span> <span class="sc">-</span><span class="fl">0.0025500306</span>  <span class="fl">0.0006061994</span>  <span class="fl">0.0010440993</span></span></code></pre></div>
 </div>
 
   </main><aside class="col-md-3"><div class="license">
