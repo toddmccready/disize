@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.20</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.21</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,8 +37,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/a-bulk-experiment.html">A Bulk Experiment</a></li>
-    <li><a class="dropdown-item" href="articles/derivation.html">Derivation of disize</a></li>
+<li><a class="dropdown-item" href="articles/derivation.html">Derivation of disize</a></li>
     <li><a class="dropdown-item" href="articles/single-cell-experiment.html">Running disize on a Single-cell Experiment</a></li>
   </ul>
 </li>
@@ -47,6 +46,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/toddmccready/disize/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -89,7 +89,7 @@
 
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.20" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.21" },
     # ...
 ]</code></pre>
 <p>Then sync your project:</p>
@@ -105,8 +105,8 @@ dependencies = [
 <p>Internally, <code>disize</code> uses Stan to fit a Bayesian model that jointly estimates the effect of covariates(structured according to <code>design_formula</code>) on expression <em>and</em> any confounding batch-effects:</p>
 <p><span class="math display">\begin{aligned}
     \mathbf{y}_g &amp;\sim \text{NegBinom}(\mathbf{\mu}_g, \phi) \\
-    \log \mathbf{\mu}_g &amp;= \mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{o} \\
-        &amp;= \mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{B} \mathbf{s} \\
+    \log \mathbf{\mu}_g &amp;= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{o} \\
+        &amp;= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + (\mathbf{B} \mathbf{s}) \\
     \mathbf{\beta}_g &amp;\sim \text{Normal}(\mathbf{0}, \mathbf{G})
 \end{aligned}</span></p>
 <p>Where <span class="math inline">\mathbf{y}_g</span> denotes the vector of counts of a gene <span class="math inline">g</span> for all observations, which is realized from the distribution parameterized by the effect of the covariates (<span class="math inline">\mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g</span>) and any batch-effects (<span class="math inline">\mathbf{B} \mathbf{s}</span>).</p>
@@ -116,7 +116,14 @@ dependencies = [
 <p>This assumption is encoded in the final model by placing distinct horseshoe priors on each of the model coefficients (both the fixed- and random-effects). This allows the priors to be learned independently of each other using the large number of features measured in RNAseq experiments.</p>
 </div>
 
-  </main><aside class="col-md-3"><div class="license">
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/toddmccready/disize/" class="external-link">Browse source code</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>

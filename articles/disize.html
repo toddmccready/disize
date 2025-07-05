@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.20</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.21</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,8 +35,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/a-bulk-experiment.html">A Bulk Experiment</a></li>
-    <li><a class="dropdown-item" href="../articles/derivation.html">Derivation of disize</a></li>
+<li><a class="dropdown-item" href="../articles/derivation.html">Derivation of disize</a></li>
     <li><a class="dropdown-item" href="../articles/single-cell-experiment.html">Running disize on a Single-cell Experiment</a></li>
   </ul>
 </li>
@@ -45,6 +44,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/toddmccready/disize/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -61,7 +61,7 @@
       <h1>An introduction to disize</h1>
             
       
-
+      <small class="dont-index">Source: <a href="https://github.com/toddmccready/disize/blob/main/vignettes/disize.Rmd" class="external-link"><code>vignettes/disize.Rmd</code></a></small>
       <div class="d-none name"><code>disize.Rmd</code></div>
     </div>
 
@@ -187,8 +187,45 @@ be:</p>
 <span>    obs_name <span class="op">=</span> <span class="st">"obs_id"</span> <span class="co"># needed to order 'counts' correctly</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~72.7s)</span></span>
-<span><span class="co">#&gt; Finised in 62.6s!</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_nvecserial.a</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_cvodes.a</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_idas.a</span></span>
+<span><span class="co">#&gt; ar: creating stan/lib/stan_math/lib/sundials_6.1.1/lib/libsundials_kinsol.a</span></span>
+<span><span class="co">#&gt; /home/runner/.cmdstan/cmdstan-2.36.0/stan/lib/stan_math/lib/tbb_2020.3/build/Makefile.tbb:28: CONFIG: cfg=release arch=intel64 compiler=gcc target=linux runtime=cc13.3.0_libc2.39_kernel6.11.0</span></span>
+<span><span class="co">#&gt; In file included from ../tbb_2020.3/src/tbb/concurrent_hash_map.cpp:17:</span></span>
+<span><span class="co">#&gt; ../tbb_2020.3/include/tbb/concurrent_hash_map.h:347:23: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
+<span><span class="co">#&gt;   347 |         : public std::iterator&lt;std::forward_iterator_tag,Value&gt;</span></span>
+<span><span class="co">#&gt;       |                       ^~~~~~~~</span></span>
+<span><span class="co">#&gt; In file included from /usr/include/c++/13/bits/stl_construct.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/bits/stl_tempbuf.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/memory:66,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/include/tbb/tbb_stddef.h:452,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/include/tbb/concurrent_hash_map.h:23:</span></span>
+<span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
+<span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
+<span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
+<span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
+<span><span class="co">#&gt; In file included from ../tbb_2020.3/src/tbb/concurrent_queue.cpp:22:</span></span>
+<span><span class="co">#&gt; ../tbb_2020.3/include/tbb/internal/_concurrent_queue_impl.h:749:21: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
+<span><span class="co">#&gt;   749 |         public std::iterator&lt;std::forward_iterator_tag,Value&gt; {</span></span>
+<span><span class="co">#&gt;       |                     ^~~~~~~~</span></span>
+<span><span class="co">#&gt; In file included from /usr/include/c++/13/bits/stl_construct.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/bits/stl_tempbuf.h:61,</span></span>
+<span><span class="co">#&gt;                  from /usr/include/c++/13/memory:66,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/include/tbb/tbb_stddef.h:452,</span></span>
+<span><span class="co">#&gt;                  from ../tbb_2020.3/src/tbb/concurrent_queue.cpp:17:</span></span>
+<span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
+<span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
+<span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
+<span><span class="co">#&gt; ../tbb_2020.3/include/tbb/internal/_concurrent_queue_impl.h:1013:21: warning: ‘template&lt;class _Category, class _Tp, class _Distance, class _Pointer, class _Reference&gt; struct std::iterator’ is deprecated [-Wdeprecated-declarations]</span></span>
+<span><span class="co">#&gt;  1013 |         public std::iterator&lt;std::forward_iterator_tag,Value&gt; {</span></span>
+<span><span class="co">#&gt;       |                     ^~~~~~~~</span></span>
+<span><span class="co">#&gt; /usr/include/c++/13/bits/stl_iterator_base_types.h:127:34: note: declared here</span></span>
+<span><span class="co">#&gt;   127 |     struct _GLIBCXX17_DEPRECATED iterator</span></span>
+<span><span class="co">#&gt;       |                                  ^~~~~~~~</span></span>
+<span><span class="co">#&gt; cc1plus: note: unrecognized command-line option ‘-Wno-unknown-warning-option’ may have been intended to silence earlier diagnostics</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~66.6s)</span></span>
+<span><span class="co">#&gt; Finised in 60.2s!</span></span>
 <span></span>
 <span><span class="co"># Second batch definition</span></span>
 <span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
@@ -199,8 +236,8 @@ be:</p>
 <span>    obs_name <span class="op">=</span> <span class="st">"obs_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~77.1s)</span></span>
-<span><span class="co">#&gt; Finised in 61s!</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~71.1s)</span></span>
+<span><span class="co">#&gt; Finised in 61.7s!</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="comparing-batch-definitions">Comparing batch definitions<a class="anchor" aria-label="anchor" href="#comparing-batch-definitions"></a>
 </h4>
