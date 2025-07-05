@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   disize: disize.html
   single-cell-experiment: single-cell-experiment.html
-last_built: 2025-07-05T16:16Z
+last_built: 2025-07-05T16:58Z
 urls:
   reference: https://toddmccready.github.io/disize/reference
   article: https://toddmccready.github.io/disize/articles

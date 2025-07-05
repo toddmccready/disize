@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.22</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -88,7 +88,7 @@
 
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.21" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.22" },
     # ...
 ]</code></pre>
 <p>Then sync your project:</p>
@@ -113,6 +113,12 @@ dependencies = [
 <p>The confounding batch-effect is essentially an unknown offset <span class="math inline">\mathbf{o} = \mathbf{B} \mathbf{s}</span>, where <span class="math inline">\mathbf{B}</span> specifies the batch membership for each observation and <span class="math inline">\mathbf{s}</span> contains the “size factors” which scale the true magnitude of expression.</p>
 <p>At its face, however, this model should not be identifiable for most experimental designs (often the batch ID is perfectly collinear with a predictor or interaction between predictors). This identifiability issue is overcome by constraining <span class="math inline">\mathbf{s}</span> and assuming only a fraction of features are significantly affected by the covariates measured in the experiment; in other words, the estimated coefficients <span class="math inline">\mathbf{\beta}_g, \mathbf{b}_g</span> (excluding the intercept) are <em>sparse</em> across genes.</p>
 <p>This assumption is encoded in the model by placing distinct horseshoe priors on each of the model coefficients (both the fixed- and random-effects). This allows the priors to be learned independently of each other using the large number of features measured in RNAseq experiments.</p>
+<div class="section level2">
+<h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a>
+</h2>
+<p>Since the posterior distribution for <span class="math inline">\mathbf{s}</span> is heavily concentrated for typical datasets with thousands of features, it is sufficient to quickly provide a point estimate of <span class="math inline">\mathbf{s}</span> and delegate estimation of the model coefficients to existing tools like <code>DESeq2</code> or <code>edgeR</code> (only replacing the small normalization step of their workflows).</p>
+<p><code>disize</code> uses Stan’s <a href="https://mc-stan.org/docs/reference-manual/optimization.html" class="external-link">L-BFGS optimization algorithm</a> to find the model’s <em>maximum a posteriori</em> (MAP) for <span class="math inline">\mathbf{s}</span>. We end up doing this in fewer iterations than needed for all parameters to converge by using a heuristic to guess how long the procedure should run for; this is followed up with a diagnostic to ensure the size factors have converged.</p>
+</div>
 </div>
 
   </main><aside class="col-md-3"><div class="links">
