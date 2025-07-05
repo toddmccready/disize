@@ -52,7 +52,7 @@ $$\begin{aligned}
     \mathbf{y}_g &\sim \text{NegBinom}(\mathbf{\mu}_g, \phi) \\
     \log \mathbf{\mu}_g &= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{o} \\
         &= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + (\mathbf{B} \mathbf{s}) \\
-    \mathbf{\beta}_g &\sim \text{Normal}(\mathbf{0}, \mathbf{G})
+    \mathbf{b}_g &\sim \text{Normal}(\mathbf{0}, \mathbf{G})
 \end{aligned}$$
 
 Where $\mathbf{y}_g$ denotes the vector of counts of a gene $g$ for all observations, which is realized from the distribution parameterized by the effect of the covariates ($\mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g$) and any batch-effects ($\mathbf{B} \mathbf{s}$).
