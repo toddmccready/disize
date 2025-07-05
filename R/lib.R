@@ -59,7 +59,7 @@ disize <- function(
     n_feats = 10000L,
     n_subset = 50L,
     n_iters = "auto",
-    n_threads = max(1, parallel::detectCores() - 2L),
+    n_threads = max(1, parallel::detectCores() - 1L),
     grainsize = ceiling(n_feats / n_threads),
     init_alpha = 1e-6,
     verbose = 3L

@@ -44,20 +44,10 @@ jobs:
       # Add this step to install CmdStan
       - name: Install CmdStan
         run: |
-          # install CmdStan
-          cmdstanr::install_cmdstan()
+          cmdstanr::install_cmdstan(overwrite = TRUE, cores = 2)
 
-          cmdstan_path <- cmdstanr::cmdstan_path()
-
-          message("CmdStan installed at: ", cmdstanr::cmdstan_path())
-          make_local_path <- file.path(cmdstan_path, "make", "local")
-
-          if (!dir.exists(dirname(make_local_path))) {
-            dir.create(dirname(make_local_path), recursive = TRUE)
-          }
-
-          writeLines("CXXFLAGS += -Wno-deprecated-declarations", make_local_path)
-          message("make/local file configured to suppress warnings.")
+          # Verify the path is set (optional, for debugging)
+          message("CmdStan path after installation: ", cmdstanr::cmdstan_path())
         shell: Rscript {0}
 
       - name: Build site
