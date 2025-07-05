@@ -84,8 +84,8 @@ metadata <- metadata |>
 ## Inspecting the study design
 
 The dataset is derived from a study investigating the effect of various RNA binding proteins (RBPs) on alternative splicing regulation.
-The authors partitioned *D. melanogaster* cells into two different conditions: observations with `condition = treated` were treated with dsRNAs to knockdown expression via RNAi, while `condition = untreated` were left alone as a control.
-Additionally, two sets of duplicates were processed in parallel for each condition with different kits used for library preparation (producing single-read vs paired-end reads).
+The authors partitioned *D. melanogaster* cells into two different conditions: samples with `condition = treated` were treated with dsRNAs to knockdown expression via RNAi, while `condition = untreated` were left alone as a control.
+Additionally, two sets of duplicates were processed for each condition with different technologies used for sequencing (single-read vs paired-end).
 Thus, a suitable definition of "batch" might be the interaction between `type` and `condition`. However, it is easy to double-check by making the batch definition as granular as possible (where each sample denotes a batch).
 
 The `metadata` object contains the information from the experimental design:
@@ -136,7 +136,7 @@ print(size_factors)
 ```
 
 Although there are some similarities, there is enough of a difference for
-some observations that using the more granular definition may bring some
+some samples that using the more granular definition may bring some
 needed precision.
 
 ## Running DESeq
