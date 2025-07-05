@@ -41,8 +41,8 @@ split_formula <- function(design_formula) {
 #'  estimation, defaults to 50 (useful for scRNA-seq experiments).
 #' @param n_iters The number of iterations used for a single optimization pass.
 #' @param n_threads The number of threads to use for parallel processing.
-#' @param grainsize The grainsize used for partitioning data across threads (
-#' highly encouraged to leave to its default value).
+#' @param grainsize The grainsize used for partitioning data across threads
+#' (highly encouraged to leave to its default value).
 #' @param verbose The verbosity level (`1`: only errors, `2`: also allows warnings,
 #'  `3`: also allows messages, `4`: also prints additional output useful for
 #'  debugging).
