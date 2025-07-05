@@ -8,12 +8,12 @@ disize(
   design_formula,
   counts,
   metadata,
-  batch_name = "batch_id",
+  batch_name,
   obs_name = "obs_id",
-  n_feats = min(10000L, ncol(counts)),
+  n_feats = 10000L,
   n_subset = 50L,
   n_iters = "auto",
-  n_threads = max(1, parallel::detectCores() - 2L),
+  n_threads = max(1L, parallel::detectCores() - 1L),
   grainsize = ceiling(n_feats/n_threads),
   init_alpha = 1e-06,
   verbose = 3L
@@ -22,21 +22,20 @@ disize(
 \arguments{
 \item{design_formula}{The formula describing the experimental design.}
 
-\item{counts}{A (obsservation x feature) count matrix.}
+\item{counts}{A (observation x feature) count matrix.}
 
-\item{metadata}{A dataframe containing sample metadata.}
+\item{metadata}{A dataframe containing observation-level metadata.}
 
-\item{batch_name}{The identifier for the batch column in 'metadata',
-defaults to "batch_id".}
+\item{batch_name}{The identifier for the batch column in 'metadata'.}
 
 \item{obs_name}{The identifier for the observation column in 'metadata',
 defaults to "obs_id".}
 
 \item{n_feats}{The number of features used during estimation, defaults to
-automatically choosing based on a heuristic.}
+all features (which will cap to 10000).}
 
 \item{n_subset}{The number of observations per experimental unit used during
-estimation, defaults to 50.}
+estimation, defaults to 50 (useful for scRNA-seq experiments).}
 
 \item{n_iters}{The number of iterations used for a single optimization pass.}
 
@@ -50,7 +49,7 @@ highly encouraged to leave to its default value).}
 debugging).}
 }
 \value{
-A named numeric vector containing the size factor point estimates.
+A named numeric vector containing the size factor estimates.
 }
 \description{
 Design-informed size factor estimation
