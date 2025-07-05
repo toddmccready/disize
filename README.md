@@ -64,3 +64,9 @@ The confounding batch-effect is essentially an unknown offset $\mathbf{o} = \mat
 At its face, however, this model should not be identifiable for most experimental designs (often the batch ID is perfectly collinear with a predictor or interaction between predictors). This identifiability issue is overcome by constraining $\mathbf{s}$ and assuming only a fraction of features are significantly affected by the covariates measured in the experiment; in other words, the estimated coefficients $\mathbf{\beta}_g, \mathbf{b}_g$ (excluding the intercept) are *sparse* across genes.
 
 This assumption is encoded in the model by placing distinct horseshoe priors on each of the model coefficients (both the fixed- and random-effects). This allows the priors to be learned independently of each other using the large number of features measured in RNAseq experiments.
+
+## Estimation
+
+Since the posterior distribution for $\mathbf{s}$ is heavily concentrated for typical datasets with thousands of features, it is sufficient to quickly provide a point estimate of $\mathbf{s}$ and delegate estimation of the model coefficients to existing tools like `DESeq2` or `edgeR` (only replacing the small normalization step of their workflows).
+
+`disize` uses Stan's [L-BFGS optimization algorithm](https://mc-stan.org/docs/reference-manual/optimization.html) to find the model's *maximum a posteriori* (MAP) for $\mathbf{s}$. We end up doing this in fewer iterations than needed for all parameters to converge by using a heuristic to guess how long the procedure should run for; this is followed up with a diagnostic to ensure the size factors have converged.

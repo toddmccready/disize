@@ -49,6 +49,19 @@ suppressPackageStartupMessages({
 })
 ```
 
+```{r, include=FALSE}
+# Get rid of depreciation warnings
+model <- instantiate::stan_package_model(
+    name = "disize",
+    package = "disize",
+    compile = TRUE,
+    force = TRUE,
+    cpp_options = list(stan_threads = TRUE),
+    compile_model_methods = TRUE
+)
+```
+
+
 ## Reading in data
 
 ```{r}
@@ -135,9 +148,8 @@ size_factors <- data.frame(
 print(size_factors)
 ```
 
-Although there are some similarities, there is enough of a difference for
-some samples that using the more granular definition may bring some
-needed precision.
+Although there are some similarities, there are enough differences that using
+the most granular definition is likely better at adjusting for batch-effects.
 
 ## Running DESeq
 
