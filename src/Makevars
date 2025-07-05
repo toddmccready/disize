@@ -1,2 +1,2 @@
 
-CXXFLAGS += -Wno-deprecated
+CXXFLAGS += -Wno-deprecated-declarations
