@@ -46,9 +46,10 @@ jobs:
         run: |
           # install CmdStan
           cmdstanr::install_cmdstan()
-          message("CmdStan installed at: ", cmdstanr::cmdstan_path())
 
           cmdstan_path <- cmdstanr::cmdstan_path()
+
+          message("CmdStan installed at: ", cmdstanr::cmdstan_path())
           make_local_path <- file.path(cmdstan_path, "make", "local")
 
           if (!dir.exists(dirname(make_local_path))) {
