@@ -107,7 +107,7 @@ dependencies = [
     \mathbf{y}_g &amp;\sim \text{NegBinom}(\mathbf{\mu}_g, \phi) \\
     \log \mathbf{\mu}_g &amp;= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{o} \\
         &amp;= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + (\mathbf{B} \mathbf{s}) \\
-    \mathbf{\beta}_g &amp;\sim \text{Normal}(\mathbf{0}, \mathbf{G})
+    \mathbf{b}_g &amp;\sim \text{Normal}(\mathbf{0}, \mathbf{G})
 \end{aligned}</span></p>
 <p>Where <span class="math inline">\mathbf{y}_g</span> denotes the vector of counts of a gene <span class="math inline">g</span> for all observations, which is realized from the distribution parameterized by the effect of the covariates (<span class="math inline">\mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g</span>) and any batch-effects (<span class="math inline">\mathbf{B} \mathbf{s}</span>).</p>
 <p>The experimental design is specified by an R formula (<code>design_formula</code>) that constructs a “fixed-effects” model matrix <span class="math inline">\mathbf{X}</span> (without an intercept) and a “random-effects” model matrix <span class="math inline">\mathbf{Z}</span>; this by itself is a regular GLMM.</p>
