@@ -44,14 +44,19 @@ jobs:
       # Add this step to install CmdStan
       - name: Install CmdStan
         run: |
-          # Load cmdstanr to make its functions available
-          # This should be safe as setup-r-dependencies would have installed it.
-          library(cmdstanr)
-          # Install CmdStan. Use overwrite=TRUE for clean CI builds.
-          # Use cores to speed up compilation if multiple cores are available.
-          install_cmdstan(overwrite = TRUE, cores = 2)
-          # Verify the path is set (optional, for debugging)
-          message("CmdStan path after installation: ", cmdstan_path())
+          # install CmdStan
+          cmdstanr::install_cmdstan()
+          message("CmdStan installed at: ", cmdstan_path())
+
+          cmdstan_path <- cmdstanr::cmdstan_path()
+          make_local_path <- file.path(cmdstan_path, "make", "local")
+
+          if (!dir.exists(dirname(make_local_path))) {
+            dir.create(dirname(make_local_path), recursive = TRUE)
+          }
+
+          writeLines("CXXFLAGS += -Wno-deprecated-declarations", make_local_path)
+          message("make/local file configured to suppress warnings.")
         shell: Rscript {0}
 
       - name: Build site

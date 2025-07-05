@@ -240,10 +240,7 @@ disize <- function(
         package = "disize",
         compile = TRUE,
         force = TRUE,
-        cpp_options = list(
-            stan_threads = TRUE,
-            "CXXFLAGS += -Wno-deprecated-declarations"
-        ),
+        cpp_options = list(stan_threads = TRUE),
         compile_model_methods = TRUE
     )
 
