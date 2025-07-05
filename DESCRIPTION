@@ -33,5 +33,5 @@ Suggests:
 Remotes:
     stan-dev/cmdstanr
 Config/testthat/edition: 3
-URL: https://toddmccready.github.io/disize/
+URL: https://toddmccready.github.io/disize/, https://github.com/toddmccready/disize
 VignetteBuilder: knitr

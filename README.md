@@ -50,8 +50,8 @@ Internally, `disize` uses Stan to fit a Bayesian model that jointly estimates th
 
 $$\begin{aligned}
     \mathbf{y}_g &\sim \text{NegBinom}(\mathbf{\mu}_g, \phi) \\
-    \log \mathbf{\mu}_g &= \mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{o} \\
-        &= \mathbf{\alpha} + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{B} \mathbf{s} \\
+    \log \mathbf{\mu}_g &= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{o} \\
+        &= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + (\mathbf{B} \mathbf{s}) \\
     \mathbf{\beta}_g &\sim \text{Normal}(\mathbf{0}, \mathbf{G})
 \end{aligned}$$
 
