@@ -87,11 +87,7 @@ metadata <- read.csv(metadata_path)
 metadata <- metadata |>
     dplyr::mutate(obs_id = sub("fb", "", metadata$file)) |>
     dplyr::select(obs_id, condition, type) |>
-    dplyr::mutate(across(c(condition, type), as.factor)) |>
-    dplyr::mutate(
-        id_1 = interaction(metadata$type, metadata$condition, sep = ":"),
-        id_2 = obs_id
-    )
+    dplyr::mutate(across(c(condition, type), as.factor))
 ```
 
 ## Inspecting the study design
@@ -99,7 +95,7 @@ metadata <- metadata |>
 The dataset is derived from a study investigating the effect of various RNA binding proteins (RBPs) on alternative splicing regulation.
 The authors partitioned *D. melanogaster* cells into two different conditions: samples with `condition = treated` were treated with dsRNAs to knockdown expression via RNAi, while `condition = untreated` were left alone as a control.
 Additionally, two sets of duplicates were processed for each condition with different technologies used for sequencing (single-read vs paired-end).
-Thus, a suitable definition of "batch" might be the interaction between `type` and `condition`. However, it is easy to double-check by making the batch definition as granular as possible (where each sample denotes a batch).
+To be safe we'll keep the definition of a "batch" as granular as possible (meaning every sample is treated as having some batch-effect), however, `disize` supports arbitrary batch membership which is explored in [WIP].
 
 The `metadata` object contains the information from the experimental design:
 
@@ -119,37 +115,14 @@ design_formula <- ~ condition
 
 ```{r}
 # First batch definition
-size_factors_1 <- disize::disize(
+size_factors <- disize::disize(
     design_formula,
     counts,
     metadata,
-    batch_name = "id_1",
+    batch_name = "obs_id",
     obs_name = "obs_id" # needed to order 'counts' correctly
 )
-
-# Second batch definition
-size_factors_2 <- disize::disize(
-    design_formula,
-    counts,
-    metadata,
-    batch_name = "id_2",
-    obs_name = "obs_id"
-)
 ```
-
-### Comparing batch definitions
-```{r}
-size_factors <- data.frame(
-    obs_id = metadata$obs_id,
-    def_1 = unname(size_factors_1[metadata$id_1]),
-    def_2 = unname(size_factors_2[metadata$id_2])
-)
-
-print(size_factors)
-```
-
-Although there are some similarities, there are enough differences that using
-the most granular definition is likely better at adjusting for batch-effects.
 
 ## Running DESeq
 

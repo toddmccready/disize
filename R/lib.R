@@ -59,8 +59,7 @@ disize <- function(
     n_feats = 10000L,
     n_subset = 50L,
     n_iters = "auto",
-    n_threads = max(1L, parallel::detectCores() - 1L),
-    grainsize = ceiling(n_feats / n_threads),
+    n_threads = max(1, ceiling(parallel::detectCores() / 2)),
     init_alpha = 1e-6,
     verbose = 3L
 ) {
@@ -149,7 +148,7 @@ disize <- function(
     # Ensure relevant columns are factors
     metadata[[batch_name]] <- as.factor(metadata[[batch_name]])
 
-    # Formating Data For Stan ----
+    # Formating data for Stan ----
     if (2 < verbose) {
         message("Formatting data...")
     }
@@ -197,7 +196,6 @@ disize <- function(
             )
         }
 
-        # Include data for Stan
         stan_data[["n_re"]] <- ncol(re_design)
         stan_data[["n_nz_re"]] <- length(re_design@x)
         stan_data[["re_design_x"]] <- re_design@x
@@ -219,7 +217,9 @@ disize <- function(
     stan_data[["counts"]] <- counts |> t()
 
     # Include grainsize
-    stan_data[["grainsize"]] <- grainsize
+    stan_data[["grainsize"]] <- ceiling(
+        stan_data[["n_feats"]] / n_threads
+    )
 
     # Compute heuristic for maximum # of iterations
     if (n_iters == "auto") {

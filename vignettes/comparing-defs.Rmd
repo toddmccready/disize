@@ -1,8 +1,8 @@
 ---
-title: "Running disize on a Single-cell Experiment"
+title: "Comparing batch definitions"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Running disize on a Single-cell Experiment}
+  %\VignetteIndexEntry{Comparing batch definitions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

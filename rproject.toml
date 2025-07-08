@@ -33,4 +33,7 @@ dependencies = [
     "rmarkdown",
     "pandoc",
     "pasilla",
+    "Seurat",
+    { name = "SeuratData", git = "https://github.com/satijalab/seurat-data", branch = "main" },
+    "harmony",
 ]
