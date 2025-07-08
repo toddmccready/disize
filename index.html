@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.24</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.26</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,8 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/single-cell-experiment.html">Running disize on a Single-cell Experiment</a></li>
+<li><a class="dropdown-item" href="articles/comparing-defs.html">Comparing batch definitions</a></li>
+    <li><a class="dropdown-item" href="articles/implementation.html">Implementation of disize</a></li>
   </ul>
 </li>
       </ul>
@@ -93,36 +94,12 @@
 
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.24" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.26" },
     # ...
 ]</code></pre>
-<p>Then sync your project:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">rv</span> sync</span></code></pre></div>
-<p>And finally install the CmdStan toolchain in <code>R</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>Then install the CmdStan toolchain in <code>R</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">cmdstanr</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/cmdstanr/reference/install_cmdstan.html" class="external-link">install_cmdstan</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level1">
-<h1 id="implementation">Implementation<a class="anchor" aria-label="anchor" href="#implementation"></a>
-</h1>
-<p>Internally, <code>disize</code> uses Stan to fit a Bayesian model that jointly estimates the effect of covariates(structured according to <code>design_formula</code>) on gene expression <em>and</em> any confounding batch-effects:</p>
-<p><span class="math display">\begin{aligned}
-    \mathbf{y}_g &amp;\sim \text{NegBinom}(\mathbf{\mu}_g, \phi) \\
-    \log \mathbf{\mu}_g &amp;= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{o} \\
-        &amp;= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + (\mathbf{B} \mathbf{s}) \\
-    \mathbf{b}_g &amp;\sim \text{Normal}(\mathbf{0}, \mathbf{G}_g)
-\end{aligned}</span></p>
-<p>Where <span class="math inline">\mathbf{y}_g</span> denotes the vector of counts of a gene <span class="math inline">g</span> for all observations, which is realized from the distribution parameterized by the effect of the covariates (<span class="math inline">\mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g</span>) and any batch-effects (<span class="math inline">\mathbf{B} \mathbf{s}</span>).</p>
-<p>The experimental design is specified by an R formula (<code>design_formula</code>) that constructs a “fixed-effects” model matrix <span class="math inline">\mathbf{X}</span> (without an intercept) and a “random-effects” model matrix <span class="math inline">\mathbf{Z}</span>; this by itself is a regular GLMM.</p>
-<p>The confounding batch-effect is essentially an unknown offset <span class="math inline">\mathbf{o} = \mathbf{B} \mathbf{s}</span>, where <span class="math inline">\mathbf{B}</span> specifies the batch membership for each observation and <span class="math inline">\mathbf{s}</span> contains the “size factors” which scale the true magnitude of expression.</p>
-<p>At its face, however, this model should not be identifiable for most experimental designs (often the batch ID is perfectly collinear with a predictor or interaction between predictors). This identifiability issue is overcome by constraining <span class="math inline">\mathbf{s}</span> and assuming only a fraction of features are significantly affected by the covariates measured in the experiment; in other words, the estimated coefficients <span class="math inline">\mathbf{\beta}_g, \mathbf{b}_g</span> (excluding the intercept) are <em>sparse</em> across genes.</p>
-<p>This assumption is encoded in the model by placing distinct horseshoe priors on each of the model coefficients (both the fixed- and random-effects). This allows the priors to be learned independently of each other using the large number of features measured in RNAseq experiments.</p>
-<div class="section level2">
-<h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a>
-</h2>
-<p>Since the posterior distribution for <span class="math inline">\mathbf{s}</span> is heavily concentrated for typical datasets with thousands of features, it is sufficient to quickly provide a point estimate of <span class="math inline">\mathbf{s}</span> and delegate estimation of the model coefficients to existing tools like <code>DESeq2</code> or <code>edgeR</code> (only replacing the small normalization step of their workflows).</p>
-<p><code>disize</code> uses Stan’s <a href="https://mc-stan.org/docs/reference-manual/optimization.html" class="external-link">L-BFGS optimization algorithm</a> to find the model’s <em>maximum a posteriori</em> (MAP) for <span class="math inline">\mathbf{s}</span>. We end up doing this in fewer iterations than needed for all parameters to converge by using a heuristic to guess how long the procedure should run for; this is followed up with a diagnostic to ensure the size factors have converged.</p>
 </div>
 </div>
 
