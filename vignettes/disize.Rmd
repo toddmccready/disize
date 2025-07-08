@@ -135,7 +135,7 @@ dds <- DESeq2::DESeqDataSetFromMatrix(
     colData = metadata,
     design = design_formula
 )
-DESeq2::sizeFactors(dds) <- exp(size_factors_ # Insert size factors
+DESeq2::sizeFactors(dds) <- exp(size_factors) # Insert size factors
 
 # Run analysis
 dds <- DESeq2::DESeq(dds)
