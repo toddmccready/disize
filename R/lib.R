@@ -36,10 +36,10 @@ split_formula <- function(design_formula) {
 #' @param obs_name The identifier for the observation column in 'metadata',
 #'  defaults to "obs_id".
 #' @param n_feats The number of features used during estimation, defaults to
-#'  all features (which will cap to 10000).
+#'  all features (default caps to 10000).
 #' @param n_subset The number of observations per experimental unit used during
 #'  estimation, defaults to 50 (useful for scRNA-seq experiments).
-#' @param n_iters The number of iterations used for a single optimization pass.
+#' @param n_iters The number of iterations used for estimation.
 #' @param n_threads The number of threads to use for parallel processing.
 #' @param grainsize The grainsize used for partitioning data across threads
 #' (highly encouraged to leave to its default value).

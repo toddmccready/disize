@@ -13,8 +13,7 @@ disize(
   n_feats = 10000L,
   n_subset = 50L,
   n_iters = "auto",
-  n_threads = max(1L, parallel::detectCores() - 1L),
-  grainsize = ceiling(n_feats/n_threads),
+  n_threads = max(1, ceiling(parallel::detectCores()/2)),
   init_alpha = 1e-06,
   verbose = 3L
 )
@@ -32,21 +31,21 @@ disize(
 defaults to "obs_id".}
 
 \item{n_feats}{The number of features used during estimation, defaults to
-all features (which will cap to 10000).}
+all features (default caps to 10000).}
 
 \item{n_subset}{The number of observations per experimental unit used during
 estimation, defaults to 50 (useful for scRNA-seq experiments).}
 
-\item{n_iters}{The number of iterations used for a single optimization pass.}
+\item{n_iters}{The number of iterations used for estimation.}
 
 \item{n_threads}{The number of threads to use for parallel processing.}
-
-\item{grainsize}{The grainsize used for partitioning data across threads (
-highly encouraged to leave to its default value).}
 
 \item{verbose}{The verbosity level (\code{1}: only errors, \code{2}: also allows warnings,
 \code{3}: also allows messages, \code{4}: also prints additional output useful for
 debugging).}
+
+\item{grainsize}{The grainsize used for partitioning data across threads
+(highly encouraged to leave to its default value).}
 }
 \value{
 A named numeric vector containing the size factor estimates.

@@ -139,7 +139,7 @@ Once the size factors are inserted into the `DESeqDataSet` object, the analysis 
 ```{r}
 # Constructing DESeqDataSet object
 dds <- DESeq2::DESeqDataSetFromMatrix(
-    countData = t(counts[metadata$obs_id, ]),
+    countData = t(counts[metadata$sample_id, ]),
     colData = metadata,
     design = design_formula
 )
@@ -149,5 +149,5 @@ DESeq2::sizeFactors(dds) <- exp(size_factors_2) # Insert size factors
 dds <- DESeq2::DESeq(dds)
 
 # Print results
-print(results(dds))
+print(DESeq2::results(dds))
 ```
