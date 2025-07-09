@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.26</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.28</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,9 +67,182 @@
 
     
     
+<p>The definition of a “batch” is often not explicitly mentioned for
+many studies, instead you’ll often have to go inspecting the methods
+section how samples were processed (where library pooling was done, if
+multiple sequencing runs were used, etc).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://toddmccready.github.io/disize/">disize</a></span><span class="op">)</span></span></code></pre></div>
-  </main>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressPackageStartupMessages</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">pasilla</span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://toddmccready.github.io/disize/">disize</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/thelovelab/DESeq2" class="external-link">DESeq2</a></span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="reading-in-data">Reading in data<a class="anchor" aria-label="anchor" href="#reading-in-data"></a>
+</h2>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Grab filepaths</span></span>
+<span><span class="va">counts_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
+<span>    <span class="st">"extdata"</span>,</span>
+<span>    <span class="st">"pasilla_gene_counts.tsv"</span>,</span>
+<span>    package<span class="op">=</span><span class="st">"pasilla"</span>,</span>
+<span>    mustWork<span class="op">=</span><span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">metadata_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
+<span>    <span class="st">"extdata"</span>,</span>
+<span>    <span class="st">"pasilla_sample_annotation.csv"</span>,</span>
+<span>    package<span class="op">=</span><span class="st">"pasilla"</span>,</span>
+<span>    mustWork<span class="op">=</span><span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Read in data</span></span>
+<span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">counts_path</span>, sep <span class="op">=</span> <span class="st">"\t"</span>, row.names <span class="op">=</span> <span class="st">"gene_id"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">metadata_path</span><span class="op">)</span></span>
+<span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="va">metadata</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>sample_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"fb"</span>, <span class="st">""</span>, <span class="va">file</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">sample_id</span>, <span class="va">condition</span>, <span class="va">type</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">condition</span>, <span class="va">type</span><span class="op">)</span>, <span class="va">as.factor</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="inspecting-the-study-design">Inspecting the study design<a class="anchor" aria-label="anchor" href="#inspecting-the-study-design"></a>
+</h2>
+<p>The dataset is derived from a study investigating the effect of
+various RNA binding proteins (RBPs) on alternative splicing regulation.
+The authors partitioned <em>D. melanogaster</em> cells into two
+different conditions: samples with <code>condition = treated</code> were
+treated with dsRNAs to knockdown expression via RNAi, while
+<code>condition = untreated</code> were left alone as a control.
+Additionally, two sets of <em>duplicates</em> were processed for each
+condition with different technologies used for sequencing (single-read
+vs paired-end).</p>
+<p>Therefore, a suitable definition of a “batch” might be the grouping
+duplicates together:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="va">metadata</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>id_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">type</span>, <span class="va">condition</span>, sep <span class="op">=</span> <span class="st">":"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>However, the most granular definition would allow for batch-effects
+even within these duplicates (as a result of differences in sample
+processing):</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="va">metadata</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>id_2 <span class="op">=</span> <span class="va">sample_id</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    sample_id condition        type                  id_1       id_2</span></span>
+<span><span class="co">#&gt; 1   treated1   treated single-read   single-read:treated   treated1</span></span>
+<span><span class="co">#&gt; 2   treated2   treated  paired-end    paired-end:treated   treated2</span></span>
+<span><span class="co">#&gt; 3   treated3   treated  paired-end    paired-end:treated   treated3</span></span>
+<span><span class="co">#&gt; 4 untreated1 untreated single-read single-read:untreated untreated1</span></span>
+<span><span class="co">#&gt; 5 untreated2 untreated single-read single-read:untreated untreated2</span></span>
+<span><span class="co">#&gt; 6 untreated3 untreated  paired-end  paired-end:untreated untreated3</span></span>
+<span><span class="co">#&gt; 7 untreated4 untreated  paired-end  paired-end:untreated untreated4</span></span></code></pre></div>
+<p>(Evidently one sample was thrown away, although this does not pose a
+problem for anything downstream.)</p>
+</div>
+<div class="section level2">
+<h2 id="estimating-size-factors">Estimating size factors<a class="anchor" aria-label="anchor" href="#estimating-size-factors"></a>
+</h2>
+<p>In the absence of batch-effects we are interested in the effects of
+<code>condition</code>, so our <code>design_formula</code> should
+be:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">design_formula</span> <span class="op">&lt;-</span> <span class="op">~</span> <span class="va">condition</span></span></code></pre></div>
+<p>With all the required arguments we can now run <code>disize</code>
+for both batch definitions:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">size_factors_1</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
+<span>    <span class="va">design_formula</span>,</span>
+<span>    <span class="va">counts</span>,</span>
+<span>    <span class="va">metadata</span>,</span>
+<span>    batch_name <span class="op">=</span> <span class="st">"id_1"</span>,</span>
+<span>    obs_name <span class="op">=</span> <span class="st">"sample_id"</span> <span class="co"># needed to order 'counts' correctly</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Formatting data...</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~69.7s)</span></span>
+<span><span class="co">#&gt; Finised in 60.9s!</span></span>
+<span></span>
+<span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
+<span>    <span class="va">design_formula</span>,</span>
+<span>    <span class="va">counts</span>,</span>
+<span>    <span class="va">metadata</span>,</span>
+<span>    batch_name <span class="op">=</span> <span class="st">"id_2"</span>,</span>
+<span>    obs_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Formatting data...</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~71.4s)</span></span>
+<span><span class="co">#&gt; Finised in 62.8s!</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="comparing-definitions">Comparing definitions<a class="anchor" aria-label="anchor" href="#comparing-definitions"></a>
+</h2>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">size_factors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    sample_id <span class="op">=</span> <span class="va">metadata</span><span class="op">$</span><span class="va">sample_id</span>,</span>
+<span>    id_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">size_factors_1</span><span class="op">[</span><span class="va">metadata</span><span class="op">$</span><span class="va">id_1</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    id_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">[</span><span class="va">metadata</span><span class="op">$</span><span class="va">id_2</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    sample_id       id_1       id_2</span></span>
+<span><span class="co">#&gt; 1   treated1  0.3576840  0.4337995</span></span>
+<span><span class="co">#&gt; 2   treated2 -0.3341442 -0.3501711</span></span>
+<span><span class="co">#&gt; 3   treated3 -0.3341442 -0.2633270</span></span>
+<span><span class="co">#&gt; 4 untreated1  0.2187259  0.0424296</span></span>
+<span><span class="co">#&gt; 5 untreated2  0.2187259  0.5012903</span></span>
+<span><span class="co">#&gt; 6 untreated3 -0.4950414 -0.5118620</span></span>
+<span><span class="co">#&gt; 7 untreated4 -0.4950414 -0.3706849</span></span></code></pre></div>
+<p>Although there are some similarities (e.g., the estimates for
+<code>untreated3</code> are approximately equal), there are enough
+differences between samples that the more granular definition is a
+better choice for this analysis.</p>
+</div>
+<div class="section level2">
+<h2 id="running-deseq">Running DESeq<a class="anchor" aria-label="anchor" href="#running-deseq"></a>
+</h2>
+<p>Once the size factors are inserted into the <code>DESeqDataSet</code>
+object, the analysis then proceeds normally.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Constructing DESeqDataSet object</span></span>
+<span><span class="va">dds</span> <span class="op">&lt;-</span> <span class="fu">DESeq2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DESeq2/man/DESeqDataSet.html" class="external-link">DESeqDataSetFromMatrix</a></span><span class="op">(</span></span>
+<span>    countData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">counts</span><span class="op">[</span><span class="va">metadata</span><span class="op">$</span><span class="va">sample_id</span>, <span class="op">]</span><span class="op">)</span>,</span>
+<span>    colData <span class="op">=</span> <span class="va">metadata</span>,</span>
+<span>    design <span class="op">=</span> <span class="va">design_formula</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">DESeq2</span><span class="fu">::</span><span class="fu">sizeFactors</span><span class="op">(</span><span class="va">dds</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span> <span class="co"># Insert size factors</span></span>
+<span></span>
+<span><span class="co"># Run analysis</span></span>
+<span><span class="va">dds</span> <span class="op">&lt;-</span> <span class="fu">DESeq2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DESeq2/man/DESeq.html" class="external-link">DESeq</a></span><span class="op">(</span><span class="va">dds</span><span class="op">)</span></span>
+<span><span class="co">#&gt; using pre-existing size factors</span></span>
+<span><span class="co">#&gt; estimating dispersions</span></span>
+<span><span class="co">#&gt; gene-wise dispersion estimates</span></span>
+<span><span class="co">#&gt; mean-dispersion relationship</span></span>
+<span><span class="co">#&gt; final dispersion estimates</span></span>
+<span><span class="co">#&gt; fitting model and testing</span></span>
+<span></span>
+<span><span class="co"># Print results</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">DESeq2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DESeq2/man/results.html" class="external-link">results</a></span><span class="op">(</span><span class="va">dds</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; log2 fold change (MLE): condition untreated vs treated </span></span>
+<span><span class="co">#&gt; Wald test p-value: condition untreated vs treated </span></span>
+<span><span class="co">#&gt; DataFrame with 14599 rows and 6 columns</span></span>
+<span><span class="co">#&gt;                baseMean log2FoldChange     lfcSE       stat    pvalue      padj</span></span>
+<span><span class="co">#&gt;               &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; FBgn0000003    0.185893     -1.0167939  3.804518 -0.2672596 0.7892693        NA</span></span>
+<span><span class="co">#&gt; FBgn0000008  102.946483      0.0152384  0.221325  0.0688507 0.9451085  0.990455</span></span>
+<span><span class="co">#&gt; FBgn0000014    1.141458      0.5268319  2.114015  0.2492092 0.8031990        NA</span></span>
+<span><span class="co">#&gt; FBgn0000015    0.917912      1.8982548  2.060040  0.9214650 0.3568077        NA</span></span>
+<span><span class="co">#&gt; FBgn0000017 4711.140900      0.2564267  0.126126  2.0330989 0.0420425  0.234177</span></span>
+<span><span class="co">#&gt; ...                 ...            ...       ...        ...       ...       ...</span></span>
+<span><span class="co">#&gt; FBgn0261571 9.25775e-02    -0.87944028  3.809549 -0.2308515  0.817430        NA</span></span>
+<span><span class="co">#&gt; FBgn0261572 6.71659e+00     0.97726858  0.762876  1.2810322  0.200182  0.579617</span></span>
+<span><span class="co">#&gt; FBgn0261573 2.42519e+03     0.00375871  0.115481  0.0325484  0.974035  0.995694</span></span>
+<span><span class="co">#&gt; FBgn0261574 5.25085e+03     0.00508216  0.190924  0.0266188  0.978764  0.997642</span></span>
+<span><span class="co">#&gt; FBgn0261575 1.15072e+01    -0.13557712  0.928857 -0.1459612  0.883952  0.973689</span></span></code></pre></div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 

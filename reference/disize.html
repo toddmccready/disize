@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.26</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.28</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,8 +53,7 @@
 <span>  n_feats <span class="op">=</span> <span class="fl">10000L</span>,</span>
 <span>  n_subset <span class="op">=</span> <span class="fl">50L</span>,</span>
 <span>  n_iters <span class="op">=</span> <span class="st">"auto"</span>,</span>
-<span>  n_threads <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1L</span><span class="op">)</span>,</span>
-<span>  grainsize <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="va">n_feats</span><span class="op">/</span><span class="va">n_threads</span><span class="op">)</span>,</span>
+<span>  n_threads <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  init_alpha <span class="op">=</span> <span class="fl">1e-06</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="fl">3L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -87,7 +86,7 @@ defaults to "obs_id".</p></dd>
 
 <dt id="arg-n-feats">n_feats<a class="anchor" aria-label="anchor" href="#arg-n-feats"></a></dt>
 <dd><p>The number of features used during estimation, defaults to
-all features (which will cap to 10000).</p></dd>
+all features (default caps to 10000).</p></dd>
 
 
 <dt id="arg-n-subset">n_subset<a class="anchor" aria-label="anchor" href="#arg-n-subset"></a></dt>
@@ -96,22 +95,22 @@ estimation, defaults to 50 (useful for scRNA-seq experiments).</p></dd>
 
 
 <dt id="arg-n-iters">n_iters<a class="anchor" aria-label="anchor" href="#arg-n-iters"></a></dt>
-<dd><p>The number of iterations used for a single optimization pass.</p></dd>
+<dd><p>The number of iterations used for estimation.</p></dd>
 
 
 <dt id="arg-n-threads">n_threads<a class="anchor" aria-label="anchor" href="#arg-n-threads"></a></dt>
 <dd><p>The number of threads to use for parallel processing.</p></dd>
 
 
-<dt id="arg-grainsize">grainsize<a class="anchor" aria-label="anchor" href="#arg-grainsize"></a></dt>
-<dd><p>The grainsize used for partitioning data across threads (
-highly encouraged to leave to its default value).</p></dd>
-
-
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>The verbosity level (<code>1</code>: only errors, <code>2</code>: also allows warnings,
 <code>3</code>: also allows messages, <code>4</code>: also prints additional output useful for
 debugging).</p></dd>
+
+
+<dt id="arg-grainsize">grainsize<a class="anchor" aria-label="anchor" href="#arg-grainsize"></a></dt>
+<dd><p>The grainsize used for partitioning data across threads
+(highly encouraged to leave to its default value).</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.26</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.28</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,106 +98,141 @@ do not correspond to the same observation but are named, you can specify
 <h2 id="an-example-with-deseq2">An example with DESeq2<a class="anchor" aria-label="anchor" href="#an-example-with-deseq2"></a>
 </h2>
 <p>To see <code>disize</code> in action, we will be analyzing the
-following dataset from the <code>pasilla</code> package with
-<code>DESeq2</code>.</p>
+following dataset from Li et al., 2025 with <code>DESeq2</code>.</p>
+<p>This dataset consists of a purified macrophage subtype(“Mac2”,
+induced in an ‘activated’ state) that has been partitioned into four
+groups exposed to different conditions. The authors offer this
+information on how the samples were processed:</p>
+<blockquote>
+<p>The sorted Mac2 cells were divided into four groups and stimulated at
+the 3-h time point with the same concentrations as previously described.
+Then, the RNA was extracted using the RNeasy Plus Micro Kit as per
+manufacturer instructions. Poly(A)mRNA was isolated using mRNA Capture
+Beads 2.0 (Yeasen Cat.12629ES, CHN) with two rounds of purification,
+followed by RNA fragmentation with magnesium ions at 94°C (Yeasen
+Cat.12340ES97, CHN). RNA sequencing library preparation was performed
+using the TruSeq RNA Library Prep Kit v2 (Illumina). Sequencing was
+carried out as paired-end 2×150 bp (PE150) on an Illumina Novaseq™ X
+Plus (LC-Bio Technologies).</p>
+</blockquote>
+<p>The TruSeq RNA Library Prep Kit involves “tagging” transcripts with
+barcodes that identify distinct <em>samples</em>, allowing all prepared
+cDNA libraries to be pooled together before sequencing. Since
+batch-effects are usually attributed to separate sequencing runs, then
+we expect very small batch-effects to be present in this dataset if we
+define a “batch” as the unit subjected to RNA extraction(and all further
+processing).</p>
+<div class="section level3">
+<h3 id="dependencies">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies"></a>
+</h3>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressPackageStartupMessages</a></span><span class="op">(</span><span class="op">{</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">pasilla</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://toddmccready.github.io/disize/">disize</a></span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/thelovelab/DESeq2" class="external-link">DESeq2</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/curl" class="external-link">curl</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://henrikbengtsson.github.io/R.utils/" class="external-link">R.utils</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="reading-in-data">Reading in data<a class="anchor" aria-label="anchor" href="#reading-in-data"></a>
-</h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Grab filepaths</span></span>
-<span><span class="va">counts_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
-<span>    <span class="st">"extdata"</span>,</span>
-<span>    <span class="st">"pasilla_gene_counts.tsv"</span>,</span>
-<span>    package<span class="op">=</span><span class="st">"pasilla"</span>,</span>
-<span>    mustWork<span class="op">=</span><span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">metadata_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
-<span>    <span class="st">"extdata"</span>,</span>
-<span>    <span class="st">"pasilla_sample_annotation.csv"</span>,</span>
-<span>    package<span class="op">=</span><span class="st">"pasilla"</span>,</span>
-<span>    mustWork<span class="op">=</span><span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Read in data</span></span>
-<span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">counts_path</span>, sep <span class="op">=</span> <span class="st">"\t"</span>, row.names <span class="op">=</span> <span class="st">"gene_id"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">metadata_path</span><span class="op">)</span></span>
-<span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="va">metadata</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>obs_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"fb"</span>, <span class="st">""</span>, <span class="va">metadata</span><span class="op">$</span><span class="va">file</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">obs_id</span>, <span class="va">condition</span>, <span class="va">type</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">condition</span>, <span class="va">type</span><span class="op">)</span>, <span class="va">as.factor</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="inspecting-the-study-design">Inspecting the study design<a class="anchor" aria-label="anchor" href="#inspecting-the-study-design"></a>
+<h3 id="downloading-the-data">Downloading the data<a class="anchor" aria-label="anchor" href="#downloading-the-data"></a>
 </h3>
-<p>The dataset is derived from a study investigating the effect of
-various RNA binding proteins (RBPs) on alternative splicing regulation.
-The authors partitioned <em>D. melanogaster</em> cells into two
-different conditions: samples with <code>condition = treated</code> were
-treated with dsRNAs to knockdown expression via RNAi, while
-<code>condition = untreated</code> were left alone as a control.
-Additionally, two sets of duplicates were processed for each condition
-with different technologies used for sequencing (single-read vs
-paired-end). To be safe we’ll keep the definition of a “batch” as
-granular as possible (meaning every sample is treated as having some
-batch-effect), however, <code>disize</code> supports arbitrary batch
-membership which is explored in [WIP].</p>
-<p>The <code>metadata</code> object contains the information from the
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Download counts and construct metadata</span></span>
+<span><span class="va">counts_path</span> <span class="op">&lt;-</span> <span class="fu">curl</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/curl/reference/curl_download.html" class="external-link">curl_download</a></span><span class="op">(</span></span>
+<span>    url <span class="op">=</span> <span class="st">"https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE273924&amp;format=file&amp;file=GSE273924%5Fraw%5Fcounts%2Etsv%2Egz"</span>,</span>
+<span>    destfile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"/counts.tsv.gz"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">counts_path</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    <span class="st">"sample_id"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    <span class="st">"condition"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"control"</span>, <span class="st">"lps"</span>, <span class="st">"nelps"</span>, <span class="st">"ne"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Coerce to formatted matrix</span></span>
+<span><span class="va">gene_names</span> <span class="op">&lt;-</span> <span class="va">counts</span><span class="op">$</span><span class="va">gene_id</span></span>
+<span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">counts</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">gene_names</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="running-disize">Running <code>disize</code><a class="anchor" aria-label="anchor" href="#running-disize"></a>
+</h3>
+<p>The <code>metadata</code> contains the information for the
 experimental design:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       obs_id condition        type</span></span>
-<span><span class="co">#&gt; 1   treated1   treated single-read</span></span>
-<span><span class="co">#&gt; 2   treated2   treated  paired-end</span></span>
-<span><span class="co">#&gt; 3   treated3   treated  paired-end</span></span>
-<span><span class="co">#&gt; 4 untreated1 untreated single-read</span></span>
-<span><span class="co">#&gt; 5 untreated2 untreated single-read</span></span>
-<span><span class="co">#&gt; 6 untreated3 untreated  paired-end</span></span>
-<span><span class="co">#&gt; 7 untreated4 untreated  paired-end</span></span></code></pre></div>
-<p>Evidently, one sample was thrown away!</p>
-<p>In the absence of batch-effects we are interested in the effects of
-<code>condition</code>, so our <code>design_formula</code> should
-be:</p>
+<span><span class="co">#&gt;    sample_id condition</span></span>
+<span><span class="co">#&gt; 1      Ctrl1   control</span></span>
+<span><span class="co">#&gt; 2      Ctrl2   control</span></span>
+<span><span class="co">#&gt; 3      Ctrl3   control</span></span>
+<span><span class="co">#&gt; 4       LPS1       lps</span></span>
+<span><span class="co">#&gt; 5       LPS2       lps</span></span>
+<span><span class="co">#&gt; 6       LPS3       lps</span></span>
+<span><span class="co">#&gt; 7     NELPS1     nelps</span></span>
+<span><span class="co">#&gt; 8     NELPS2     nelps</span></span>
+<span><span class="co">#&gt; 9     NELPS3     nelps</span></span>
+<span><span class="co">#&gt; 10       NE1        ne</span></span>
+<span><span class="co">#&gt; 11       NE2        ne</span></span>
+<span><span class="co">#&gt; 12       NE3        ne</span></span></code></pre></div>
+<p>For this dataset, the study was primarily interested in the effect of
+<code>condition</code> on expression, thus the formula we would input
+into <code>disize</code> is:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">design_formula</span> <span class="op">&lt;-</span> <span class="op">~</span> <span class="va">condition</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="estimating-size-factors">Estimating size factors<a class="anchor" aria-label="anchor" href="#estimating-size-factors"></a>
-</h3>
+<p>We can finally run <code>disize</code> to get the estimated size
+factors:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># First batch definition</span></span>
-<span><span class="va">size_factors</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">size_factors_1</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
 <span>    <span class="va">design_formula</span>,</span>
 <span>    <span class="va">counts</span>,</span>
 <span>    <span class="va">metadata</span>,</span>
-<span>    batch_name <span class="op">=</span> <span class="st">"obs_id"</span>,</span>
-<span>    obs_name <span class="op">=</span> <span class="st">"obs_id"</span> <span class="co"># needed to order 'counts' correctly</span></span>
+<span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~70.5s)</span></span>
-<span><span class="co">#&gt; Finised in 64.7s!</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~110.7s)</span></span>
+<span><span class="co">#&gt; Finised in 99.6s!</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_1</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
+<span><span class="co">#&gt;  0.082340728  0.003553523 -0.086471855  0.085881138  0.012432106  0.100065963 </span></span>
+<span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
+<span><span class="co">#&gt; -0.069011169  0.036273935  0.106796358 -0.162830180 -0.134203900 -0.021313770</span></span></code></pre></div>
+<p>Evidently the batch-effect is indeed small across most samples! The
+samples “NELPS1” and “NELPS2” seem to have been processed slightly
+worse, but otherwise the estimated size factors are approximately the
+same (within ~0.1).</p>
+<p>We can confirm these estimates by rerunning <code>disize</code> with
+a larger <code>n_feats</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
+<span>    <span class="va">design_formula</span>,</span>
+<span>    <span class="va">counts</span>,</span>
+<span>    <span class="va">metadata</span>,</span>
+<span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span>,</span>
+<span>    n_feats <span class="op">=</span> <span class="fl">15000</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Formatting data...</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~157.5s)</span></span>
+<span><span class="co">#&gt; Finised in 145.1s!</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
+<span><span class="co">#&gt;  0.095303742  0.005168706 -0.083965484  0.073874335 -0.008215053  0.087963097 </span></span>
+<span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
+<span><span class="co">#&gt; -0.044352619  0.055490226  0.123255579 -0.181307332 -0.149171063 -0.025856786</span></span></code></pre></div>
+<p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level3">
 <h3 id="running-deseq">Running DESeq<a class="anchor" aria-label="anchor" href="#running-deseq"></a>
 </h3>
 <p>Once the size factors are inserted into the <code>DESeqDataSet</code>
 object, the analysis then proceeds normally.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Constructing DESeqDataSet object</span></span>
 <span><span class="va">dds</span> <span class="op">&lt;-</span> <span class="fu">DESeq2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DESeq2/man/DESeqDataSet.html" class="external-link">DESeqDataSetFromMatrix</a></span><span class="op">(</span></span>
-<span>    countData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">counts</span><span class="op">[</span><span class="va">metadata</span><span class="op">$</span><span class="va">obs_id</span>, <span class="op">]</span><span class="op">)</span>,</span>
+<span>    countData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span>,</span>
 <span>    colData <span class="op">=</span> <span class="va">metadata</span>,</span>
 <span>    design <span class="op">=</span> <span class="va">design_formula</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu">DESeq2</span><span class="fu">::</span><span class="fu">sizeFactors</span><span class="op">(</span><span class="va">dds</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span> <span class="co"># Insert size factors</span></span>
+<span><span class="fu">DESeq2</span><span class="fu">::</span><span class="fu">sizeFactors</span><span class="op">(</span><span class="va">dds</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span> <span class="co"># Insert size factors</span></span>
 <span></span>
 <span><span class="co"># Run analysis</span></span>
 <span><span class="va">dds</span> <span class="op">&lt;-</span> <span class="fu">DESeq2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DESeq2/man/DESeq.html" class="external-link">DESeq</a></span><span class="op">(</span><span class="va">dds</span><span class="op">)</span></span>
@@ -209,23 +244,36 @@ object, the analysis then proceeds normally.</p>
 <span><span class="co">#&gt; fitting model and testing</span></span>
 <span></span>
 <span><span class="co"># Print results</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/DESeq2/man/results.html" class="external-link">results</a></span><span class="op">(</span><span class="va">dds</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; log2 fold change (MLE): condition untreated vs treated </span></span>
-<span><span class="co">#&gt; Wald test p-value: condition untreated vs treated </span></span>
-<span><span class="co">#&gt; DataFrame with 14599 rows and 6 columns</span></span>
-<span><span class="co">#&gt;                baseMean log2FoldChange     lfcSE      stat    pvalue      padj</span></span>
-<span><span class="co">#&gt;               &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; FBgn0000003    0.183606     -0.9857506  3.804283 -0.259116 0.7955458        NA</span></span>
-<span><span class="co">#&gt; FBgn0000008  102.823583      0.0480676  0.220402  0.218090 0.8273587   0.95747</span></span>
-<span><span class="co">#&gt; FBgn0000014    1.151175      0.5750640  2.108700  0.272710 0.7850760        NA</span></span>
-<span><span class="co">#&gt; FBgn0000015    0.920188      1.9284878  2.065835  0.933515 0.3505542        NA</span></span>
-<span><span class="co">#&gt; FBgn0000017 4710.475562      0.2882284  0.123070  2.341989 0.0191813   0.12899</span></span>
-<span><span class="co">#&gt; ...                 ...            ...       ...       ...       ...       ...</span></span>
-<span><span class="co">#&gt; FBgn0261571 9.10092e-02     -0.8456069  3.809401 -0.221979  0.824330        NA</span></span>
-<span><span class="co">#&gt; FBgn0261572 6.72827e+00      1.0103521  0.764586  1.321436  0.186356        NA</span></span>
-<span><span class="co">#&gt; FBgn0261573 2.42364e+03      0.0364862  0.116188  0.314026  0.753501  0.931582</span></span>
-<span><span class="co">#&gt; FBgn0261574 5.24892e+03      0.0399011  0.190998  0.208909  0.834519  0.957764</span></span>
-<span><span class="co">#&gt; FBgn0261575 1.15034e+01     -0.0957019  0.923661 -0.103611  0.917478  0.982144</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu">DESeq2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DESeq2/man/results.html" class="external-link">results</a></span><span class="op">(</span><span class="va">dds</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; log2 fold change (MLE): condition nelps vs control </span></span>
+<span><span class="co">#&gt; Wald test p-value: condition nelps vs control </span></span>
+<span><span class="co">#&gt; DataFrame with 57132 rows and 6 columns</span></span>
+<span><span class="co">#&gt;                       baseMean log2FoldChange     lfcSE       stat      pvalue</span></span>
+<span><span class="co">#&gt;                      &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt;   &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028180 1.94379e+03     -0.8031370 0.0948941 -8.4635057 2.59458e-17</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028182 2.82072e+01     -0.9036829 0.5053360 -1.7882814 7.37306e-02</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028185 3.36083e-01     -0.0567436 4.4073563 -0.0128748 9.89728e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028184 1.03770e+04      0.7491799 0.0647543 11.5695750 5.87731e-31</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028187 9.79971e+02     -0.1955160 0.1124985 -1.7379436 8.22207e-02</span></span>
+<span><span class="co">#&gt; ...                        ...            ...       ...        ...         ...</span></span>
+<span><span class="co">#&gt; ENSMUSG00000106108    10.66611      6.7370233 1.4341914   4.697437 2.63447e-06</span></span>
+<span><span class="co">#&gt; ENSMUSG00000042675  1583.23329     -0.0525418 0.0782159  -0.671753 5.01741e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000036959  1428.91454      0.5311799 0.0834599   6.364493 1.95936e-10</span></span>
+<span><span class="co">#&gt; ENSMUSG00000036958     0.66323     -3.9148515 4.2776350  -0.915191 3.60092e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000042678     5.59561     -5.6136803 1.7045407  -3.293368 9.89947e-04</span></span>
+<span><span class="co">#&gt;                           padj</span></span>
+<span><span class="co">#&gt;                      &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028180 2.37920e-16</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028182 1.43474e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028185          NA</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028184 9.03694e-30</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028187 1.57786e-01</span></span>
+<span><span class="co">#&gt; ...                        ...</span></span>
+<span><span class="co">#&gt; ENSMUSG00000106108 1.05146e-05</span></span>
+<span><span class="co">#&gt; ENSMUSG00000042675 6.53594e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000036959 1.14561e-09</span></span>
+<span><span class="co">#&gt; ENSMUSG00000036958          NA</span></span>
+<span><span class="co">#&gt; ENSMUSG00000042678 2.84207e-03</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
