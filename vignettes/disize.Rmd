@@ -38,14 +38,27 @@ identifier.
 
 # An example with DESeq2
 
-To see `disize` in action, we will be analyzing the following dataset from the `pasilla` package with `DESeq2`.
+To see `disize` in action, we will be analyzing the following dataset from Li et al., 2025 with `DESeq2`.
 
-```{r}
+This dataset consists of a purified macrophage subtype("Mac2", induced in an 'activated' state) that has been partitioned into four groups exposed to different conditions.
+The authors offer this information on how the samples were processed:
+
+> The sorted Mac2 cells were divided into four groups and stimulated at the 3-h time point with the same concentrations as previously described.
+Then, the RNA was extracted using the RNeasy Plus Micro Kit as per manufacturer instructions.
+Poly(A)mRNA was isolated using mRNA Capture Beads 2.0 (Yeasen Cat.12629ES, CHN) with two rounds of purification, followed by RNA fragmentation with magnesium ions at 94°C (Yeasen Cat.12340ES97, CHN).
+RNA sequencing library preparation was performed using the TruSeq RNA Library Prep Kit v2 (Illumina).
+Sequencing was carried out as paired-end 2×150 bp (PE150) on an Illumina Novaseq™ X Plus (LC-Bio Technologies).
+
+The TruSeq RNA Library Prep Kit involves "tagging" transcripts with barcodes that identify distinct *samples*, allowing all prepared cDNA libraries to be pooled together before sequencing.
+Since batch-effects are usually attributed to separate sequencing runs, then we expect very small batch-effects to be present in this dataset if we define a "batch" as the unit subjected to RNA extraction(and all further processing).
+
+## Dependencies
+```{r setup}
 suppressPackageStartupMessages({
-    library(pasilla)
-    library(dplyr)
     library(disize)
-    library(DESeq2)
+    library(curl)
+    library(R.utils)
+    library(data.table)
 })
 ```
 
@@ -62,67 +75,72 @@ model <- instantiate::stan_package_model(
 ```
 
 
-## Reading in data
+## Downloading the data
 
 ```{r}
-# Grab filepaths
-counts_path <- system.file(
-    "extdata",
-    "pasilla_gene_counts.tsv",
-    package="pasilla",
-    mustWork=TRUE
+## Download counts and construct metadata
+counts_path <- curl::curl_download(
+    url = "https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE273924&format=file&file=GSE273924%5Fraw%5Fcounts%2Etsv%2Egz",
+    destfile = paste0(tempdir(), "/counts.tsv.gz")
 )
-metadata_path <- system.file(
-    "extdata",
-    "pasilla_sample_annotation.csv",
-    package="pasilla",
-    mustWork=TRUE
+counts <- data.table::fread(counts_path)
+
+metadata <- data.frame(
+    "sample_id" = c(colnames(counts)[-1]),
+    "condition" = factor(rep(c("control", "lps", "nelps", "ne"), each = 3))
 )
 
-# Read in data
-counts <- as.matrix(read.csv(counts_path, sep = "\t", row.names = "gene_id")) |>
-    t()
-
-metadata <- read.csv(metadata_path)
-metadata <- metadata |>
-    dplyr::mutate(obs_id = sub("fb", "", metadata$file)) |>
-    dplyr::select(obs_id, condition, type) |>
-    dplyr::mutate(across(c(condition, type), as.factor))
+# Coerce to formatted matrix
+gene_names <- counts$gene_id
+counts <- t(as.matrix(counts[,-1]))
+colnames(counts) <- gene_names
 ```
 
-## Inspecting the study design
+## Running `disize`
 
-The dataset is derived from a study investigating the effect of various RNA binding proteins (RBPs) on alternative splicing regulation.
-The authors partitioned *D. melanogaster* cells into two different conditions: samples with `condition = treated` were treated with dsRNAs to knockdown expression via RNAi, while `condition = untreated` were left alone as a control.
-Additionally, two sets of duplicates were processed for each condition with different technologies used for sequencing (single-read vs paired-end).
-To be safe we'll keep the definition of a "batch" as granular as possible (meaning every sample is treated as having some batch-effect), however, `disize` supports arbitrary batch membership which is explored in [WIP].
-
-The `metadata` object contains the information from the experimental design:
+The `metadata` contains the information for the experimental design:
 
 ```{r}
 print(metadata)
 ```
 
-Evidently, one sample was thrown away!
-
-In the absence of batch-effects we are interested in the effects of `condition`, so our `design_formula` should be:
+For this dataset, the study was primarily interested in the effect of
+`condition` on expression, thus the formula we would input into `disize` is:
 
 ```{r}
 design_formula <- ~ condition
 ```
 
-## Estimating size factors
+We can finally run `disize` to get the estimated size factors:
 
 ```{r}
-# First batch definition
-size_factors <- disize::disize(
+size_factors_1 <- disize::disize(
     design_formula,
     counts,
     metadata,
-    batch_name = "obs_id",
-    obs_name = "obs_id" # needed to order 'counts' correctly
+    batch_name = "sample_id"
 )
+print(size_factors_1)
 ```
+
+Evidently the batch-effect is indeed small across most samples! The samples
+"NELPS1" and "NELPS2" seem to have been processed slightly worse, but otherwise
+the estimated size factors are approximately the same (within ~0.1).
+
+We can confirm these estimates by rerunning `disize` with a larger `n_feats`:
+
+```{r}
+size_factors_2 <- disize::disize(
+    design_formula,
+    counts,
+    metadata,
+    batch_name = "sample_id",
+    n_feats = 15000
+)
+print(size_factors_2)
+```
+
+Indeed the estimates remain largely the same.
 
 ## Running DESeq
 
@@ -131,15 +149,15 @@ Once the size factors are inserted into the `DESeqDataSet` object, the analysis 
 ```{r}
 # Constructing DESeqDataSet object
 dds <- DESeq2::DESeqDataSetFromMatrix(
-    countData = t(counts[metadata$obs_id, ]),
+    countData = t(counts),
     colData = metadata,
     design = design_formula
 )
-DESeq2::sizeFactors(dds) <- exp(size_factors) # Insert size factors
+DESeq2::sizeFactors(dds) <- exp(size_factors_2) # Insert size factors
 
 # Run analysis
 dds <- DESeq2::DESeq(dds)
 
 # Print results
-print(results(dds))
+print(DESeq2::results(dds))
 ```

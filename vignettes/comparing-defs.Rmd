@@ -14,6 +14,140 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(disize)
+The definition of a "batch" is often not explicitly mentioned for many studies, instead you'll often have to go inspecting the methods section how samples were processed (where library pooling was done, if multiple sequencing runs were used, etc).
+
+
+```{r}
+suppressPackageStartupMessages({
+    library(pasilla)
+    library(dplyr)
+    library(disize)
+    library(DESeq2)
+})
+```
+
+```{r, include=FALSE}
+# Get rid of depreciation warnings
+model <- instantiate::stan_package_model(
+    name = "disize",
+    package = "disize",
+    compile = TRUE,
+    force = TRUE,
+    cpp_options = list(stan_threads = TRUE),
+    compile_model_methods = TRUE
+)
+```
+
+
+## Reading in data
+
+```{r}
+# Grab filepaths
+counts_path <- system.file(
+    "extdata",
+    "pasilla_gene_counts.tsv",
+    package="pasilla",
+    mustWork=TRUE
+)
+metadata_path <- system.file(
+    "extdata",
+    "pasilla_sample_annotation.csv",
+    package="pasilla",
+    mustWork=TRUE
+)
+
+# Read in data
+counts <- as.matrix(read.csv(counts_path, sep = "\t", row.names = "gene_id")) |>
+    t()
+
+metadata <- read.csv(metadata_path)
+metadata <- metadata |>
+    dplyr::mutate(sample_id = sub("fb", "", file)) |>
+    dplyr::select(sample_id, condition, type) |>
+    dplyr::mutate(dplyr::across(c(condition, type), as.factor))
+```
+
+## Inspecting the study design
+
+The dataset is derived from a study investigating the effect of various RNA binding proteins (RBPs) on alternative splicing regulation.
+The authors partitioned *D. melanogaster* cells into two different conditions: samples with `condition = treated` were treated with dsRNAs to knockdown expression via RNAi, while `condition = untreated` were left alone as a control.
+Additionally, two sets of *duplicates* were processed for each condition with different technologies used for sequencing (single-read vs paired-end).
+
+Therefore, a suitable definition of a "batch" might be the grouping duplicates together:
+
+```{r}
+metadata <- metadata |>
+    dplyr::mutate(id_1 = interaction(type, condition, sep = ":"))
+```
+
+However, the most granular definition would allow for batch-effects even within these duplicates (as a result of differences in sample processing):
+
+```{r}
+metadata <- metadata |>
+    dplyr::mutate(id_2 = sample_id)
+
+print(metadata)
+```
+
+(Evidently one sample was thrown away, although this does not pose a problem for anything downstream.)
+
+## Estimating size factors
+
+In the absence of batch-effects we are interested in the effects of `condition`, so our `design_formula` should be:
+
+```{r}
+design_formula <- ~ condition
+```
+
+With all the required arguments we can now run `disize` for both batch definitions:
+
+```{r}
+size_factors_1 <- disize::disize(
+    design_formula,
+    counts,
+    metadata,
+    batch_name = "id_1",
+    obs_name = "sample_id" # needed to order 'counts' correctly
+)
+
+size_factors_2 <- disize::disize(
+    design_formula,
+    counts,
+    metadata,
+    batch_name = "id_2",
+    obs_name = "sample_id"
+)
+```
+
+## Comparing definitions
+```{r}
+size_factors <- data.frame(
+    sample_id = metadata$sample_id,
+    id_1 = unname(size_factors_1[metadata$id_1]),
+    id_2 = unname(size_factors_2[metadata$id_2])
+)
+
+print(size_factors)
+```
+
+Although there are some similarities (e.g., the estimates for `untreated3` are approximately equal), there are enough differences between samples that the more granular definition is a better choice for this analysis.
+
+## Running DESeq
+
+Once the size factors are inserted into the `DESeqDataSet` object, the analysis then proceeds normally.
+
+```{r}
+# Constructing DESeqDataSet object
+dds <- DESeq2::DESeqDataSetFromMatrix(
+    countData = t(counts[metadata$obs_id, ]),
+    colData = metadata,
+    design = design_formula
+)
+DESeq2::sizeFactors(dds) <- exp(size_factors_2) # Insert size factors
+
+# Run analysis
+dds <- DESeq2::DESeq(dds)
+
+# Print results
+print(results(dds))
 ```
