@@ -74,7 +74,6 @@ model <- instantiate::stan_package_model(
 )
 ```
 
-
 ## Downloading the data
 
 ```{r}

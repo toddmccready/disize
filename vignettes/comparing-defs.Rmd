@@ -14,8 +14,10 @@ knitr::opts_chunk$set(
 )
 ```
 
-The definition of a "batch" is often not explicitly mentioned for many studies, instead you'll often have to go inspecting the methods section how samples were processed (where library pooling was done, if multiple sequencing runs were used, etc).
-
+The definition of a "batch" is often not explicitly mentioned for many studies,
+instead you'll often have to go inspecting the methods section or even contacting the authors for how samples were processed (if samples were processed on the same day, where library pooling was done, if multiple sequencing runs were used, etc).
+Luckily, `disize` allows observations to be partitioned into batches any way you like.
+To see this in action we'll be using a dataset from the `pasilla` package.
 
 ```{r}
 suppressPackageStartupMessages({
@@ -37,7 +39,6 @@ model <- instantiate::stan_package_model(
     compile_model_methods = TRUE
 )
 ```
-
 
 ## Reading in data
 
