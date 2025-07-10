@@ -69,8 +69,12 @@
     
 <p>The definition of a “batch” is often not explicitly mentioned for
 many studies, instead you’ll often have to go inspecting the methods
-section how samples were processed (where library pooling was done, if
-multiple sequencing runs were used, etc).</p>
+section or even contacting the authors for how samples were processed
+(if samples were processed on the same day, where library pooling was
+done, if multiple sequencing runs were used, etc). Luckily,
+<code>disize</code> allows observations to be partitioned into batches
+any way you like. To see this in action we’ll be using a dataset from
+the <code>pasilla</code> package.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressPackageStartupMessages</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">pasilla</span><span class="op">)</span></span>
@@ -161,8 +165,8 @@ for both batch definitions:</p>
 <span>    obs_name <span class="op">=</span> <span class="st">"sample_id"</span> <span class="co"># needed to order 'counts' correctly</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~69.7s)</span></span>
-<span><span class="co">#&gt; Finised in 60.9s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~66.8s)</span></span>
+<span><span class="co">#&gt; Finised in 60.1s!</span></span>
 <span></span>
 <span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
 <span>    <span class="va">design_formula</span>,</span>
@@ -172,8 +176,8 @@ for both batch definitions:</p>
 <span>    obs_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~71.4s)</span></span>
-<span><span class="co">#&gt; Finised in 62.8s!</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~71.3s)</span></span>
+<span><span class="co">#&gt; Finised in 61.5s!</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="comparing-definitions">Comparing definitions<a class="anchor" aria-label="anchor" href="#comparing-definitions"></a>
