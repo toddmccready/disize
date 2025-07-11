@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.28</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.29</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,8 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/comparing-defs.html">Comparing batch definitions</a></li>
+<li><a class="dropdown-item" href="../articles/benchmarking.html">Benchmarking against `DESeq2` and `edgeR`</a></li>
+    <li><a class="dropdown-item" href="../articles/comparing-defs.html">Comparing batch definitions</a></li>
     <li><a class="dropdown-item" href="../articles/implementation.html">Implementation of disize</a></li>
   </ul>
 </li>
@@ -120,8 +121,8 @@ barcodes that identify distinct <em>samples</em>, allowing all prepared
 cDNA libraries to be pooled together before sequencing. Since
 batch-effects are usually attributed to separate sequencing runs, then
 we expect very small batch-effects to be present in this dataset if we
-define a “batch” as the unit subjected to RNA extraction(and all further
-processing).</p>
+define a “batch” as the unit subjected to RNA extraction (and all
+further processing).</p>
 <div class="section level3">
 <h3 id="dependencies">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies"></a>
 </h3>
@@ -137,7 +138,7 @@ processing).</p>
 <h3 id="downloading-the-data">Downloading the data<a class="anchor" aria-label="anchor" href="#downloading-the-data"></a>
 </h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## Download counts and construct metadata</span></span>
+<code class="sourceCode R"><span><span class="co"># Download counts and construct metadata</span></span>
 <span><span class="va">counts_path</span> <span class="op">&lt;-</span> <span class="fu">curl</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/curl/reference/curl_download.html" class="external-link">curl_download</a></span><span class="op">(</span></span>
 <span>    url <span class="op">=</span> <span class="st">"https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE273924&amp;format=file&amp;file=GSE273924%5Fraw%5Fcounts%2Etsv%2Egz"</span>,</span>
 <span>    destfile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"/counts.tsv.gz"</span><span class="op">)</span></span>
@@ -189,8 +190,8 @@ factors:</p>
 <span>    batch_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~113.7s)</span></span>
-<span><span class="co">#&gt; Finised in 96.3s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~110.7s)</span></span>
+<span><span class="co">#&gt; Finised in 96.7s!</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
 <span><span class="co">#&gt;  0.082340728  0.003553523 -0.086471855  0.085881138  0.012432106  0.100065963 </span></span>
@@ -211,8 +212,8 @@ a larger <code>n_feats</code>:</p>
 <span>    n_feats <span class="op">=</span> <span class="fl">15000</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~160.6s)</span></span>
-<span><span class="co">#&gt; Finised in 139.3s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~160.7s)</span></span>
+<span><span class="co">#&gt; Finised in 144s!</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
 <span><span class="co">#&gt;  0.095303742  0.005168706 -0.083965484  0.073874335 -0.008215053  0.087963097 </span></span>

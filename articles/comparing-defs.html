@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.28</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.29</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,8 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/comparing-defs.html">Comparing batch definitions</a></li>
+<li><a class="dropdown-item" href="../articles/benchmarking.html">Benchmarking against `DESeq2` and `edgeR`</a></li>
+    <li><a class="dropdown-item" href="../articles/comparing-defs.html">Comparing batch definitions</a></li>
     <li><a class="dropdown-item" href="../articles/implementation.html">Implementation of disize</a></li>
   </ul>
 </li>
@@ -68,10 +69,13 @@
     
     
 <p>The definition of a “batch” is often not explicitly mentioned for
-many studies, instead you’ll often have to go inspecting the methods
+many studies, instead you often have to go inspecting the methods
 section or even contacting the authors for how samples were processed
-(if samples were processed on the same day, where library pooling was
-done, if multiple sequencing runs were used, etc). Luckily,
+(if samples were prepared on the same day, where library pooling was
+done, were multiple sequencing runs were used, etc). You’ll then have to
+decide what steps are likely to induce a non-negligible batch effect;
+anecdotally, separate sequencing runs are often the greatest concern
+(though earlier steps can still contribute). Luckily,
 <code>disize</code> allows observations to be partitioned into batches
 any way you like. To see this in action we’ll be using a dataset from
 the <code>pasilla</code> package.</p>
@@ -120,16 +124,15 @@ different conditions: samples with <code>condition = treated</code> were
 treated with dsRNAs to knockdown expression via RNAi, while
 <code>condition = untreated</code> were left alone as a control.
 Additionally, two sets of <em>duplicates</em> were processed for each
-condition with different technologies used for sequencing (single-read
-vs paired-end).</p>
+condition with different chemistry used for sequencing (single-read vs
+paired-end).</p>
 <p>Therefore, a suitable definition of a “batch” might be the grouping
 duplicates together:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="va">metadata</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>id_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interaction.html" class="external-link">interaction</a></span><span class="op">(</span><span class="va">type</span>, <span class="va">condition</span>, sep <span class="op">=</span> <span class="st">":"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>However, the most granular definition would allow for batch-effects
-even within these duplicates (as a result of differences in sample
-processing):</p>
+even within these duplicates:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="va">metadata</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>id_2 <span class="op">=</span> <span class="va">sample_id</span><span class="op">)</span></span>
@@ -165,8 +168,8 @@ for both batch definitions:</p>
 <span>    obs_name <span class="op">=</span> <span class="st">"sample_id"</span> <span class="co"># needed to order 'counts' correctly</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~66.8s)</span></span>
-<span><span class="co">#&gt; Finised in 60.1s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~66.7s)</span></span>
+<span><span class="co">#&gt; Finised in 59s!</span></span>
 <span></span>
 <span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
 <span>    <span class="va">design_formula</span>,</span>
@@ -177,7 +180,7 @@ for both batch definitions:</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
 <span><span class="co">#&gt; Estimating size factors... (Max ETA: ~71.3s)</span></span>
-<span><span class="co">#&gt; Finised in 61.5s!</span></span></code></pre></div>
+<span><span class="co">#&gt; Finised in 61.7s!</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="comparing-definitions">Comparing definitions<a class="anchor" aria-label="anchor" href="#comparing-definitions"></a>
@@ -199,9 +202,9 @@ for both batch definitions:</p>
 <span><span class="co">#&gt; 6 untreated3 -0.4950414 -0.5118620</span></span>
 <span><span class="co">#&gt; 7 untreated4 -0.4950414 -0.3706849</span></span></code></pre></div>
 <p>Although there are some similarities (e.g., the estimates for
-<code>untreated3</code> are approximately equal), there are enough
-differences between samples that the more granular definition is a
-better choice for this analysis.</p>
+<code>untreated3</code> and <code>treated2</code> are approximately
+equal), there are enough differences between samples that the more
+granular definition is a better choice for this analysis.</p>
 </div>
 <div class="section level2">
 <h2 id="running-deseq">Running DESeq<a class="anchor" aria-label="anchor" href="#running-deseq"></a>

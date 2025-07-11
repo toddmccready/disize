@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.28</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.29</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,8 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/comparing-defs.html">Comparing batch definitions</a></li>
+<li><a class="dropdown-item" href="articles/benchmarking.html">Benchmarking against `DESeq2` and `edgeR`</a></li>
+    <li><a class="dropdown-item" href="articles/comparing-defs.html">Comparing batch definitions</a></li>
     <li><a class="dropdown-item" href="articles/implementation.html">Implementation of disize</a></li>
   </ul>
 </li>
@@ -83,7 +84,7 @@
 <h2 id="with-rv">With <a href="https://a2-ai.github.io/rv-docs/" class="external-link"><code>rv</code></a>
 <a class="anchor" aria-label="anchor" href="#with-rv"></a>
 </h2>
-<p>Add the following entries to your <code>rproject.toml</code> file(if not already present):</p>
+<p>Add the following entries to your <code>rproject.toml</code> file (if not already present):</p>
 <pre><code>repositories = [
     # ...
     { alias = "STAN", url = "https://stan-dev.r-universe.dev" },
@@ -94,7 +95,7 @@
 
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.28" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.29" },
     # ...
 ]</code></pre>
 <p>Then install the CmdStan toolchain in <code>R</code>:</p>
