@@ -21,7 +21,7 @@ cmdstanr::install_cmdstan()
 
 ## With [`rv`](https://a2-ai.github.io/rv-docs/)
 
-Add the following entries to your `rproject.toml` file(if not already present):
+Add the following entries to your `rproject.toml` file (if not already present):
 ```
 repositories = [
     # ...

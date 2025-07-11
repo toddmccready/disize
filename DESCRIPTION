@@ -16,7 +16,8 @@ Imports:
     cmdstanr,
     instantiate,
     Matrix,
-    dplyr
+    dplyr,
+    parallelly
 Suggests:
     testthat (>= 3.0.0),
     dplyr (>= 1.1.4),

@@ -1,0 +1,17 @@
+---
+title: "Benchmarking against `DESeq2` and `edgeR`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Benchmarking against `DESeq2` and `edgeR`}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Benchmarking is difficult.

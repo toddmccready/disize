@@ -36,4 +36,5 @@ dependencies = [
     "Seurat",
     { name = "SeuratData", git = "https://github.com/satijalab/seurat-data", branch = "main" },
     "harmony",
+    "parallelly",
 ]

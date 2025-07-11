@@ -43,9 +43,6 @@ estimation, defaults to 50 (useful for scRNA-seq experiments).}
 \item{verbose}{The verbosity level (\code{1}: only errors, \code{2}: also allows warnings,
 \code{3}: also allows messages, \code{4}: also prints additional output useful for
 debugging).}
-
-\item{grainsize}{The grainsize used for partitioning data across threads
-(highly encouraged to leave to its default value).}
 }
 \value{
 A named numeric vector containing the size factor estimates.

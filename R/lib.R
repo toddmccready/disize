@@ -41,8 +41,9 @@ split_formula <- function(design_formula) {
 #'  estimation, defaults to 50 (useful for scRNA-seq experiments).
 #' @param n_iters The number of iterations used for estimation.
 #' @param n_threads The number of threads to use for parallel processing.
-#' @param grainsize The grainsize used for partitioning data across threads
-#' (highly encouraged to leave to its default value).
+#' @param init_alpha The initial step-size for the optimizer, lower values
+#'  can sometimes make it easier to estimate size factors for more complex
+#'  designs.
 #' @param verbose The verbosity level (`1`: only errors, `2`: also allows warnings,
 #'  `3`: also allows messages, `4`: also prints additional output useful for
 #'  debugging).
@@ -59,7 +60,7 @@ disize <- function(
     n_feats = 10000L,
     n_subset = 50L,
     n_iters = "auto",
-    n_threads = max(1, ceiling(parallel::detectCores() / 2)),
+    n_threads = parallelly::availableCores(logical = FALSE, omit = 2L),
     init_alpha = 1e-6,
     verbose = 3L
 ) {
@@ -77,7 +78,7 @@ disize <- function(
     if (nrow(metadata) != nrow(counts)) {
         stop(
             "'counts' and 'metadata' should have the same # of ",
-            "observations(rows)."
+            "observations (rows)."
         )
     }
 
@@ -160,7 +161,7 @@ disize <- function(
     stan_data[["n_batches"]] <- length(levels(metadata[[batch_name]]))
     stan_data[["batch_id"]] <- as.integer(metadata[[batch_name]])
 
-    # Modify the design formula
+    # Split the design formula into fixed- and random-effects
     design <- split_formula(design_formula)
 
     # Construct fixed-effects model matrix if present

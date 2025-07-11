@@ -32,7 +32,7 @@ functions {
         for (i in 1:n_slice_feats) {
             int feat_i = start + i - 1;
 
-            // Scaling random-effects with horseshoe shrinkage
+            // Scaling standardized random-effects (with horseshoe shrinkage)
             if (n_re != 0) {
                 for (re_i in 1:n_re) {
                     re_coefs_col[re_i] = raw_re_coefs[re_i, feat_i] * (re_sigma[re_id[re_i], feat_i] * re_tau[re_id[re_i]]);

@@ -50,7 +50,7 @@ RNA sequencing library preparation was performed using the TruSeq RNA Library Pr
 Sequencing was carried out as paired-end 2×150 bp (PE150) on an Illumina Novaseq™ X Plus (LC-Bio Technologies).
 
 The TruSeq RNA Library Prep Kit involves "tagging" transcripts with barcodes that identify distinct *samples*, allowing all prepared cDNA libraries to be pooled together before sequencing.
-Since batch-effects are usually attributed to separate sequencing runs, then we expect very small batch-effects to be present in this dataset if we define a "batch" as the unit subjected to RNA extraction(and all further processing).
+Since batch-effects are usually attributed to separate sequencing runs, then we expect very small batch-effects to be present in this dataset if we define a "batch" as the unit subjected to RNA extraction (and all further processing).
 
 ## Dependencies
 ```{r setup}
@@ -77,7 +77,7 @@ model <- instantiate::stan_package_model(
 ## Downloading the data
 
 ```{r}
-## Download counts and construct metadata
+# Download counts and construct metadata
 counts_path <- curl::curl_download(
     url = "https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE273924&format=file&file=GSE273924%5Fraw%5Fcounts%2Etsv%2Egz",
     destfile = paste0(tempdir(), "/counts.tsv.gz")

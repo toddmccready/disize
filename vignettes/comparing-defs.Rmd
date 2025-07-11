@@ -15,7 +15,8 @@ knitr::opts_chunk$set(
 ```
 
 The definition of a "batch" is often not explicitly mentioned for many studies,
-instead you'll often have to go inspecting the methods section or even contacting the authors for how samples were processed (if samples were processed on the same day, where library pooling was done, if multiple sequencing runs were used, etc).
+instead you often have to go inspecting the methods section or even contacting the authors for how samples were processed (if samples were prepared on the same day, where library pooling was done, were multiple sequencing runs were used, etc).
+You'll then have to decide what steps are likely to induce a non-negligible batch effect; anecdotally, separate sequencing runs are often the greatest concern (though earlier steps can still contribute).
 Luckily, `disize` allows observations to be partitioned into batches any way you like.
 To see this in action we'll be using a dataset from the `pasilla` package.
 
@@ -72,7 +73,7 @@ metadata <- metadata |>
 
 The dataset is derived from a study investigating the effect of various RNA binding proteins (RBPs) on alternative splicing regulation.
 The authors partitioned *D. melanogaster* cells into two different conditions: samples with `condition = treated` were treated with dsRNAs to knockdown expression via RNAi, while `condition = untreated` were left alone as a control.
-Additionally, two sets of *duplicates* were processed for each condition with different technologies used for sequencing (single-read vs paired-end).
+Additionally, two sets of *duplicates* were processed for each condition with different chemistry used for sequencing (single-read vs paired-end).
 
 Therefore, a suitable definition of a "batch" might be the grouping duplicates together:
 
@@ -81,7 +82,7 @@ metadata <- metadata |>
     dplyr::mutate(id_1 = interaction(type, condition, sep = ":"))
 ```
 
-However, the most granular definition would allow for batch-effects even within these duplicates (as a result of differences in sample processing):
+However, the most granular definition would allow for batch-effects even within these duplicates:
 
 ```{r}
 metadata <- metadata |>
@@ -131,7 +132,7 @@ size_factors <- data.frame(
 print(size_factors)
 ```
 
-Although there are some similarities (e.g., the estimates for `untreated3` are approximately equal), there are enough differences between samples that the more granular definition is a better choice for this analysis.
+Although there are some similarities (e.g., the estimates for `untreated3` and `treated2` are approximately equal), there are enough differences between samples that the more granular definition is a better choice for this analysis.
 
 ## Running DESeq
 
