@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.29</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.30</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/benchmarking.html">Benchmarking against `DESeq2` and `edgeR`</a></li>
+<li><a class="dropdown-item" href="articles/benchmarking.html">Benchmarking against DESeq2 and edgeR</a></li>
     <li><a class="dropdown-item" href="articles/comparing-defs.html">Comparing batch definitions</a></li>
     <li><a class="dropdown-item" href="articles/implementation.html">Implementation of disize</a></li>
   </ul>
@@ -58,7 +58,7 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="disize">disize<a class="anchor" aria-label="anchor" href="#disize"></a>
 </h1></div>
-<p><strong>D</strong>esign <strong>i</strong>nformed <strong>size</strong> factor estimation (or <code>disize</code>) is a normalization method meant to be an alternative to <code>DESeq2</code>’s <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106" class="external-link">median of rations</a> and <code>edgeR</code>’s <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25" class="external-link">trimmed mean of M values</a></p>
+<p><strong>D</strong>esign <strong>i</strong>nformed <strong>size</strong> factor estimation (or <code>disize</code>) is a normalization method meant to be an alternative to <code>DESeq2</code>’s <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106" class="external-link">median of ratios</a> and <code>edgeR</code>’s <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25" class="external-link">trimmed mean of M values</a></p>
 </div>
 <div class="section level1">
 <h1 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
@@ -95,7 +95,7 @@
 
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.29" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.30" },
     # ...
 ]</code></pre>
 <p>Then install the CmdStan toolchain in <code>R</code>:</p>
