@@ -50,7 +50,7 @@ functions {
             log_prob += cauchy_lpdf(lambda[, feat_i] | 0, 1);
             log_prob += normal_lpdf(fe_coefs[, feat_i] | 0, lambda[, feat_i] .* fe_tau);
 
-            // Estimated Feature Expression ----
+            // Effect of Experimental Design ----
             log_mu = rep_vector(intercept[feat_i], n_obs);
 
             if (n_fe != 0) {
