@@ -1,6 +1,8 @@
 # disize
 
-**D**esign **i**nformed **size** factor estimation (or `disize`) is a normalization method meant to be an alternative to `DESeq2`'s [median of rations](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106) and `edgeR`'s [trimmed mean of M values](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25)
+**D**esign **i**nformed **size** factor estimation (or `disize`) is a normalization method meant to be an alternative to
+`DESeq2`'s [median of ratios](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106)
+and `edgeR`'s [trimmed mean of M values](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25)
 
 # Usage
 
@@ -33,7 +35,7 @@ repositories = [
 
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.29" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.30" },
     # ...
 ]
 ```
