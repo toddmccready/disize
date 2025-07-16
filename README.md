@@ -30,7 +30,7 @@ Add the following entry to your `rproject.toml` file (if not already present):
 ```
 dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.38" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", branch = "main" },
     # ...
 ]
 ```
