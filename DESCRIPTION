@@ -16,8 +16,7 @@ Imports:
     cmdstanr,
     instantiate,
     Matrix,
-    dplyr,
-    parallelly
+    dplyr
 Suggests:
     testthat (>= 3.0.0),
     dplyr (>= 1.1.4),
@@ -36,3 +35,4 @@ Remotes:
 Config/testthat/edition: 3
 URL: https://toddmccready.github.io/disize/, https://github.com/toddmccready/disize
 VignetteBuilder: knitr
+Config/Needs/website: rmarkdown

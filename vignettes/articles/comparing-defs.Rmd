@@ -109,7 +109,8 @@ size_factors_1 <- disize::disize(
     counts,
     metadata,
     batch_name = "id_1",
-    obs_name = "sample_id" # needed to order 'counts' correctly
+    obs_name = "sample_id", # needed to order 'counts' correctly
+    n_threads = parallel::detectCores()
 )
 
 size_factors_2 <- disize::disize(
@@ -117,7 +118,8 @@ size_factors_2 <- disize::disize(
     counts,
     metadata,
     batch_name = "id_2",
-    obs_name = "sample_id"
+    obs_name = "sample_id",
+    n_threads = parallel::detectCores()
 )
 ```
 

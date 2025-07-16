@@ -12,7 +12,7 @@ split_formula <- function(design_formula) {
 
     fixed <- NULL
     if (length(terms[!re]) != 0) {
-        fixed <- formula(paste0(" ~ 0 + ", paste(terms[!re], collapse = " + ")))
+        fixed <- formula(paste0(" ~ 1 + ", paste(terms[!re], collapse = " + ")))
     }
 
     random <- NULL
@@ -60,7 +60,7 @@ disize <- function(
     n_feats = 10000L,
     n_subset = 50L,
     n_iters = "auto",
-    n_threads = parallelly::availableCores(logical = FALSE, omit = 2L),
+    n_threads = 1L,
     init_alpha = 1e-6,
     verbose = 3L
 ) {
@@ -166,7 +166,7 @@ disize <- function(
 
     # Construct fixed-effects model matrix if present
     if (!is.null(design$fixed)) {
-        fe_design <- model.matrix(design$fixed, metadata)
+        fe_design <- model.matrix(design$fixed, metadata)[, -1, drop = FALSE]
 
         stan_data[["n_fe"]] <- ncol(fe_design)
         stan_data[["fe_design"]] <- fe_design

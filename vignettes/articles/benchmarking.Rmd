@@ -14,9 +14,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-## A Review of MoR and TMM Normalization
+# A Review of MoR and TMM Normalization
 
-### Setting Up Notation
+## Set Up
 
 Let $y_{i,g}$ denote the observed count in a sample $i \in \mathcal{I}$ (with $n_i = |\mathcal{I}|$) for a gene $g \in \mathcal{G}$ (with $n_g = |\mathcal{G}|$) realized from a particular negative binomial distribution:
 
@@ -27,7 +27,7 @@ $$\begin{aligned}
 
 Where $\eta_{i,g}$ denotes the true magnitude of expression and $\rho_{i}$ denotes the "size factor" that scales this expression from its ground-truth.
 
-### `DESeq2`'s Median of Ratios
+## `DESeq2`'s Median of Ratios
 
 We first focus on a particular gene $g$ and compare the observed count for a sample $i$ to the geometric average of counts across samples to get a ratio $R_{i,g}$:
 
@@ -41,7 +41,7 @@ $$
     \hat{s}_{i} = \underset{g \in \mathcal{G}}{\text{median }} R_{i,g}
 $$
 
-### `edgeR`'s Trimmed Mean of M Values
+## `edgeR`'s Trimmed Mean of M Values
 
 We first "normalize" the observed count profile for a sample $i$ by the total number of counts $N_i = \sum_{g \in \mathcal{G}} y_{i,g}$ in order to get proportions:
 
@@ -63,3 +63,35 @@ We finally compute the size factor by taking the weighted average of these ratio
 $$
     \log_2 \hat{s}_i = \frac{ \sum_{g \in \mathcal{G}'_i} w_{i,g} R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
 $$
+
+# Simulation Framework
+
+## Comparing Two Conditions
+
+```{r}
+# Simulating settings
+n_donors <- 6L
+n_genes <- 1000L
+
+model_formula <- reformulas::splitForm(~ 0 + cond_id + (1 | donor_id))
+
+# Construct model matrices
+metadata <- data.frame(
+    donor_id = 1:n_donors,
+    cond_id = cut(1:n_donors, 2),
+    batch_id = 1:n_donors
+)
+
+fe_design <- model.matrix(
+    model_formula$fixedFormula,
+    data = metadata
+)
+re_design <- reformulas::mkReTrms(
+    model_formula$reTrmFormulas,
+    fr = metadata,
+    calc.lambdat = FALSE
+)$Ztlist |> lapply(Matrix::t)
+
+# Simulate effect of covariates on expression
+
+```
