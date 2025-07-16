@@ -25,9 +25,3 @@ filename = "DESCRIPTION"
 search = 'Version: {current_version}'
 replace = "Version: {new_version}"
 regex = true
-
-[[tool.bumpversion.files]]
-filename = "README.md"
-search = 'tag = "v{current_version}"'
-replace = 'tag = "v{new_version}"'
-regex = true
