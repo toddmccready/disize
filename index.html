@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.38</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.39</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,7 +57,8 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="disize">disize<a class="anchor" aria-label="anchor" href="#disize"></a>
 </h1></div>
-<p>The existing methods for RNAseq normalization are <code>DESeq2</code>’s <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106" class="external-link">median of ratios</a> (MoR) and <code>edgeR</code>’s <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25" class="external-link">trimmed mean of M values</a> (TMM) . These methods however do not include information about the experimental design when trying to estimate size factors, and can fail for more complex study designs. <strong>D</strong>esign <strong>i</strong>nformed <strong>size</strong> factor estimation (or <code>disize</code>) is an alternative normalization method that jointly models gene expression and batch-effects following a specified design to gain precision on size factor estimates.</p>
+<p>The existing methods for RNAseq normalization are <code>DESeq2</code>’s <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106" class="external-link">median of ratios</a> (MoR) and <code>edgeR</code>’s <a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25" class="external-link">trimmed mean of M values</a> (TMM) . These methods however do not include information about the experimental design when trying to estimate size factors, and can fail for more complex study designs.</p>
+<p><strong>D</strong>esign <strong>i</strong>nformed <strong>size</strong> factor estimation (or <code>disize</code>) is an alternative normalization method that <a href="https://toddmccready.github.io/disize/articles/implementation.html">jointly models gene expression and batch-effects</a> following a specified design to gain precision on size factor estimates.</p>
 </div>
 <div class="section level1">
 <h1 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
@@ -86,7 +87,7 @@
 <p>Add the following entry to your <code>rproject.toml</code> file (if not already present):</p>
 <pre><code>dependencies = [
     # ...
-    { name = "disize", git = "https://github.com/toddmccready/disize", tag = "v0.4.38" },
+    { name = "disize", git = "https://github.com/toddmccready/disize", branch = "main" },
     # ...
 ]</code></pre>
 <p>Then install the CmdStan toolchain in <code>R</code>:</p>
