@@ -117,7 +117,7 @@ size_factors_1 <- disize::disize(
     design_formula,
     counts,
     metadata,
-    batch_name = "sample_id"
+    batch_name = "sample_id",
     n_threads = parallel::detectCores()
 )
 print(size_factors_1)
