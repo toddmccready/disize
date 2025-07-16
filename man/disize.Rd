@@ -13,7 +13,7 @@ disize(
   n_feats = 10000L,
   n_subset = 50L,
   n_iters = "auto",
-  n_threads = parallelly::availableCores(logical = FALSE, omit = 2L),
+  n_threads = 1L,
   init_alpha = 1e-06,
   verbose = 3L
 )

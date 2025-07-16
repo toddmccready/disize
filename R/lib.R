@@ -17,7 +17,10 @@ split_formula <- function(design_formula) {
 
     random <- NULL
     if (length(terms[re]) != 0) {
-        random <- formula(paste0(" ~ 0 + ", paste(terms[re], collapse = " + ")))
+        random <- stats::formula(paste0(
+            " ~ 0 + ",
+            paste(terms[re], collapse = " + ")
+        ))
     }
 
     list(
@@ -143,7 +146,7 @@ disize <- function(
 
     # Convert to dense matrix if needed
     if (is(counts, "sparseMatrix")) {
-        counts <- as.matrix(counts)
+        counts <- base::as.matrix(counts)
     }
 
     # Ensure relevant columns are factors
@@ -165,8 +168,11 @@ disize <- function(
     design <- split_formula(design_formula)
 
     # Construct fixed-effects model matrix if present
-    if (!is.null(design$fixed)) {
-        fe_design <- model.matrix(design$fixed, metadata)[, -1, drop = FALSE]
+    if (!base::is.null(design$fixed)) {
+        fe_design <- stats::model.matrix(design$fixed, metadata)[,
+            -1,
+            drop = FALSE
+        ]
 
         stan_data[["n_fe"]] <- ncol(fe_design)
         stan_data[["fe_design"]] <- fe_design
@@ -317,7 +323,7 @@ disize <- function(
     skeleton <- fit$variable_skeleton(FALSE)
 
     # Extract unconstrained variable
-    uc_params <- fit$unconstrain_variables(relist(params, skeleton))
+    uc_params <- fit$unconstrain_variables(utils::relist(params, skeleton))
 
     # Compute gradient
     gradient <- fit$grad_log_prob(uc_params)
