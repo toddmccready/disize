@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.33</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.34</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,7 @@
       <h1>An introduction to disize</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/toddmccready/disize/blob/v0.4.33/vignettes/articles/disize.Rmd" class="external-link"><code>vignettes/articles/disize.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/toddmccready/disize/blob/v0.4.34/vignettes/articles/disize.Rmd" class="external-link"><code>vignettes/articles/disize.Rmd</code></a></small>
       <div class="d-none name"><code>disize.Rmd</code></div>
     </div>
 
@@ -94,6 +94,11 @@ observation-level information(with observations as rows).</p></li>
 do not correspond to the same observation but are named, you can specify
 <code>obs_name</code> which will automatically re-order
 <code>counts</code> to match the indices in <code>metadata</code>.</p>
+</blockquote>
+<blockquote>
+<p><em>Note</em>: <code>disize</code> encourages users to set the
+<code>n_threads</code> argument in order to take advantage of
+parallelization.</p>
 </blockquote>
 <div class="section level2">
 <h2 id="an-example-with-deseq2">An example with DESeq2<a class="anchor" aria-label="anchor" href="#an-example-with-deseq2"></a>
@@ -191,8 +196,8 @@ factors:</p>
 <span>    n_threads <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~86.9s)</span></span>
-<span><span class="co">#&gt; Finised in 79.1s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~86.8s)</span></span>
+<span><span class="co">#&gt; Finised in 78s!</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
 <span><span class="co">#&gt;  0.094267893  0.015031281 -0.076917418  0.082696685  0.007454061  0.097203017 </span></span>
@@ -214,8 +219,8 @@ a larger <code>n_feats</code>:</p>
 <span>    n_threads <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~155.2s)</span></span>
-<span><span class="co">#&gt; Finised in 126.8s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~152s)</span></span>
+<span><span class="co">#&gt; Finised in 124.6s!</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
 <span><span class="co">#&gt;  0.105272847  0.009010748 -0.080962030  0.068038928 -0.015195995  0.084975827 </span></span>
