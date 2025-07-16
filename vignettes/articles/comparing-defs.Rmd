@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 The definition of a "batch" is often not explicitly mentioned for many studies,
-instead you have to go inspecting the methods section or even contacting the authors for how samples were processed (if samples were prepared on the same day with the same reagents, where library pooling was done, were multiple sequencing runs were used, etc).
+instead you have to go inspecting the methods section or even contacting the authors for how samples were processed (were samples prepared on the same day with the same reagents, where library pooling was done, if multiple sequencing runs were used, etc).
 You'll then have to decide what steps are likely to induce a non-negligible batch effect; anecdotally, separate sequencing runs are often the greatest concern (though earlier steps can still contribute).
 Luckily, `disize` allows observations to be partitioned into batches any way you like.
 To see this in action we'll be using a dataset from the `pasilla` package.
