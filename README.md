@@ -4,7 +4,7 @@ The existing methods for RNAseq normalization are
 `DESeq2`'s [median of ratios](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106) (MoR)
 and `edgeR`'s [trimmed mean of M values](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25) (TMM) .
 These methods however do not include information about the experimental design when trying to estimate size factors, and can fail for more complex study designs.
-**D**esign **i**nformed **size** factor estimation (or `disize`) is an alternative normalization method that jointly models gene expression and batch-effects following a specified design to gain precision on size factor estimates.
+**D**esign **i**nformed **size** factor estimation (or `disize`) is an alternative normalization method that [jointly models gene expression and batch-effects](https://toddmccready.github.io/disize/articles/implementation.html) following a specified design to gain precision on size factor estimates.
 
 # Usage
 
