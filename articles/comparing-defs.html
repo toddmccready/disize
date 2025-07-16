@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.30</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.33</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,7 @@
       <h1>Comparing batch definitions</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/toddmccready/disize/blob/main/vignettes/comparing-defs.Rmd" class="external-link"><code>vignettes/comparing-defs.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/toddmccready/disize/blob/v0.4.33/vignettes/articles/comparing-defs.Rmd" class="external-link"><code>vignettes/articles/comparing-defs.Rmd</code></a></small>
       <div class="d-none name"><code>comparing-defs.Rmd</code></div>
     </div>
 
@@ -165,22 +165,24 @@ for both batch definitions:</p>
 <span>    <span class="va">counts</span>,</span>
 <span>    <span class="va">metadata</span>,</span>
 <span>    batch_name <span class="op">=</span> <span class="st">"id_1"</span>,</span>
-<span>    obs_name <span class="op">=</span> <span class="st">"sample_id"</span> <span class="co"># needed to order 'counts' correctly</span></span>
+<span>    obs_name <span class="op">=</span> <span class="st">"sample_id"</span>, <span class="co"># needed to order 'counts' correctly</span></span>
+<span>    n_threads <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~66.7s)</span></span>
-<span><span class="co">#&gt; Finised in 61.1s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~58s)</span></span>
+<span><span class="co">#&gt; Finised in 49.3s!</span></span>
 <span></span>
 <span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
 <span>    <span class="va">design_formula</span>,</span>
 <span>    <span class="va">counts</span>,</span>
 <span>    <span class="va">metadata</span>,</span>
 <span>    batch_name <span class="op">=</span> <span class="st">"id_2"</span>,</span>
-<span>    obs_name <span class="op">=</span> <span class="st">"sample_id"</span></span>
+<span>    obs_name <span class="op">=</span> <span class="st">"sample_id"</span>,</span>
+<span>    n_threads <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~71.2s)</span></span>
-<span><span class="co">#&gt; Finised in 61.8s!</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~59.6s)</span></span>
+<span><span class="co">#&gt; Finised in 48.9s!</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="comparing-definitions">Comparing definitions<a class="anchor" aria-label="anchor" href="#comparing-definitions"></a>
@@ -193,14 +195,14 @@ for both batch definitions:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    sample_id       id_1       id_2</span></span>
-<span><span class="co">#&gt; 1   treated1  0.3576840  0.4337995</span></span>
-<span><span class="co">#&gt; 2   treated2 -0.3341442 -0.3501711</span></span>
-<span><span class="co">#&gt; 3   treated3 -0.3341442 -0.2633270</span></span>
-<span><span class="co">#&gt; 4 untreated1  0.2187259  0.0424296</span></span>
-<span><span class="co">#&gt; 5 untreated2  0.2187259  0.5012903</span></span>
-<span><span class="co">#&gt; 6 untreated3 -0.4950414 -0.5118620</span></span>
-<span><span class="co">#&gt; 7 untreated4 -0.4950414 -0.3706849</span></span></code></pre></div>
+<span><span class="co">#&gt;    sample_id       id_1        id_2</span></span>
+<span><span class="co">#&gt; 1   treated1  0.4237065  0.45382540</span></span>
+<span><span class="co">#&gt; 2   treated2 -0.4065548 -0.34422601</span></span>
+<span><span class="co">#&gt; 3   treated3 -0.4065548 -0.25613031</span></span>
+<span><span class="co">#&gt; 4 untreated1  0.2060039  0.01351995</span></span>
+<span><span class="co">#&gt; 5 untreated2  0.2060039  0.49017730</span></span>
+<span><span class="co">#&gt; 6 untreated3 -0.5487210 -0.49525578</span></span>
+<span><span class="co">#&gt; 7 untreated4 -0.5487210 -0.37507949</span></span></code></pre></div>
 <p>Although there are some similarities (e.g., the estimates for
 <code>untreated3</code> and <code>treated2</code> are approximately
 equal), there are enough differences between samples that the more
@@ -234,19 +236,19 @@ object, the analysis then proceeds normally.</p>
 <span><span class="co">#&gt; log2 fold change (MLE): condition untreated vs treated </span></span>
 <span><span class="co">#&gt; Wald test p-value: condition untreated vs treated </span></span>
 <span><span class="co">#&gt; DataFrame with 14599 rows and 6 columns</span></span>
-<span><span class="co">#&gt;                baseMean log2FoldChange     lfcSE       stat    pvalue      padj</span></span>
-<span><span class="co">#&gt;               &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; FBgn0000003    0.185893     -1.0167939  3.804518 -0.2672596 0.7892693        NA</span></span>
-<span><span class="co">#&gt; FBgn0000008  102.946483      0.0152384  0.221325  0.0688507 0.9451085  0.990455</span></span>
-<span><span class="co">#&gt; FBgn0000014    1.141458      0.5268319  2.114015  0.2492092 0.8031990        NA</span></span>
-<span><span class="co">#&gt; FBgn0000015    0.917912      1.8982548  2.060040  0.9214650 0.3568077        NA</span></span>
-<span><span class="co">#&gt; FBgn0000017 4711.140900      0.2564267  0.126126  2.0330989 0.0420425  0.234177</span></span>
-<span><span class="co">#&gt; ...                 ...            ...       ...        ...       ...       ...</span></span>
-<span><span class="co">#&gt; FBgn0261571 9.25775e-02    -0.87944028  3.809549 -0.2308515  0.817430        NA</span></span>
-<span><span class="co">#&gt; FBgn0261572 6.71659e+00     0.97726858  0.762876  1.2810322  0.200182  0.579617</span></span>
-<span><span class="co">#&gt; FBgn0261573 2.42519e+03     0.00375871  0.115481  0.0325484  0.974035  0.995694</span></span>
-<span><span class="co">#&gt; FBgn0261574 5.25085e+03     0.00508216  0.190924  0.0266188  0.978764  0.997642</span></span>
-<span><span class="co">#&gt; FBgn0261575 1.15072e+01    -0.13557712  0.928857 -0.1459612  0.883952  0.973689</span></span></code></pre></div>
+<span><span class="co">#&gt;                baseMean log2FoldChange     lfcSE      stat    pvalue      padj</span></span>
+<span><span class="co">#&gt;               &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; FBgn0000003    0.184560     -0.9959969  3.803883 -0.261837 0.7934472        NA</span></span>
+<span><span class="co">#&gt; FBgn0000008  102.781102      0.0409561  0.220432  0.185799 0.8526022  0.965876</span></span>
+<span><span class="co">#&gt; FBgn0000014    1.155164      0.5825494  2.103552  0.276936 0.7818292        NA</span></span>
+<span><span class="co">#&gt; FBgn0000015    0.915909      1.9207946  2.072944  0.926602 0.3541331        NA</span></span>
+<span><span class="co">#&gt; FBgn0000017 4707.654896      0.2802176  0.121269  2.310716 0.0208485  0.143939</span></span>
+<span><span class="co">#&gt; ...                 ...            ...       ...       ...       ...       ...</span></span>
+<span><span class="co">#&gt; FBgn0261571 9.07419e-02     -0.8510821  3.809148 -0.223431  0.823200        NA</span></span>
+<span><span class="co">#&gt; FBgn0261572 6.71910e+00      1.0044574  0.766641  1.310205  0.190126  0.550984</span></span>
+<span><span class="co">#&gt; FBgn0261573 2.42379e+03      0.0291687  0.118174  0.246829  0.805041  0.954300</span></span>
+<span><span class="co">#&gt; FBgn0261574 5.24839e+03      0.0348369  0.190160  0.183197  0.854643  0.966593</span></span>
+<span><span class="co">#&gt; FBgn0261575 1.14954e+01     -0.0962191  0.917024 -0.104925  0.916435  0.981692</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

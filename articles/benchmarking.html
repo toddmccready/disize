@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.30</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.33</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,7 @@
       <h1>Benchmarking against DESeq2 and edgeR</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/toddmccready/disize/blob/main/vignettes/benchmarking.Rmd" class="external-link"><code>vignettes/benchmarking.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/toddmccready/disize/blob/v0.4.33/vignettes/articles/benchmarking.Rmd" class="external-link"><code>vignettes/articles/benchmarking.Rmd</code></a></small>
       <div class="d-none name"><code>benchmarking.Rmd</code></div>
     </div>
 
@@ -72,7 +72,7 @@
 <h2 id="a-review-of-mor-and-tmm-normalization">A Review of MoR and TMM Normalization<a class="anchor" aria-label="anchor" href="#a-review-of-mor-and-tmm-normalization"></a>
 </h2>
 <div class="section level3">
-<h3 id="setting-up-notation">Setting Up Notation<a class="anchor" aria-label="anchor" href="#setting-up-notation"></a>
+<h3 id="set-up">Set Up<a class="anchor" aria-label="anchor" href="#set-up"></a>
 </h3>
 <p>Let <span class="math inline">y_{i,g}</span> denote the observed
 count in a sample <span class="math inline">i \in \mathcal{I}</span>
@@ -133,6 +133,39 @@ these ratios and raising it to the second power:</p>
     \log_2 \hat{s}_i = \frac{ \sum_{g \in \mathcal{G}'_i} w_{i,g}
 R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
 </span></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="simulation-framework">Simulation Framework<a class="anchor" aria-label="anchor" href="#simulation-framework"></a>
+</h2>
+<div class="section level3">
+<h3 id="comparing-two-conditions">Comparing Two Conditions<a class="anchor" aria-label="anchor" href="#comparing-two-conditions"></a>
+</h3>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Simulating settings</span></span>
+<span><span class="va">n_donors</span> <span class="op">&lt;-</span> <span class="fl">6L</span></span>
+<span><span class="va">n_genes</span> <span class="op">&lt;-</span> <span class="fl">1000L</span></span>
+<span></span>
+<span><span class="va">model_formula</span> <span class="op">&lt;-</span> <span class="fu">reformulas</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reformulas/man/splitForm.html" class="external-link">splitForm</a></span><span class="op">(</span><span class="op">~</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">cond_id</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">donor_id</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Construct model matrices</span></span>
+<span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    donor_id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="va">n_donors</span>,</span>
+<span>    cond_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_donors</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>    batch_id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="va">n_donors</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fe_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span></span>
+<span>    <span class="va">model_formula</span><span class="op">$</span><span class="va">fixedFormula</span>,</span>
+<span>    data <span class="op">=</span> <span class="va">metadata</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">re_design</span> <span class="op">&lt;-</span> <span class="fu">reformulas</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reformulas/man/mkReTrms.html" class="external-link">mkReTrms</a></span><span class="op">(</span></span>
+<span>    <span class="va">model_formula</span><span class="op">$</span><span class="va">reTrmFormulas</span>,</span>
+<span>    fr <span class="op">=</span> <span class="va">metadata</span>,</span>
+<span>    calc.lambdat <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span><span class="op">$</span><span class="va">Ztlist</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu">Matrix</span><span class="fu">::</span><span class="va">t</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Simulate effect of covariates on expression</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
