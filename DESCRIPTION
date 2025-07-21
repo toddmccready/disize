@@ -19,16 +19,19 @@ Imports:
     dplyr
 Suggests:
     testthat (>= 3.0.0),
-    purrr (>= 1.0.4),
-    tidyr (>= 1.3.1),
-    tibble (>= 3.3.0),
+    purrr,
+    tidyr,
+    tibble,
     knitr,
     rmarkdown,
     R.utils,
     data.table,
     curl,
     pasilla,
-    DESeq2
+    DESeq2,
+    edgeR,
+    future,
+    future.apply
 Remotes:
     stan-dev/cmdstanr
 Config/testthat/edition: 3

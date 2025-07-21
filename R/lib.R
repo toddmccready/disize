@@ -123,11 +123,9 @@ disize <- function(
     # Ensure valid number of features selected
     if (1 < verbose && ncol(counts) < n_feats) {
         warning(
-            "Insufficient number of features after subsetting observations (",
-            ncol(counts),
-            ") to satisfy n_feats = ",
-            n_feats,
-            "."
+            "Insufficient number of features (", ncol(counts), ") after ", 
+            "subsetting observations to satisfy n_feats = ", n_feats, ". ",
+            "Try increasing 'n_subset' if you have repeated measurements."
         )
     }
     n_feats <- min(n_feats, ncol(counts))

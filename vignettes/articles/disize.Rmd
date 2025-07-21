@@ -62,6 +62,9 @@ suppressPackageStartupMessages({
     library(R.utils)
     library(data.table)
 })
+
+# Set number of threads to use
+n_threads <- parallel::detectCores(logical = FALSE)
 ```
 
 ```{r, include=FALSE}
@@ -120,7 +123,7 @@ size_factors_1 <- disize::disize(
     counts,
     metadata,
     batch_name = "sample_id",
-    n_threads = parallel::detectCores()
+    n_threads = n_threads
 )
 print(size_factors_1)
 ```
@@ -138,7 +141,7 @@ size_factors_2 <- disize::disize(
     metadata,
     batch_name = "sample_id",
     n_feats = 15000,
-    n_threads = parallel::detectCores()
+    n_threads = n_threads
 )
 print(size_factors_2)
 ```
