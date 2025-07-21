@@ -31,7 +31,9 @@ Suggests:
     DESeq2,
     edgeR,
     future,
-    future.apply
+    future.apply,
+    ggplot2,
+    ggbeeswarm
 Remotes:
     stan-dev/cmdstanr
 Config/testthat/edition: 3
