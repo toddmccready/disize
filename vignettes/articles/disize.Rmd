@@ -64,7 +64,7 @@ suppressPackageStartupMessages({
 })
 
 # Set number of threads to use
-n_threads <- parallel::detectCores(logical = FALSE)
+n_threads <- parallel::detectCores()
 ```
 
 ```{r, include=FALSE}

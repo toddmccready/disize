@@ -34,7 +34,17 @@ This identifiability issue is overcome by constraining $\mathbf{s}$ and assuming
 in other words, the estimated coefficients $\mathbf{\beta}_g, \mathbf{b}_g$ (excluding the intercept) are *sparse* across genes.
 
 This assumption is encoded in the model by placing distinct horseshoe priors on each of the model coefficients (both the fixed- and random-effects).
-This allows the priors to be learned independently of each other using the large number of features measured in RNAseq experiments.
+This allows the priors to be learned independently of each other using the large number of features measured in RNAseq experiments:
+
+$$\begin{aligned}
+    \mathbf{y}_g &\sim \text{NegBinom}(\mathbf{\mu}_g, \phi) \\
+    \log \mathbf{\mu}_g &= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + \mathbf{o} \\
+        &= \mathbf{\alpha}_g + \mathbf{X} \mathbf{\beta}_g + \mathbf{Z}\mathbf{b}_g + (\mathbf{B} \mathbf{s}) \\
+    \mathbf{\beta}_g &\sim \text{Normal}(\mathbf{0}, \mathbf{\lambda}_g^{(f)} \odot \mathbf{\tau}_g^{(f)}) \\
+    \mathbf{\lambda}_g^{(f)} &\sim \text{Half-Cauchy}(\mathbf{0}, \mathbf{1}) \\
+    \mathbf{b}_g &\sim \text{Normal}(\mathbf{0}, \mathbf{R} [ \mathbf{\lambda}_g^{(r)} \odot \mathbf{\tau}_g^{(r)} ]) \\
+    \mathbf{\lambda}_g^{(r)} &\sim \text{Half-Cauchy}(\mathbf{0}, \mathbf{1}) \\
+\end{aligned}$$
 
 ## Estimation
 

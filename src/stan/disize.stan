@@ -16,8 +16,8 @@ functions {
         vector intercept,
         matrix fe_coefs,
         matrix raw_re_coefs,
-        matrix re_sigma,
-        matrix lambda,
+        matrix re_lambda,
+        matrix fe_lambda,
         vector fe_tau,
         vector re_tau,
         vector sf,
@@ -35,22 +35,22 @@ functions {
             // Scaling standardized random-effects (with horseshoe shrinkage)
             if (n_re != 0) {
                 for (re_i in 1:n_re) {
-                    re_coefs_col[re_i] = raw_re_coefs[re_i, feat_i] * (re_sigma[re_id[re_i], feat_i] * re_tau[re_id[re_i]]);
+                    re_coefs_col[re_i] = raw_re_coefs[re_i, feat_i] * (re_lambda[re_id[re_i], feat_i] * re_tau[re_id[re_i]]);
                 }
             }
 
             // Priors ----
             // Half-cauchy prior over random-effects variance
-            log_prob += cauchy_lpdf(re_sigma[, feat_i] | 0, 1);
+            log_prob += cauchy_lpdf(re_lambda[, feat_i] | 0, 1);
 
             // Normal prior over (raw) random-effects
             log_prob += std_normal_lpdf(raw_re_coefs[, feat_i]);
 
             // Horseshoe prior over fixed-effects
-            log_prob += cauchy_lpdf(lambda[, feat_i] | 0, 1);
-            log_prob += normal_lpdf(fe_coefs[, feat_i] | 0, lambda[, feat_i] .* fe_tau);
+            log_prob += cauchy_lpdf(fe_lambda[, feat_i] | 0, 1);
+            log_prob += normal_lpdf(fe_coefs[, feat_i] | 0, fe_lambda[, feat_i] .* fe_tau);
 
-            // Effect of Experimental Design ----
+            // Covariate Effects ----
             log_mu = rep_vector(intercept[feat_i], n_obs);
 
             if (n_fe != 0) {
@@ -113,7 +113,7 @@ parameters {
     matrix[n_fe, n_feats] fe_coefs;
 
     matrix[n_re, n_feats] raw_re_coefs;
-    matrix<lower=0>[n_re_terms, n_feats] re_sigma;
+    matrix<lower=0>[n_re_terms, n_feats] re_lambda;
 
     // Batch Effect ----
     simplex[n_batches] raw_sf;
@@ -121,7 +121,7 @@ parameters {
     // Shrinkage ----
     vector<lower=0>[n_fe] fe_tau;
     vector<lower=0>[n_re_terms] re_tau;
-    matrix<lower=0>[n_fe, n_feats] lambda;
+    matrix<lower=0>[n_fe, n_feats] fe_lambda;
 
     // Inverse Overdispersion ----
     real<lower=0> iodisp;
@@ -131,10 +131,6 @@ transformed parameters {
     vector[n_batches] sf = log(raw_sf) + log(n_batches);
 }
 model {
-    // Constrain global shrinkage parameters ----
-    fe_tau ~ exponential(1);
-    re_tau ~ exponential(1);
-
     // Parallel posterior eval ----
     target += reduce_sum(
         partial_posterior,
@@ -153,8 +149,8 @@ model {
         intercept,
         fe_coefs,
         raw_re_coefs,
-        re_sigma,
-        lambda,
+        re_lambda,
+        fe_lambda,
         fe_tau,
         re_tau,
         sf,
