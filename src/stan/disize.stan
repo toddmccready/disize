@@ -40,15 +40,15 @@ functions {
             }
 
             // Priors ----
-            // Half-cauchy prior over random-effects variance
+            // Half-cauchy prior over random-effects variance (to fulfill horseshoe)
             log_prob += cauchy_lpdf(re_lambda[, feat_i] | 0, 1);
-
-            // Normal prior over (raw) random-effects
-            log_prob += std_normal_lpdf(raw_re_coefs[, feat_i]);
 
             // Horseshoe prior over fixed-effects
             log_prob += cauchy_lpdf(fe_lambda[, feat_i] | 0, 1);
             log_prob += normal_lpdf(fe_coefs[, feat_i] | 0, fe_lambda[, feat_i] .* fe_tau);
+
+            // Normal prior over (raw) random-effects
+            log_prob += std_normal_lpdf(raw_re_coefs[, feat_i]);
 
             // Covariate Effects ----
             log_mu = rep_vector(intercept[feat_i], n_obs);
