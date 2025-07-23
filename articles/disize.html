@@ -140,7 +140,7 @@ further processing).</p>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Set number of threads to use</span></span>
-<span><span class="va">n_threads</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">n_threads</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="downloading-the-data">Downloading the data<a class="anchor" aria-label="anchor" href="#downloading-the-data"></a>
@@ -199,13 +199,13 @@ factors:</p>
 <span>    n_threads <span class="op">=</span> <span class="va">n_threads</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~47s)</span></span>
-<span><span class="co">#&gt; Finised in 48.9s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~36.1s)</span></span>
+<span><span class="co">#&gt; Finised in 30.9s!</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.091881212  0.010573369 -0.082839374  0.084875869  0.007084256  0.099205758 </span></span>
+<span><span class="co">#&gt;  0.091491079  0.013927651 -0.075658197  0.079105928  0.005524345  0.093203414 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.076430663  0.031003277  0.106821502 -0.166010010 -0.135697657 -0.018300292</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.072574546  0.031164104  0.102013622 -0.160848056 -0.132033025 -0.019480501</span></span></code></pre></div>
 <p>Evidently the batch-effect is indeed small across most samples! The
 samples “NELPS1” and “NELPS2” seem to have been processed slightly
 worse, but otherwise the estimated size factors are approximately the
@@ -222,13 +222,13 @@ a larger <code>n_feats</code>:</p>
 <span>    n_threads <span class="op">=</span> <span class="va">n_threads</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~90.4s)</span></span>
-<span><span class="co">#&gt; Finised in 77.9s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~57.1s)</span></span>
+<span><span class="co">#&gt; Finised in 51.9s!</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       Ctrl1       Ctrl2       Ctrl3        LPS1        LPS2        LPS3 </span></span>
-<span><span class="co">#&gt;  0.11273713  0.01487283 -0.08240529  0.07378857 -0.01546727  0.08920863 </span></span>
+<span><span class="co">#&gt;  0.10234696  0.01601308 -0.07049796  0.06836038 -0.01141886  0.08111685 </span></span>
 <span><span class="co">#&gt;         NE1         NE2         NE3      NELPS1      NELPS2      NELPS3 </span></span>
-<span><span class="co">#&gt; -0.05063284  0.05693219  0.13118898 -0.19664465 -0.16442539 -0.02944772</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.04637741  0.04913596  0.11447797 -0.17733037 -0.14660570 -0.02758125</span></span></code></pre></div>
 <p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level3">
@@ -259,32 +259,32 @@ object, the analysis then proceeds normally.</p>
 <span><span class="co">#&gt; log2 fold change (MLE): condition nelps vs control </span></span>
 <span><span class="co">#&gt; Wald test p-value: condition nelps vs control </span></span>
 <span><span class="co">#&gt; DataFrame with 57132 rows and 6 columns</span></span>
-<span><span class="co">#&gt;                       baseMean log2FoldChange     lfcSE       stat      pvalue</span></span>
-<span><span class="co">#&gt;                      &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt;   &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028180 1.94468e+03     -0.7901904 0.0975504 -8.1003290 5.48107e-16</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028182 2.82075e+01     -0.8926243 0.5119357 -1.7436259 8.12243e-02</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028185 3.38529e-01     -0.0444323 4.4073563 -0.0100814 9.91956e-01</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028184 1.03977e+04      0.7610003 0.0655667 11.6065009 3.81927e-31</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028187 9.80987e+02     -0.1834269 0.1152564 -1.5914682 1.11504e-01</span></span>
-<span><span class="co">#&gt; ...                        ...            ...       ...        ...         ...</span></span>
-<span><span class="co">#&gt; ENSMUSG00000106108   10.686295      6.7500894 1.4408367   4.684840 2.80179e-06</span></span>
-<span><span class="co">#&gt; ENSMUSG00000042675 1588.277800     -0.0395916 0.0812792  -0.487106 6.26183e-01</span></span>
-<span><span class="co">#&gt; ENSMUSG00000036959 1430.061511      0.5440430 0.0844747   6.440308 1.19231e-10</span></span>
-<span><span class="co">#&gt; ENSMUSG00000036958    0.656825     -3.9023671 4.2776528  -0.912268 3.61627e-01</span></span>
-<span><span class="co">#&gt; ENSMUSG00000042678    5.601043     -5.6016171 1.7125635  -3.270896 1.07207e-03</span></span>
+<span><span class="co">#&gt;                       baseMean log2FoldChange     lfcSE        stat      pvalue</span></span>
+<span><span class="co">#&gt;                      &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt;   &lt;numeric&gt;   &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028180 1.94175e+03     -0.7801104 0.0938084 -8.31600045 9.09815e-17</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028182 2.81535e+01     -0.8799874 0.5026908 -1.75055394 8.00228e-02</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028185 3.37161e-01     -0.0334153 4.4073563 -0.00758171 9.93951e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028184 1.03820e+04      0.7726814 0.0648917 11.90724528 1.08503e-32</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028187 9.79374e+02     -0.1720898 0.1114035 -1.54474347 1.22408e-01</span></span>
+<span><span class="co">#&gt; ...                        ...            ...       ...         ...         ...</span></span>
+<span><span class="co">#&gt; ENSMUSG00000106108   10.715603       6.760040 1.4302712    4.726405 2.28530e-06</span></span>
+<span><span class="co">#&gt; ENSMUSG00000042675 1581.415176      -0.029481 0.0770706   -0.382519 7.02076e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000036959 1430.457445       0.554300 0.0832854    6.655422 2.82489e-11</span></span>
+<span><span class="co">#&gt; ENSMUSG00000036958    0.656076      -3.890966 4.2776413   -0.909606 3.63031e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000042678    5.578951      -5.590322 1.7018855   -3.284782 1.02061e-03</span></span>
 <span><span class="co">#&gt;                           padj</span></span>
 <span><span class="co">#&gt;                      &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028180 4.94529e-15</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028182 1.58252e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028180 8.28220e-16</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028182 1.56347e-01</span></span>
 <span><span class="co">#&gt; ENSMUSG00000028185          NA</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028184 6.28643e-30</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028187 2.06807e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028184 1.76131e-31</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028187 2.23569e-01</span></span>
 <span><span class="co">#&gt; ...                        ...</span></span>
-<span><span class="co">#&gt; ENSMUSG00000106108 1.16350e-05</span></span>
-<span><span class="co">#&gt; ENSMUSG00000042675 7.63643e-01</span></span>
-<span><span class="co">#&gt; ENSMUSG00000036959 7.54411e-10</span></span>
+<span><span class="co">#&gt; ENSMUSG00000106108 9.47492e-06</span></span>
+<span><span class="co">#&gt; ENSMUSG00000042675 8.21710e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000036959 1.83144e-10</span></span>
 <span><span class="co">#&gt; ENSMUSG00000036958          NA</span></span>
-<span><span class="co">#&gt; ENSMUSG00000042678 3.16561e-03</span></span></code></pre></div>
+<span><span class="co">#&gt; ENSMUSG00000042678 3.01059e-03</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
