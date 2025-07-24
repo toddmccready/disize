@@ -90,10 +90,11 @@ by the effect of the covariates (<span class="math inline">\mathbf{\alpha}_g + \
 matrix <span class="math inline">\mathbf{X}</span> (without an
 intercept) and a “random-effects” model matrix <span class="math inline">\mathbf{Z}</span>; this by itself is a regular
 GLMM.</p>
-<p>The confounding batch-effect is essentially an unknown offset <span class="math inline">\mathbf{o} = \mathbf{B} \mathbf{s}</span>, where
-<span class="math inline">\mathbf{B}</span> specifies the batch
-membership for each observation and <span class="math inline">\mathbf{s}</span> contains the “size factors” which
-scale the true magnitude of expression.</p>
+<p>The confounding batch-effect is essentially an unknown “offset” <span class="math inline">\mathbf{o} = \mathbf{B} \mathbf{s}</span> (which
+isn’t really an offset as we’re trying to estimate it), where <span class="math inline">\mathbf{B}</span> specifies the batch membership for
+each observation and <span class="math inline">\mathbf{s}</span>
+contains the “size factors” which scale the true magnitude of
+expression.</p>
 <p>At its face, however, this model should not be identifiable for most
 experimental designs (often the batch ID results in too many free
 parameters such as when it is identical to a measured covariate). This
@@ -121,6 +122,8 @@ experiments:</p>
     \mathbf{\lambda}_g^{(r)} &amp;\sim \text{Half-Cauchy}(\mathbf{0},
 \mathbf{1}) \\
 \end{aligned}</span></p>
+<p>Where <span class="math inline">\mathbf{R}</span> specifies the
+random-effect term membership for <span class="math inline">\mathbf{b}_g</span>.</p>
 <div class="section level2">
 <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a>
 </h2>
