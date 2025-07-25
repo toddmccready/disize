@@ -66,7 +66,7 @@ $$
 
 # Simulations
 
-```{r}
+```{r, echo = FALSE}
 suppressPackageStartupMessages({
     library(reformulas)
     library(disize)
@@ -86,9 +86,7 @@ future::plan(
 )
 ```
 
-## Helper Functions
-
-```{r}
+```{r, echo = FALSE}
 split_formula <- function(design_formula) {
     # Extract terms
     terms <- attr(terms(design_formula), "term.labels")
@@ -175,7 +173,11 @@ simulate_dataset <- function(design_formula, data, n_genes, sparsity, sd) {
     # Cast to integers
     mode(counts) <- "integer"
 
-    list(counts = counts, metadata = data, size_factors = size_factors / sum(size_factors) * length(size_factors))
+    list(
+        counts = counts, 
+        metadata = data, 
+        size_factors = log(size_factors / sum(size_factors) * length(size_factors))
+    )
 }
 
 get_disize <- function(dataset, design_formula) {
@@ -269,7 +271,7 @@ run_benchmark <- function(n_sims, sim_pars, design_formula, data) {
 }
 
 plot_benchmark <- function(benchmark, title, design_formula) {
-    the_plot <- ggplot(benchmark, aes(x = sd, fill = comparison)) +
+    the_plot <- ggplot(benchmark, aes(x = sd, color = comparison, fill = comparison)) +
         geom_ribbon(aes(ymin = q5, ymax = q95), alpha = 0.25) +
         geom_ribbon(aes(ymin = q25, ymax = q75), alpha = 0.25) +
         geom_ribbon(aes(ymin = q40, ymax = q60), alpha = 0.25) +
@@ -284,6 +286,12 @@ plot_benchmark <- function(benchmark, title, design_formula) {
             subtitle = paste("Design Formula:", paste(as.character(design_formula), collapse = " ")),
             x = "Biological Variation (Nonsparse Standard Deviation)", 
             y = "Relative Error") +
+        scale_fill_discrete(
+            labels = c("DESeq2", "disize", "edgeR")
+        ) +
+        scale_color_discrete(
+            labels = c("DESeq2", "disize", "edgeR")
+        )
         theme_classic()
     
     the_plot
