@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.39</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.40</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../articles/disize.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
+<li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/benchmarking.html">Benchmarking against DESeq2 and edgeR</a></li>
@@ -88,7 +88,7 @@ the <code>pasilla</code> package.</p>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Set number of threads to use</span></span>
-<span><span class="va">n_threads</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span></span></code></pre></div>
+<span><span class="va">n_threads</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span>logical <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="reading-in-data">Reading in data<a class="anchor" aria-label="anchor" href="#reading-in-data"></a>
 </h2>
@@ -172,8 +172,8 @@ for both batch definitions:</p>
 <span>    n_threads <span class="op">=</span> <span class="va">n_threads</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~8.3s)</span></span>
-<span><span class="co">#&gt; Finised in 10.2s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~18.7s)</span></span>
+<span><span class="co">#&gt; Finised in 20s!</span></span>
 <span></span>
 <span><span class="va">size_factors_2</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
 <span>    <span class="va">design_formula</span>,</span>
@@ -184,8 +184,8 @@ for both batch definitions:</p>
 <span>    n_threads <span class="op">=</span> <span class="va">n_threads</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~8.7s)</span></span>
-<span><span class="co">#&gt; Finised in 10.7s!</span></span></code></pre></div>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~19.1s)</span></span>
+<span><span class="co">#&gt; Finised in 20.5s!</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="comparing-definitions">Comparing definitions<a class="anchor" aria-label="anchor" href="#comparing-definitions"></a>
@@ -198,14 +198,14 @@ for both batch definitions:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    sample_id       id_1       id_2</span></span>
-<span><span class="co">#&gt; 1   treated1  0.4161660  0.5038590</span></span>
-<span><span class="co">#&gt; 2   treated2 -0.4029706 -0.3825143</span></span>
-<span><span class="co">#&gt; 3   treated3 -0.4029706 -0.2882902</span></span>
-<span><span class="co">#&gt; 4 untreated1  0.2099367 -0.0110242</span></span>
-<span><span class="co">#&gt; 5 untreated2  0.2099367  0.5300903</span></span>
-<span><span class="co">#&gt; 6 untreated3 -0.5414038 -0.5565442</span></span>
-<span><span class="co">#&gt; 7 untreated4 -0.5414038 -0.4278528</span></span></code></pre></div>
+<span><span class="co">#&gt;    sample_id       id_1        id_2</span></span>
+<span><span class="co">#&gt; 1   treated1  0.3747827  0.51742515</span></span>
+<span><span class="co">#&gt; 2   treated2 -0.3370844 -0.26029091</span></span>
+<span><span class="co">#&gt; 3   treated3 -0.3370844 -0.17477057</span></span>
+<span><span class="co">#&gt; 4 untreated1  0.2086055 -0.04444308</span></span>
+<span><span class="co">#&gt; 5 untreated2  0.2086055  0.42953867</span></span>
+<span><span class="co">#&gt; 6 untreated3 -0.5116305 -0.55809929</span></span>
+<span><span class="co">#&gt; 7 untreated4 -0.5116305 -0.43626493</span></span></code></pre></div>
 <p>Although there are some similarities (e.g., the estimates for
 <code>untreated3</code> and <code>treated2</code> are approximately
 equal), there are enough differences between samples that the more
@@ -239,19 +239,32 @@ object, the analysis then proceeds normally.</p>
 <span><span class="co">#&gt; log2 fold change (MLE): condition untreated vs treated </span></span>
 <span><span class="co">#&gt; Wald test p-value: condition untreated vs treated </span></span>
 <span><span class="co">#&gt; DataFrame with 14599 rows and 6 columns</span></span>
-<span><span class="co">#&gt;                baseMean log2FoldChange     lfcSE       stat    pvalue      padj</span></span>
-<span><span class="co">#&gt;               &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; FBgn0000003    0.190592     -1.0033152  3.799994  -0.264031 0.7917562        NA</span></span>
-<span><span class="co">#&gt; FBgn0000008  104.961193      0.0643029  0.235671   0.272850 0.7849684  0.947440</span></span>
-<span><span class="co">#&gt; FBgn0000014    1.151537      0.6512574  2.046149   0.318284 0.7502692        NA</span></span>
-<span><span class="co">#&gt; FBgn0000015    0.941979      1.9607138  2.034428   0.963767 0.3351629        NA</span></span>
-<span><span class="co">#&gt; FBgn0000017 4799.242929      0.3033671  0.139393   2.176349 0.0295292  0.197715</span></span>
-<span><span class="co">#&gt; ...                 ...            ...       ...        ...       ...       ...</span></span>
-<span><span class="co">#&gt; FBgn0261571 8.63135e-02     -0.8108194  3.806643 -0.2130012  0.831326        NA</span></span>
-<span><span class="co">#&gt; FBgn0261572 6.88247e+00      1.0393161  0.761771  1.3643421  0.172460  0.543428</span></span>
-<span><span class="co">#&gt; FBgn0261573 2.47328e+03      0.0520302  0.147492  0.3527663  0.724264  0.931884</span></span>
-<span><span class="co">#&gt; FBgn0261574 5.31636e+03      0.0671360  0.177922  0.3773328  0.705926  0.925309</span></span>
-<span><span class="co">#&gt; FBgn0261575 1.12453e+01     -0.0779992  0.871376 -0.0895127  0.928674  0.987282</span></span></code></pre></div>
+<span><span class="co">#&gt;                baseMean log2FoldChange     lfcSE       stat      pvalue</span></span>
+<span><span class="co">#&gt;               &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt;  &lt;numeric&gt;   &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; FBgn0000003    0.170139      -0.791082  3.804784  -0.207918 8.35293e-01</span></span>
+<span><span class="co">#&gt; FBgn0000008  103.288951       0.238426  0.218556   1.090915 2.75310e-01</span></span>
+<span><span class="co">#&gt; FBgn0000014    1.180321       0.764676  2.102836   0.363640 7.16127e-01</span></span>
+<span><span class="co">#&gt; FBgn0000015    0.962694       2.114523  2.049733   1.031609 3.02255e-01</span></span>
+<span><span class="co">#&gt; FBgn0000017 4757.427840       0.478391  0.119981   3.987217 6.68529e-05</span></span>
+<span><span class="co">#&gt; ...                 ...            ...       ...        ...         ...</span></span>
+<span><span class="co">#&gt; FBgn0261571 8.51505e-02     -0.6568730  3.809716 -0.1724205   0.8631070</span></span>
+<span><span class="co">#&gt; FBgn0261572 6.89786e+00      1.1992685  0.761958  1.5739304   0.1155035</span></span>
+<span><span class="co">#&gt; FBgn0261573 2.43495e+03      0.2276114  0.114304  1.9912731   0.0464509</span></span>
+<span><span class="co">#&gt; FBgn0261574 5.27800e+03      0.2296204  0.193357  1.1875438   0.2350132</span></span>
+<span><span class="co">#&gt; FBgn0261575 1.15491e+01      0.0904875  0.926939  0.0976197   0.9222343</span></span>
+<span><span class="co">#&gt;                    padj</span></span>
+<span><span class="co">#&gt;               &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; FBgn0000003          NA</span></span>
+<span><span class="co">#&gt; FBgn0000008 0.427468022</span></span>
+<span><span class="co">#&gt; FBgn0000014          NA</span></span>
+<span><span class="co">#&gt; FBgn0000015          NA</span></span>
+<span><span class="co">#&gt; FBgn0000017 0.000754976</span></span>
+<span><span class="co">#&gt; ...                 ...</span></span>
+<span><span class="co">#&gt; FBgn0261571          NA</span></span>
+<span><span class="co">#&gt; FBgn0261572          NA</span></span>
+<span><span class="co">#&gt; FBgn0261573    0.120627</span></span>
+<span><span class="co">#&gt; FBgn0261574    0.383683</span></span>
+<span><span class="co">#&gt; FBgn0261575    0.955409</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

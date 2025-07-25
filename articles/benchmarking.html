@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">disize</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.39</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.40</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../articles/disize.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
+<li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/benchmarking.html">Benchmarking against DESeq2 and edgeR</a></li>
@@ -138,6 +138,227 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
 <div class="section level2">
 <h2 id="simulations">Simulations<a class="anchor" aria-label="anchor" href="#simulations"></a>
 </h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressPackageStartupMessages</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bbolker/reformulas" class="external-link">reformulas</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://toddmccready.github.io/disize/">disize</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/thelovelab/DESeq2" class="external-link">DESeq2</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioinf.wehi.edu.au/edgeR/" class="external-link">edgeR</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://future.futureverse.org" class="external-link">future</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://future.apply.futureverse.org" class="external-link">future.apply</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">future</span><span class="fu">::</span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html" class="external-link">plan</a></span><span class="op">(</span></span>
+<span>    <span class="fu">future</span><span class="fu">::</span><span class="va"><a href="https://future.futureverse.org/reference/multisession.html" class="external-link">multisession</a></span>, </span>
+<span>    workers <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="helper-functions">Helper Functions<a class="anchor" aria-label="anchor" href="#helper-functions"></a>
+</h3>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">split_formula</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">design_formula</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># Extract terms</span></span>
+<span>    <span class="va">terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/terms.html" class="external-link">terms</a></span><span class="op">(</span><span class="va">design_formula</span><span class="op">)</span>, <span class="st">"term.labels"</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Identify random effects</span></span>
+<span>    <span class="va">re</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"\\| "</span>, <span class="va">terms</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="va">fixed</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">terms</span><span class="op">[</span><span class="op">!</span><span class="va">re</span><span class="op">]</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">fixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/formula.html" class="external-link">formula</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">" ~ 1 + "</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">terms</span><span class="op">[</span><span class="op">!</span><span class="va">re</span><span class="op">]</span>, collapse <span class="op">=</span> <span class="st">" + "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="va">random</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">terms</span><span class="op">[</span><span class="va">re</span><span class="op">]</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">random</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/formula.html" class="external-link">formula</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span></span>
+<span>            <span class="st">" ~ 0 + "</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">terms</span><span class="op">[</span><span class="va">re</span><span class="op">]</span>, collapse <span class="op">=</span> <span class="st">" + "</span><span class="op">)</span></span>
+<span>        <span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>        formula <span class="op">=</span> <span class="va">design_formula</span>,</span>
+<span>        fixed <span class="op">=</span> <span class="va">fixed</span>,</span>
+<span>        random <span class="op">=</span> <span class="va">random</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">simulate_dataset</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">design_formula</span>, <span class="va">data</span>, <span class="va">n_genes</span>, <span class="va">sparsity</span>, <span class="va">sd</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># Simulate inverse overdispersion factors</span></span>
+<span>    <span class="va">iodisps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Lognormal.html" class="external-link">rlnorm</a></span><span class="op">(</span><span class="va">n_genes</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Split design formula</span></span>
+<span>    <span class="va">design</span> <span class="op">&lt;-</span> <span class="fu">split_formula</span><span class="op">(</span><span class="va">design_formula</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Construct model matrices</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">design</span><span class="op">$</span><span class="va">fixed</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">fe_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="va">design</span><span class="op">$</span><span class="va">fixed</span>, <span class="va">data</span><span class="op">)</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="va">fe_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">0L</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">design</span><span class="op">$</span><span class="va">random</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">remm</span> <span class="op">&lt;-</span> <span class="fu">reformulas</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reformulas/man/mkReTrms.html" class="external-link">mkReTrms</a></span><span class="op">(</span></span>
+<span>            bars <span class="op">=</span> <span class="fu">reformulas</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reformulas/man/formfuns.html" class="external-link">findbars</a></span><span class="op">(</span><span class="va">design</span><span class="op">$</span><span class="va">random</span><span class="op">)</span>,</span>
+<span>            fr <span class="op">=</span> <span class="va">data</span>,</span>
+<span>            calc.lambdat <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>            sparse <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>        <span class="op">)</span></span>
+<span>        <span class="va">re_design</span> <span class="op">&lt;-</span> <span class="fu">Matrix</span><span class="fu">::</span><span class="fu">t</span><span class="op">(</span><span class="va">remm</span><span class="op">$</span><span class="va">Zt</span><span class="op">)</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="va">remm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>            Ztlist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">0L</span><span class="op">)</span><span class="op">)</span></span>
+<span>        <span class="op">)</span></span>
+<span>        <span class="va">re_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">0L</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="co"># Simulate size factors</span></span>
+<span>    <span class="va">size_factors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Factor-class.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">batch_id</span><span class="op">)</span><span class="op">)</span>, <span class="fl">0.1</span>, <span class="fl">1.0</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Factor-class.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">batch_id</span><span class="op">)</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="co"># Simulate counts</span></span>
+<span>    <span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_genes</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="co"># Simulate covariate coefficients</span></span>
+<span>        <span class="va">intercept</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span>        <span class="va">fe_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">fe_design</span><span class="op">)</span>, <span class="fl">1</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">sparsity</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">fe_design</span><span class="op">)</span>, sd <span class="op">=</span> <span class="va">sd</span><span class="op">)</span></span>
+<span>        <span class="va">re_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">remm</span><span class="op">$</span><span class="va">Ztlist</span>, <span class="va">nrow</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">n_rows</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="co">#</span></span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">sparsity</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_rows</span>, sd <span class="op">=</span> <span class="va">sd</span><span class="op">)</span></span>
+<span>        <span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span>        <span class="co"># Compute realized magnitude</span></span>
+<span>        <span class="va">log_mu</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">intercept</span> <span class="op">+</span> </span>
+<span>            <span class="va">fe_design</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">fe_coefs</span> <span class="op">+</span> </span>
+<span>            <span class="va">re_design</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">re_coefs</span> <span class="op">+</span> </span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">[</span><span class="va">data</span><span class="op">$</span><span class="va">batch_id</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span>        <span class="co"># Simulate counts</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/stats/NegBinomial.html" class="external-link">rnbinom</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>, mu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">log_mu</span><span class="op">)</span>, size <span class="op">=</span> <span class="va">iodisps</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Cast to integers</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/mode.html" class="external-link">mode</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"integer"</span></span>
+<span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">counts</span>, metadata <span class="op">=</span> <span class="va">data</span>, size_factors <span class="op">=</span> <span class="va">size_factors</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">size_factors</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">get_disize</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dataset</span>, <span class="va">design_formula</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">disize_sf</span> <span class="op">&lt;-</span> <span class="fu">disize</span><span class="fu">::</span><span class="fu"><a href="../reference/disize.html">disize</a></span><span class="op">(</span></span>
+<span>        <span class="va">design_formula</span>,</span>
+<span>        <span class="va">dataset</span><span class="op">$</span><span class="va">counts</span>,</span>
+<span>        <span class="va">dataset</span><span class="op">$</span><span class="va">metadata</span>,</span>
+<span>        <span class="st">"batch_id"</span>,</span>
+<span>        n_feats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">dataset</span><span class="op">$</span><span class="va">counts</span><span class="op">)</span>,</span>
+<span>        verbose <span class="op">=</span> <span class="fl">1L</span></span>
+<span>    <span class="op">)</span></span>
+<span></span>
+<span>    <span class="va">disize_sf</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">get_deseq2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dataset</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">dds</span> <span class="op">&lt;-</span> <span class="fu">DESeq2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DESeq2/man/DESeqDataSet.html" class="external-link">DESeqDataSetFromMatrix</a></span><span class="op">(</span></span>
+<span>        countData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">dataset</span><span class="op">$</span><span class="va">counts</span><span class="op">)</span>,</span>
+<span>        colData <span class="op">=</span> <span class="va">dataset</span><span class="op">$</span><span class="va">metadata</span>,</span>
+<span>        design <span class="op">=</span> <span class="op">~</span> <span class="fl">1</span></span>
+<span>    <span class="op">)</span></span>
+<span>    <span class="va">dds</span> <span class="op">&lt;-</span> <span class="fu">DESeq2</span><span class="fu">::</span><span class="fu">estimateSizeFactors</span><span class="op">(</span><span class="va">dds</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Extract size factors</span></span>
+<span>    <span class="va">deseq2_sf</span> <span class="op">&lt;-</span> <span class="fu">DESeq2</span><span class="fu">::</span><span class="fu">sizeFactors</span><span class="op">(</span><span class="va">dds</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Scale for comparisons</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">deseq2_sf</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">deseq2_sf</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">deseq2_sf</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">get_edger</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dataset</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">dds</span> <span class="op">&lt;-</span> <span class="fu">edgeR</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/DGEList.html" class="external-link">DGEList</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">dataset</span><span class="op">$</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">dds</span> <span class="op">&lt;-</span> <span class="fu">edgeR</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/edgeR/man/calcNormFactors.html" class="external-link">calcNormFactors</a></span><span class="op">(</span><span class="va">dds</span>, method <span class="op">=</span> <span class="st">"TMM"</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Extract size factors</span></span>
+<span>    <span class="va">edger_sf</span> <span class="op">&lt;-</span> <span class="va">dds</span><span class="op">$</span><span class="va">samples</span><span class="op">$</span><span class="va">norm.factors</span></span>
+<span></span>
+<span>    <span class="co"># Scale for comparisons</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">edger_sf</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">edger_sf</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">edger_sf</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">run_benchmark</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_sims</span>, <span class="va">sim_pars</span>, <span class="va">design_formula</span>, <span class="va">data</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># Run benchmarks</span></span>
+<span>    <span class="va">benchmark</span> <span class="op">&lt;-</span> <span class="va">sim_pars</span> <span class="op">|&gt;</span></span>
+<span>        <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>d <span class="op">=</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pmap.html" class="external-link">pmap</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">n_genes</span>, <span class="va">sparsity</span>, <span class="va">sd</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">n_genes</span>, <span class="va">sparsity</span>, <span class="va">sd</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="va">errors</span> <span class="op">&lt;-</span> <span class="fu">future.apply</span><span class="fu">::</span><span class="fu"><a href="https://future.apply.futureverse.org/reference/future_lapply.html" class="external-link">future_replicate</a></span><span class="op">(</span></span>
+<span>                n <span class="op">=</span> <span class="va">n_sims</span>, </span>
+<span>                expr <span class="op">=</span> <span class="op">{</span></span>
+<span>                <span class="co"># Simulate dataset</span></span>
+<span>                <span class="va">dataset</span> <span class="op">&lt;-</span> <span class="fu">simulate_dataset</span><span class="op">(</span><span class="va">design_formula</span>, <span class="va">data</span>, <span class="va">n_genes</span>, <span class="va">sparsity</span>, <span class="va">sd</span><span class="op">)</span></span>
+<span></span>
+<span>                <span class="co"># Estimate size factors</span></span>
+<span>                <span class="va">disize_sf</span> <span class="op">&lt;-</span> <span class="fu">get_disize</span><span class="op">(</span><span class="va">dataset</span>, <span class="va">design_formula</span><span class="op">)</span></span>
+<span>                <span class="va">deseq2_sf</span> <span class="op">&lt;-</span> <span class="fu">get_deseq2</span><span class="op">(</span><span class="va">dataset</span><span class="op">)</span></span>
+<span>                <span class="va">edger_sf</span> <span class="op">&lt;-</span> <span class="fu">get_edger</span><span class="op">(</span><span class="va">dataset</span><span class="op">)</span></span>
+<span></span>
+<span>                <span class="co"># Compute error on log-scale</span></span>
+<span>                <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>                    disize <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">(</span><span class="va">dataset</span><span class="op">$</span><span class="va">size_factors</span> <span class="op">-</span> <span class="va">disize_sf</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                    deseq2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">(</span><span class="va">dataset</span><span class="op">$</span><span class="va">size_factors</span> <span class="op">-</span> <span class="va">deseq2_sf</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                    edger <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">(</span><span class="va">dataset</span><span class="op">$</span><span class="va">size_factors</span> <span class="op">-</span> <span class="va">edger_sf</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span>                <span class="op">)</span></span>
+<span>                <span class="op">}</span>,</span>
+<span>                simplify <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>            <span class="op">)</span></span>
+<span></span>
+<span>            <span class="co"># Denote simulation ID</span></span>
+<span>            <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">errors</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>                <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rowid_to_column</a></span><span class="op">(</span><span class="st">"sim_id"</span><span class="op">)</span></span>
+<span>        <span class="op">}</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>        <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html" class="external-link">unnest</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>            disize_vs_disize <span class="op">=</span> <span class="va">disize</span> <span class="op">/</span> <span class="va">disize</span>,</span>
+<span>            deseq2_vs_disize <span class="op">=</span> <span class="va">deseq2</span> <span class="op">/</span> <span class="va">disize</span>,</span>
+<span>            edger_vs_disize <span class="op">=</span> <span class="va">edger</span> <span class="op">/</span> <span class="va">disize</span></span>
+<span>        <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>        <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span></span>
+<span>            cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">disize_vs_disize</span>, <span class="va">deseq2_vs_disize</span>, <span class="va">edger_vs_disize</span><span class="op">)</span>,</span>
+<span>            names_to <span class="op">=</span> <span class="st">"comparison"</span>,</span>
+<span>            values_to <span class="op">=</span> <span class="st">"relative_error"</span></span>
+<span>        <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>        <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">setting_id</span>, <span class="va">comparison</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>        <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>            q95 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">relative_error</span>, <span class="fl">0.95</span><span class="op">)</span>,</span>
+<span>            q75 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">relative_error</span>, <span class="fl">0.75</span><span class="op">)</span>,</span>
+<span>            q60 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">relative_error</span>, <span class="fl">0.60</span><span class="op">)</span>,</span>
+<span>            q40 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">relative_error</span>, <span class="fl">0.40</span><span class="op">)</span>,</span>
+<span>            q25 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">relative_error</span>, <span class="fl">0.25</span><span class="op">)</span>,</span>
+<span>            q5 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">relative_error</span>, <span class="fl">0.05</span><span class="op">)</span></span>
+<span>        <span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">benchmark</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">plot_benchmark</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">benchmark</span>, <span class="va">title</span>, <span class="va">design_formula</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">the_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">benchmark</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">sd</span>, fill <span class="op">=</span> <span class="va">comparison</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">q5</span>, ymax <span class="op">=</span> <span class="va">q95</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">q25</span>, ymax <span class="op">=</span> <span class="va">q75</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">q40</span>, ymax <span class="op">=</span> <span class="va">q60</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_log10</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span></span>
+<span>            facets <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">sparsity</span><span class="op">)</span>,</span>
+<span>            labeller <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labeller.html" class="external-link">labeller</a></span><span class="op">(</span></span>
+<span>                sparsity <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"% Sparsity: "</span>, <span class="va">x</span><span class="op">)</span></span>
+<span>            <span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>            title <span class="op">=</span> <span class="va">title</span>,</span>
+<span>            subtitle <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Design Formula:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">design_formula</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">" "</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            x <span class="op">=</span> <span class="st">"Biological Variation (Nonsparse Standard Deviation)"</span>, </span>
+<span>            y <span class="op">=</span> <span class="st">"Relative Error"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">the_plot</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
 <div class="section level3">
 <h3 id="a-trivial-setting">A Trivial Setting<a class="anchor" aria-label="anchor" href="#a-trivial-setting"></a>
 </h3>
@@ -624,41 +845,29 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
 </tbody>
 </table>
 </div>
-<p><img src="benchmarking_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
+<p><img src="benchmarking_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="comparing-two-conditions">Comparing Two Conditions<a class="anchor" aria-label="anchor" href="#comparing-two-conditions"></a>
 </h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">design_formula</span> <span class="op">&lt;-</span> <span class="op">~</span> <span class="va">cond_id</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">donor_id</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">n_donors</span> <span class="op">&lt;-</span> <span class="fl">6L</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>    donor_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_donors</span><span class="op">)</span>,</span>
-<span>    cond_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_donors</span>, <span class="fl">2</span><span class="op">)</span>,</span>
-<span>    batch_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_donors</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Design Data: "</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Design Data:</span></span>
-<span><span class="fu">gt</span><span class="fu">::</span><span class="fu"><a href="https://gt.rstudio.com/reference/gt.html" class="external-link">gt</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-<div id="yvkgufivju" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#yvkgufivju table {
+<pre><code><span><span class="co">#&gt; Design Data:</span></span></code></pre>
+<div id="wkkeulbfdp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#wkkeulbfdp table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#yvkgufivju thead, #yvkgufivju tbody, #yvkgufivju tfoot, #yvkgufivju tr, #yvkgufivju td, #yvkgufivju th {
+#wkkeulbfdp thead, #wkkeulbfdp tbody, #wkkeulbfdp tfoot, #wkkeulbfdp tr, #wkkeulbfdp td, #wkkeulbfdp th {
   border-style: none;
 }
 
-#yvkgufivju p {
+#wkkeulbfdp p {
   margin: 0;
   padding: 0;
 }
 
-#yvkgufivju .gt_table {
+#wkkeulbfdp .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -684,12 +893,12 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-left-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_caption {
+#wkkeulbfdp .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#yvkgufivju .gt_title {
+#wkkeulbfdp .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -701,7 +910,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-bottom-width: 0;
 }
 
-#yvkgufivju .gt_subtitle {
+#wkkeulbfdp .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -713,7 +922,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-top-width: 0;
 }
 
-#yvkgufivju .gt_heading {
+#wkkeulbfdp .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -725,13 +934,13 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-right-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_bottom_border {
+#wkkeulbfdp .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_col_headings {
+#wkkeulbfdp .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -746,7 +955,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-right-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_col_heading {
+#wkkeulbfdp .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -766,7 +975,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   overflow-x: hidden;
 }
 
-#yvkgufivju .gt_column_spanner_outer {
+#wkkeulbfdp .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -778,15 +987,15 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   padding-right: 4px;
 }
 
-#yvkgufivju .gt_column_spanner_outer:first-child {
+#wkkeulbfdp .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#yvkgufivju .gt_column_spanner_outer:last-child {
+#wkkeulbfdp .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#yvkgufivju .gt_column_spanner {
+#wkkeulbfdp .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -798,11 +1007,11 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   width: 100%;
 }
 
-#yvkgufivju .gt_spanner_row {
+#wkkeulbfdp .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#yvkgufivju .gt_group_heading {
+#wkkeulbfdp .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -828,7 +1037,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   text-align: left;
 }
 
-#yvkgufivju .gt_empty_group_heading {
+#wkkeulbfdp .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -843,15 +1052,15 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   vertical-align: middle;
 }
 
-#yvkgufivju .gt_from_md > :first-child {
+#wkkeulbfdp .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#yvkgufivju .gt_from_md > :last-child {
+#wkkeulbfdp .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#yvkgufivju .gt_row {
+#wkkeulbfdp .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -870,7 +1079,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   overflow-x: hidden;
 }
 
-#yvkgufivju .gt_stub {
+#wkkeulbfdp .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -883,7 +1092,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   padding-right: 5px;
 }
 
-#yvkgufivju .gt_stub_row_group {
+#wkkeulbfdp .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -897,15 +1106,15 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   vertical-align: top;
 }
 
-#yvkgufivju .gt_row_group_first td {
+#wkkeulbfdp .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#yvkgufivju .gt_row_group_first th {
+#wkkeulbfdp .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#yvkgufivju .gt_summary_row {
+#wkkeulbfdp .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -915,16 +1124,16 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   padding-right: 5px;
 }
 
-#yvkgufivju .gt_first_summary_row {
+#wkkeulbfdp .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_first_summary_row.thick {
+#wkkeulbfdp .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#yvkgufivju .gt_last_summary_row {
+#wkkeulbfdp .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -934,7 +1143,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-bottom-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_grand_summary_row {
+#wkkeulbfdp .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -944,7 +1153,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   padding-right: 5px;
 }
 
-#yvkgufivju .gt_first_grand_summary_row {
+#wkkeulbfdp .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -954,7 +1163,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-top-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_last_grand_summary_row_top {
+#wkkeulbfdp .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -964,11 +1173,11 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-bottom-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_striped {
+#wkkeulbfdp .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#yvkgufivju .gt_table_body {
+#wkkeulbfdp .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -977,7 +1186,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-bottom-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_footnotes {
+#wkkeulbfdp .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -991,7 +1200,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-right-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_footnote {
+#wkkeulbfdp .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1000,7 +1209,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   padding-right: 5px;
 }
 
-#yvkgufivju .gt_sourcenotes {
+#wkkeulbfdp .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1014,7 +1223,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   border-right-color: #D3D3D3;
 }
 
-#yvkgufivju .gt_sourcenote {
+#wkkeulbfdp .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1022,72 +1231,72 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
   padding-right: 5px;
 }
 
-#yvkgufivju .gt_left {
+#wkkeulbfdp .gt_left {
   text-align: left;
 }
 
-#yvkgufivju .gt_center {
+#wkkeulbfdp .gt_center {
   text-align: center;
 }
 
-#yvkgufivju .gt_right {
+#wkkeulbfdp .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#yvkgufivju .gt_font_normal {
+#wkkeulbfdp .gt_font_normal {
   font-weight: normal;
 }
 
-#yvkgufivju .gt_font_bold {
+#wkkeulbfdp .gt_font_bold {
   font-weight: bold;
 }
 
-#yvkgufivju .gt_font_italic {
+#wkkeulbfdp .gt_font_italic {
   font-style: italic;
 }
 
-#yvkgufivju .gt_super {
+#wkkeulbfdp .gt_super {
   font-size: 65%;
 }
 
-#yvkgufivju .gt_footnote_marks {
+#wkkeulbfdp .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#yvkgufivju .gt_asterisk {
+#wkkeulbfdp .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#yvkgufivju .gt_indent_1 {
+#wkkeulbfdp .gt_indent_1 {
   text-indent: 5px;
 }
 
-#yvkgufivju .gt_indent_2 {
+#wkkeulbfdp .gt_indent_2 {
   text-indent: 10px;
 }
 
-#yvkgufivju .gt_indent_3 {
+#wkkeulbfdp .gt_indent_3 {
   text-indent: 15px;
 }
 
-#yvkgufivju .gt_indent_4 {
+#wkkeulbfdp .gt_indent_4 {
   text-indent: 20px;
 }
 
-#yvkgufivju .gt_indent_5 {
+#wkkeulbfdp .gt_indent_5 {
   text-indent: 25px;
 }
 
-#yvkgufivju .katex-display {
+#wkkeulbfdp .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#yvkgufivju div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#wkkeulbfdp div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1131,13 +1340,7 @@ R_{i,g} }{ \sum_{g \in \mathcal{G}'_i} w_{i,g} }
 </tbody>
 </table>
 </div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="co"># Run benchmarks</span></span>
-<span><span class="va">benchmark</span> <span class="op">&lt;-</span> <span class="fu">run_benchmark</span><span class="op">(</span><span class="va">n_sims</span>, <span class="va">sim_pars</span>, <span class="va">design_formula</span>, <span class="va">data</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">plot_benchmark</span><span class="op">(</span><span class="va">benchmark</span>, <span class="st">"Comparing Two Conditions"</span>, <span class="va">design_formula</span><span class="op">)</span></span></code></pre></div>
-<p><img src="benchmarking_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+<p><img src="benchmarking_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
