@@ -12,7 +12,7 @@ split_formula <- function(design_formula) {
 
     fixed <- NULL
     if (length(terms[!re]) != 0) {
-        fixed <- formula(paste0(" ~ 1 + ", paste(terms[!re], collapse = " + ")))
+        fixed <- formula(paste0(" ~ 0 + ", paste(terms[!re], collapse = " + ")))
     }
 
     random <- NULL
@@ -167,10 +167,7 @@ disize <- function(
 
     # Construct fixed-effects model matrix if present
     if (!base::is.null(design$fixed)) {
-        fe_design <- stats::model.matrix(design$fixed, metadata)[,
-            -1,
-            drop = FALSE
-        ]
+        fe_design <- stats::model.matrix(design$fixed, metadata)
 
         stan_data[["n_fe"]] <- ncol(fe_design)
         stan_data[["fe_design"]] <- fe_design
@@ -330,20 +327,14 @@ disize <- function(
     ]
 
     # Extract size factor terms
-    end <- length(uc_params) -
-        (length(skeleton$fe_tau) +
-            length(skeleton$re_tau) +
-            length(skeleton$lambda) +
-            1)
-    start <- end - (length(skeleton$raw_sf) - 1) + 1
-    sf_gradient <- gradient[start:end]
+    sf_gradient <- gradient[grepl("raw_sf[", names(gradient))]
 
     # Calculate norm
     norm <- sum(sf_gradient^2) /
         max(abs(attr(gradient, "log_prob")), 1.0)
 
     # Check gradient for size factors
-    if (1 < norm && 2L <= verbose) {
+    if (2L <= norm && 2L <= verbose) {
         warning(
             "Magnitude of relative size factor gradient (",
             norm,
