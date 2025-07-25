@@ -407,6 +407,17 @@ dependencies = [
 ]
 
 [[packages]]
+name = "V8"
+version = "6.0.4"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    { name = "Rcpp", requirement = "(>= 0.12.12)" },
+    { name = "jsonlite", requirement = "(>= 1.0)" },
+    { name = "curl", requirement = "(>= 1.0)" },
+]
+
+[[packages]]
 name = "XML"
 version = "3.99-0.18"
 source = { repository = "https://cran.r-project.org/" }
@@ -473,8 +484,8 @@ force_source = false
 dependencies = []
 
 [[packages]]
-name = "beeswarm"
-version = "0.4.0"
+name = "bigD"
+version = "0.3.1"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
@@ -972,19 +983,6 @@ dependencies = [
 ]
 
 [[packages]]
-name = "ggbeeswarm"
-version = "0.7.2"
-source = { repository = "https://cran.r-project.org/" }
-force_source = false
-dependencies = [
-    { name = "ggplot2", requirement = "(>= 3.3.0)" },
-    "beeswarm",
-    "lifecycle",
-    "vipor",
-    "cli",
-]
-
-[[packages]]
 name = "ggplot2"
 version = "3.5.2"
 source = { repository = "https://cran.r-project.org/" }
@@ -1042,6 +1040,34 @@ version = "1.8.0"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
+
+[[packages]]
+name = "gt"
+version = "1.0.0"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    { name = "base64enc", requirement = "(>= 0.1-3)" },
+    { name = "bigD", requirement = "(>= 0.2)" },
+    { name = "bitops", requirement = "(>= 1.0-7)" },
+    { name = "cli", requirement = "(>= 3.6.3)" },
+    { name = "commonmark", requirement = "(>= 1.9.1)" },
+    { name = "dplyr", requirement = "(>= 1.1.4)" },
+    { name = "fs", requirement = "(>= 1.6.4)" },
+    { name = "glue", requirement = "(>= 1.8.0)" },
+    { name = "htmltools", requirement = "(>= 0.5.8.1)" },
+    { name = "htmlwidgets", requirement = "(>= 1.6.4)" },
+    { name = "juicyjuice", requirement = "(>= 0.1.0)" },
+    { name = "magrittr", requirement = "(>= 2.0.3)" },
+    { name = "markdown", requirement = "(>= 1.13)" },
+    { name = "reactable", requirement = "(>= 0.4.4)" },
+    { name = "rlang", requirement = "(>= 1.1.4)" },
+    { name = "sass", requirement = "(>= 0.4.9)" },
+    { name = "scales", requirement = "(>= 1.3.0)" },
+    { name = "tidyselect", requirement = "(>= 1.2.1)" },
+    "vctrs",
+    { name = "xml2", requirement = "(>= 1.3.6)" },
+]
 
 [[packages]]
 name = "gtable"
@@ -1194,6 +1220,15 @@ force_source = false
 dependencies = []
 
 [[packages]]
+name = "juicyjuice"
+version = "0.1.0"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    { name = "V8", requirement = "(>= 4.2.0)" },
+]
+
+[[packages]]
 name = "knitr"
 version = "1.50"
 source = { repository = "https://cran.r-project.org/" }
@@ -1266,6 +1301,16 @@ force_source = false
 dependencies = []
 
 [[packages]]
+name = "litedown"
+version = "0.7"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    { name = "commonmark", requirement = "(>= 1.9.5)" },
+    { name = "xfun", requirement = "(>= 0.52)" },
+]
+
+[[packages]]
 name = "locfit"
 version = "1.5-9.12"
 source = { repository = "https://cran.r-project.org/" }
@@ -1280,6 +1325,16 @@ version = "2.0.3"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
+
+[[packages]]
+name = "markdown"
+version = "2.0"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "xfun",
+    { name = "litedown", requirement = "(>= 0.6)" },
+]
 
 [[packages]]
 name = "matrixStats"
@@ -1619,6 +1674,28 @@ dependencies = [
     { name = "sessioninfo", requirement = "(>= 1.1.1)" },
     "withr",
     "xopen",
+]
+
+[[packages]]
+name = "reactR"
+version = "0.6.1"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "htmltools",
+]
+
+[[packages]]
+name = "reactable"
+version = "0.4.4"
+source = { repository = "https://cran.r-project.org/" }
+force_source = false
+dependencies = [
+    "digest",
+    { name = "htmltools", requirement = "(>= 0.5.2)" },
+    { name = "htmlwidgets", requirement = "(>= 1.5.3)" },
+    "jsonlite",
+    "reactR",
 ]
 
 [[packages]]
@@ -2015,13 +2092,6 @@ dependencies = [
     { name = "lifecycle", requirement = "(>= 1.0.3)" },
     { name = "rlang", requirement = "(>= 1.1.0)" },
 ]
-
-[[packages]]
-name = "vipor"
-version = "0.4.7"
-source = { repository = "https://cran.r-project.org/" }
-force_source = false
-dependencies = []
 
 [[packages]]
 name = "viridisLite"
