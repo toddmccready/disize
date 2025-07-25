@@ -327,7 +327,7 @@ disize <- function(
     ]
 
     # Extract size factor terms
-    sf_gradient <- gradient[grepl("raw_sf[", names(gradient))]
+    sf_gradient <- gradient[grepl("raw_sf\\[", names(gradient))]
 
     # Calculate norm
     norm <- sum(sf_gradient^2) /

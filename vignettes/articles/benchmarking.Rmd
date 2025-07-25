@@ -78,12 +78,11 @@ suppressPackageStartupMessages({
     library(future)
     library(future.apply)
     library(ggplot2)
-    library(ggbeeswarm)
 })
 
 future::plan(
     future::multisession, 
-    workers = parallel::detectCores(logical = FALSE)
+    workers = parallel::detectCores() / 2
 )
 ```
 
@@ -180,15 +179,16 @@ simulate_dataset <- function(design_formula, data, n_genes, sparsity, sd) {
 }
 
 get_disize <- function(dataset, design_formula) {
-    disize::disize(
+    disize_sf <- disize::disize(
         design_formula,
         dataset$counts,
         dataset$metadata,
         "batch_id",
         n_feats = ncol(dataset$counts),
         verbose = 1L
-    ) |>
-        exp()
+    )
+
+    disize_sf
 }
 get_deseq2 <- function(dataset) {
     dds <- DESeq2::DESeqDataSetFromMatrix(
@@ -199,20 +199,20 @@ get_deseq2 <- function(dataset) {
     dds <- DESeq2::estimateSizeFactors(dds)
 
     # Extract size factors
-    size_factors <- DESeq2::sizeFactors(dds)
+    deseq2_sf <- DESeq2::sizeFactors(dds)
 
     # Scale for comparisons
-    size_factors / sum(size_factors) * length(size_factors)
+    log(deseq2_sf / sum(deseq2_sf) * length(deseq2_sf))
 }
 get_edger <- function(dataset) {
     dds <- edgeR::DGEList(counts = t(dataset$counts))
     dds <- edgeR::calcNormFactors(dds, method = "TMM")
 
     # Extract size factors
-    size_factors <- dds$samples$norm.factors
+    edger_sf <- dds$samples$norm.factors
 
     # Scale for comparisons
-    size_factors / sum(size_factors) * length(size_factors)
+    log(edger_sf / sum(edger_sf) * length(edger_sf))
 }
 
 run_benchmark <- function(n_sims, sim_pars, design_formula, data) {
@@ -232,70 +232,78 @@ run_benchmark <- function(n_sims, sim_pars, design_formula, data) {
 
                 # Compute error on log-scale
                 tibble::tibble(
-                    disize = sqrt(sum((log(dataset$size_factors) - log(disize_sf))^2)),
-                    deseq2 = sqrt(sum((log(dataset$size_factors) - log(deseq2_sf))^2)),
-                    edger = sqrt(sum((log(dataset$size_factors) - log(edger_sf))^2))
+                    disize = sqrt(sum((dataset$size_factors - disize_sf)^2)),
+                    deseq2 = sqrt(sum((dataset$size_factors - deseq2_sf)^2)),
+                    edger = sqrt(sum((dataset$size_factors - edger_sf)^2))
                 )
                 },
                 simplify = FALSE
             )
 
+            # Denote simulation ID
             dplyr::bind_rows(errors) |>
                 tibble::rowid_to_column("sim_id")
         })) |>
         tidyr::unnest(d) |> 
         dplyr::mutate(
-            deseq2_vs_disize = 100 * deseq2 / disize,
-            edger_vs_disize = 100 * edger / disize
+            disize_vs_disize = disize / disize,
+            deseq2_vs_disize = deseq2 / disize,
+            edger_vs_disize = edger / disize
         ) |>
         tidyr::pivot_longer(
-            cols = c(deseq2_vs_disize, edger_vs_disize),
+            cols = c(disize_vs_disize, deseq2_vs_disize, edger_vs_disize),
             names_to = "comparison",
-            values_to = "relative_precision"
+            values_to = "relative_error"
         ) |>
+        dplyr::group_by(setting_id, comparison) |>
         dplyr::mutate(
-            comparison = dplyr::recode(
-                comparison,
-                "deseq2_vs_disize" = "DESeq2 vs. disize",
-                "edger_vs_disize" = "edgeR vs. disize"
-            )
+            q95 = quantile(relative_error, 0.95),
+            q75 = quantile(relative_error, 0.75),
+            q60 = quantile(relative_error, 0.60),
+            q40 = quantile(relative_error, 0.40),
+            q25 = quantile(relative_error, 0.25),
+            q5 = quantile(relative_error, 0.05)
         )
     
     benchmark
 }
 
-plot_benchmark <- function(benchmark) {
-    the_plot <- ggplot(benchmark, aes(y = relative_precision, x = comparison, color = comparison)) +
-        geom_beeswarm() +
+plot_benchmark <- function(benchmark, title, design_formula) {
+    the_plot <- ggplot(benchmark, aes(x = sd, fill = comparison)) +
+        geom_ribbon(aes(ymin = q5, ymax = q95), alpha = 0.25) +
+        geom_ribbon(aes(ymin = q25, ymax = q75), alpha = 0.25) +
+        geom_ribbon(aes(ymin = q40, ymax = q60), alpha = 0.25) +
         scale_y_log10() +
         facet_wrap(
-            facets = vars(n_genes, sparsity, sd),
+            facets = vars(sparsity),
             labeller = labeller(
-                n_genes = function(x) paste0("# of Genes: ", x), 
-                sparsity = function(x) paste0("% Sparsity: ", x),
-                sd = function(x) paste0("Nonsparse Standard Deviation: ", x)
+                sparsity = function(x) paste0("% Sparsity: ", x)
             )) +
-        labs(x = "Comparison", y = "Relative % Increase in Error") +
-        guides(color = "none") +
+        labs(
+            title = title,
+            subtitle = paste("Design Formula:", paste(as.character(design_formula), collapse = " ")),
+            x = "Biological Variation (Nonsparse Standard Deviation)", 
+            y = "Relative % Increase in Error") +
         theme_classic()
     
     the_plot
 }
 ```
 
+```{r, echo = FALSE}
+# Simulating settings
+n_sims <- 5L
+sim_pars <- expand.grid(
+    "n_genes" = c(10000L),
+    "sparsity" = c(0.10, 0.50, 0.90),
+    "sd" = c(0.25, 0.50, 1.0, 2.0)
+) |>
+    tibble::rowid_to_column("setting_id")
+```
 
 ## A Trivial Setting
 
-```{r}
-# Simulating settings
-n_sims <- 10L
-sim_pars <- expand.grid(
-    "n_genes" = c(10000L),
-    "sparsity" = c(0.10, 0.90),
-    "sd" = c(0.50)
-) |>
-    tibble::rowid_to_column("setting_id")
-
+```{r, echo = FALSE}
 design_formula <- ~ (1 | donor_id)
 
 n_donors <- 6L
@@ -314,15 +322,6 @@ plot_benchmark(benchmark)
 ## Comparing Two Conditions
 
 ```{r}
-# Simulating settings
-n_sims <- 10L
-sim_pars <- expand.grid(
-    "n_genes" = c(10000L),
-    "sparsity" = c(0.10, 0.90),
-    "sd" = c(0.50)
-) |>
-    tibble::rowid_to_column("setting_id")
-
 design_formula <- ~ cond_id + (1 | donor_id)
 
 n_donors <- 6L

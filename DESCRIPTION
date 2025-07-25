@@ -32,10 +32,7 @@ Suggests:
     edgeR,
     future,
     future.apply,
-    ggplot2,
-    ggbeeswarm
-Remotes:
-    stan-dev/cmdstanr
+    ggplot2
 Config/testthat/edition: 3
 URL: https://toddmccready.github.io/disize/, https://github.com/toddmccready/disize
 VignetteBuilder: knitr

@@ -36,7 +36,7 @@ dependencies = [
 
 [[packages]]
 name = "BiocFileCache"
-version = "2.16.0"
+version = "2.16.1"
 source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
 force_source = false
 dependencies = [
@@ -155,7 +155,7 @@ dependencies = [
 
 [[packages]]
 name = "GenomeInfoDb"
-version = "1.44.0"
+version = "1.44.1"
 source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
 force_source = false
 dependencies = [
@@ -274,7 +274,7 @@ dependencies = []
 
 [[packages]]
 name = "RSQLite"
-version = "2.4.1"
+version = "2.4.2"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = [
@@ -363,7 +363,7 @@ dependencies = [
 
 [[packages]]
 name = "SparseArray"
-version = "1.8.0"
+version = "1.8.1"
 source = { repository = "https://bioconductor.org/packages/3.21/bioc" }
 force_source = false
 dependencies = [
@@ -1128,7 +1128,7 @@ dependencies = [
 
 [[packages]]
 name = "httr2"
-version = "1.2.0"
+version = "1.2.1"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = [

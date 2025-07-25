@@ -34,7 +34,6 @@ dependencies = [
     "pandoc",
     "pasilla",
     "edgeR",
-    "ggbeeswarm",
     "future",
     "future.apply",
 ]
