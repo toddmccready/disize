@@ -67,18 +67,6 @@ suppressPackageStartupMessages({
 n_threads <- parallel::detectCores()
 ```
 
-```{r, include=FALSE}
-# Get rid of depreciation warnings
-model <- instantiate::stan_package_model(
-    name = "disize",
-    package = "disize",
-    compile = TRUE,
-    force = TRUE,
-    cpp_options = list(stan_threads = TRUE),
-    compile_model_methods = TRUE
-)
-```
-
 ## Downloading the data
 
 ```{r}
