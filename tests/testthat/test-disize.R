@@ -79,7 +79,7 @@ test_that("simple-bulk", {
     ))
 
     expect_equal(
-        object = as.vector(unname(size_factors)),
+        object = unname(size_factors),
         expected = (true_sf$sf / sum(true_sf$sf)) * n_d,
         tolerance = 0.1
     )
@@ -88,7 +88,7 @@ test_that("simple-bulk", {
 test_that("simple-sc", {
     # Simulate data
     n_g <- 1000
-    n_d <- 12
+    n_d <- 8
     n_p <- 3
     n_o <- 50
 
@@ -171,7 +171,7 @@ test_that("simple-sc", {
     ))
 
     expect_equal(
-        object = as.vector(unname(size_factors)),
+        object = unname(size_factors),
         expected = (true_sf$sf / sum(true_sf$sf)) * n_d,
         tolerance = 0.1
     )

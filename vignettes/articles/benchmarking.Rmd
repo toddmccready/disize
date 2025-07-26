@@ -96,7 +96,7 @@ split_formula <- function(design_formula) {
 
     fixed <- NULL
     if (length(terms[!re]) != 0) {
-        fixed <- formula(paste0(" ~ 1 + ", paste(terms[!re], collapse = " + ")))
+        fixed <- formula(paste0(" ~ 0 + ", paste(terms[!re], collapse = " + ")))
     }
 
     random <- NULL
@@ -116,18 +116,17 @@ split_formula <- function(design_formula) {
 
 simulate_dataset <- function(design_formula, data, n_genes, sparsity, sd) {
     # Simulate inverse overdispersion factors
-    iodisps <- rlnorm(n_genes, log(10), 1)
+    iodisps <- rlnorm(n_genes, log(10), 0.001)
 
     # Split design formula
     design <- split_formula(design_formula)
 
     # Construct model matrices
     if (!is.null(design$fixed)) {
-        fe_design <- model.matrix(design$fixed, data)[, -1, drop = FALSE]
+        fe_design <- model.matrix(design$fixed, data)
     } else {
         fe_design <- matrix(nrow = nrow(data), ncol = 0L)
     }
-
 
     if (!is.null(design$random)) {
         remm <- reformulas::mkReTrms(
@@ -285,13 +284,15 @@ plot_benchmark <- function(benchmark, title, design_formula) {
             title = title,
             subtitle = paste("Design Formula:", paste(as.character(design_formula), collapse = " ")),
             x = "Biological Variation (Nonsparse Standard Deviation)", 
-            y = "Relative Error") +
+            y = "Relative Error",
+            color = "Method",
+            fill = "Method") +
         scale_fill_discrete(
             labels = c("DESeq2", "disize", "edgeR")
         ) +
         scale_color_discrete(
             labels = c("DESeq2", "disize", "edgeR")
-        )
+        ) +
         theme_classic()
     
     the_plot
@@ -303,7 +304,7 @@ plot_benchmark <- function(benchmark, title, design_formula) {
 n_sims <- 5L
 sim_pars <- expand.grid(
     "n_genes" = c(10000L),
-    "sparsity" = c(0.50),
+    "sparsity" = c(0.10),
     "sd" = c(0.25, 0.50, 1.0, 2.0)
 ) |>
     tibble::rowid_to_column("setting_id")
@@ -343,6 +344,7 @@ data <- data.frame(
     cond_id = cut(1:n_donors, 2),
     batch_id = as.factor(1:n_donors)
 )
+levels(data$cond_id) <- letters[1:2]
 
 message("Design Data:")
 gt::gt(data)
