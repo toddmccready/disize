@@ -12,9 +12,12 @@ disize(
   obs_name = "obs_id",
   n_feats = 10000L,
   n_subset = 50L,
-  n_iters = "auto",
+  n_iters = 5000L,
+  rel_tol = 10000,
+  init_alpha = 1e-08,
+  history_size = 10L,
   n_threads = 1L,
-  init_alpha = 1e-06,
+  n_retries = 3L,
   verbose = 3L
 )
 }
@@ -27,22 +30,27 @@ disize(
 
 \item{batch_name}{The identifier for the batch column in 'metadata'.}
 
-\item{obs_name}{The identifier for the observation column in 'metadata',
-defaults to "obs_id".}
+\item{obs_name}{The identifier for the observation column in 'metadata'.}
 
-\item{n_feats}{The number of features used during estimation, defaults to
-all features (default caps to 10000).}
+\item{n_feats}{The number of features used during estimation.}
 
 \item{n_subset}{The number of observations per experimental unit used during
 estimation, defaults to 50 (useful for scRNA-seq experiments).}
 
 \item{n_iters}{The number of iterations used for estimation.}
 
-\item{n_threads}{The number of threads to use for parallel processing.}
+\item{rel_tol}{The relative tolerance used for convergence.}
 
 \item{init_alpha}{The initial step-size for the optimizer, lower values
 can sometimes make it easier to estimate size factors for more complex
 designs.}
+
+\item{history_size}{The number of past updates to use for the L-BFGS
+algorithm.}
+
+\item{n_threads}{The number of threads to use for parallel processing.}
+
+\item{n_retries}{The maximum number of times to retry fitting.}
 
 \item{verbose}{The verbosity level (\code{1}: only errors, \code{2}: also allows warnings,
 \code{3}: also allows messages, \code{4}: also prints additional output useful for

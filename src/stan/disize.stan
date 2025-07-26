@@ -121,8 +121,8 @@ model {
   // Parallel posterior eval ----
   target += reduce_sum(partial_posterior, counts, grainsize,
                        // Shared ----
-                       n_obs, n_fe, fe_design, n_re, re_design_x,
-                       re_design_j, re_design_p, re_id, batch_id, intercept,
-                       raw_fe_coefs, raw_re_coefs, re_lambda, fe_lambda,
-                       fe_tau, re_tau, sf, iodisp);
+                       n_obs, n_fe, fe_design, n_re, re_design_x, re_design_j,
+                       re_design_p, re_id, batch_id, intercept, raw_fe_coefs,
+                       raw_re_coefs, re_lambda, fe_lambda, fe_tau, re_tau, sf,
+                       iodisp);
 }

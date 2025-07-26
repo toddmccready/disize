@@ -10,13 +10,14 @@ split_formula <- function(design_formula) {
     # Identify random effects
     re <- grepl("\\| ", terms)
 
+    # Separate fixed- and random-effects terms
     fixed <- NULL
-    if (length(terms[!re]) != 0) {
-        fixed <- formula(paste0(" ~ 1 + ", paste(terms[!re], collapse = " + ")))
+    if (any(!re)) {
+        fixed <- stats::formula(paste0(" ~ 1 + ", paste(terms[!re], collapse = " + ")))
     }
 
     random <- NULL
-    if (length(terms[re]) != 0) {
+    if (any(re)) {
         random <- stats::formula(paste0(
             " ~ 0 + ",
             paste(terms[re], collapse = " + ")
@@ -45,7 +46,10 @@ split_formula <- function(design_formula) {
 #' @param init_alpha The initial step-size for the optimizer, lower values
 #'  can sometimes make it easier to estimate size factors for more complex
 #'  designs.
+#' @param history_size The number of past updates to use for the L-BFGS
+#'  algorithm.
 #' @param n_threads The number of threads to use for parallel processing.
+#' @param n_retries The maximum number of times to retry fitting.
 #' @param verbose The verbosity level (`1`: only errors, `2`: also allows warnings,
 #'  `3`: also allows messages, `4`: also prints additional output useful for
 #'  debugging).
@@ -59,20 +63,19 @@ disize <- function(
     metadata,
     batch_name,
     obs_name = "obs_id",
-    n_feats = 10000L,
+    n_feats = min(10000L, ncol(counts)),
     n_subset = 50L,
     n_iters = 5000L,
     rel_tol = 10000,
     init_alpha = 1e-8,
-    history_size = 5L,
+    history_size = 10L,
     n_threads = 1L,
+    n_retries = 3L,
     verbose = 3L
 ) {
-    # Cap n_feats
-    n_feats <- min(n_feats, ncol(counts))
-
+    # Argument Checks ----
     # Check design formula is correct
-    if (!is(design_formula, "formula")) {
+    if (!methods::is(design_formula, "formula")) {
         stop("'design_formula' should be an R formula")
     } else if (2 < length(design_formula)) {
         stop("'design_formula' should be of the form '~ x + ...'")
@@ -86,6 +89,10 @@ disize <- function(
         )
     }
 
+    # Formatting Data ----
+    if (3L <= verbose) {
+        message("Formatting data...")
+    }
     # Include explicit observation names if not present
     if (is.null(rownames(counts)) && is.null(metadata[[obs_name]])) {
         rownames(counts) <- 1:nrow(counts)
@@ -122,7 +129,7 @@ disize <- function(
     counts <- counts[, subset]
 
     # Ensure valid number of features selected
-    if (1 < verbose && ncol(counts) < n_feats) {
+    if (3L <= verbose && ncol(counts) < n_feats) {
         warning(
             "Insufficient number of features (",
             ncol(counts),
@@ -147,30 +154,23 @@ disize <- function(
         dplyr::select(dplyr::all_of(c(predictors, obs_name, batch_name)))
     counts <- counts[metadata[[obs_name]], ]
 
-    # Convert to dense matrix if needed
-    if (is(counts, "sparseMatrix")) {
+    # Cast to dense matrix
+    if (methods::is(counts, "sparseMatrix")) {
         counts <- base::as.matrix(counts)
     }
 
-    # Ensure relevant columns are factors
+    # Ensure batch identifier is a factor variable
     metadata[[batch_name]] <- as.factor(metadata[[batch_name]])
 
-    # Formating data for Stan ----
-    if (2 < verbose) {
-        message("Formatting data...")
-    }
-
-    # Allocate named list for Stan
+    # Allocate data for Stan
     stan_data <- list(n_obs = nrow(counts), n_feats = ncol(counts))
-
-    # Include batch-level for Stan
     stan_data[["n_batches"]] <- length(levels(metadata[[batch_name]]))
     stan_data[["batch_id"]] <- as.integer(metadata[[batch_name]])
 
     # Split the design formula into fixed- and random-effects
     design <- split_formula(design_formula)
 
-    # Construct fixed-effects model matrix if present
+    # Construct fixed-effects model matrix
     if (!base::is.null(design$fixed)) {
         fe_design <- stats::model.matrix(design$fixed, metadata)[, -1, drop = FALSE]
 
@@ -181,7 +181,7 @@ disize <- function(
         stan_data[["fe_design"]] <- array(0, dim = c(stan_data$n_obs, 0))
     }
 
-    # Construct random-effects matrix if present
+    # Construct random-effects matrix
     if (!is.null(design$random)) {
         remm <- reformulas::mkReTrms(
             bars = reformulas::findbars(design$random),
@@ -189,9 +189,9 @@ disize <- function(
             calc.lambdat = FALSE,
             sparse = TRUE
         )
-        re_design <- Matrix::t(remm$Zt) |> as("RsparseMatrix")
+        re_design <- Matrix::t(remm$Zt) |> methods::as("RsparseMatrix")
 
-        # Check if all random-effects terms are scalar normals
+        # Check if all random-effects terms are scalar
         all_scalar <- lapply(remm$cnms, function(b) {
             length(b) == 1
         }) |>
@@ -220,10 +220,7 @@ disize <- function(
         stan_data[["re_id"]] <- integer(0)
     }
 
-    # Include counts for Stan
-    stan_data[["counts"]] <- counts |> t()
-
-    # Include grainsize
+    stan_data[["counts"]] <- Matrix::t(counts)
     stan_data[["grainsize"]] <- ceiling(
         stan_data[["n_feats"]] / n_threads
     )
@@ -240,8 +237,8 @@ disize <- function(
     model$.__enclos_env__$private$cpp_options_ <- cpp_options
     # TEMPORARY UNTIL CMDSTANR CPP_OPTIONS REFACTOR ----
 
-    # Estimate maximum time-to-fit ----
-    init_times <- numeric(3)
+    # Guestimate maximum time-to-fit
+    init_times <- iter_times <- numeric(3)
     for (i in 1:3) {
         dummy_fit <- model$optimize(
             data = stan_data,
@@ -259,7 +256,6 @@ disize <- function(
         init_times[i] <- dummy_fit$time()$total
     }
 
-    iter_times <- numeric(3)
     for (i in 1:3) {
         dummy_fit <- model$optimize(
             data = stan_data,
@@ -290,22 +286,37 @@ disize <- function(
     }
 
     # Estimate fit
-    fit <- model$optimize(
-        data = stan_data,
-        iter = n_iters,
-        threads = n_threads,
-        algorithm = "lbfgs",
-        init_alpha = init_alpha,
-        history_size = history_size,
-        tol_rel_obj = rel_tol,
-        tol_rel_grad = rel_tol,
-        sig_figs = 16L,
-        show_messages = (4L <= verbose),
-        refresh = ceiling(n_iters / 10)
-    )
+    for (i in 1:n_retries) {
+        fit <- tryCatch(
+            {
+                model$optimize(
+                    data = stan_data,
+                    iter = n_iters,
+                    threads = n_threads,
+                    algorithm = "lbfgs",
+                    init_alpha = init_alpha,
+                    history_size = history_size,
+                    tol_rel_obj = rel_tol,
+                    tol_rel_grad = rel_tol,
+                    sig_figs = 16L,
+                    show_messages = (4L <= verbose),
+                    refresh = ceiling(n_iters / 10)
+                )
+            },
+            error = function(err) {
+                return(NULL)
+            }
+        )
+
+        if (!is.null(fit)) {
+            break
+        } else if (3L <= verbose) {
+            message("Retrying fit...")
+        }
+    }
 
     # Check for convergence
-    output <- capture.output(fit$output())
+    output <- utils::capture.output(fit$output())
     if (3L <= verbose && any(grepl("Convergence detected", output))) {
         message("Finised in ", round(fit$time()$total, 1), "s!")
     } else if (2L <= verbose) {
