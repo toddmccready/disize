@@ -1,0 +1,9 @@
+[format]
+# Number of spaces per indentation level
+indent-width = 4
+# Automatically detect the appropriate line ending
+line-ending = "auto" # "lf" or "cr-lf"
+
+[lint]
+# Control the naming convention for variables and parameters
+naming-style = "snake_case" # or "camelCase", omit to disable this lint entirely
