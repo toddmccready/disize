@@ -12,7 +12,7 @@ split_formula <- function(design_formula) {
 
     fixed <- NULL
     if (length(terms[!re]) != 0) {
-        fixed <- formula(paste0(" ~ 0 + ", paste(terms[!re], collapse = " + ")))
+        fixed <- formula(paste0(" ~ 1 + ", paste(terms[!re], collapse = " + ")))
     }
 
     random <- NULL
@@ -36,10 +36,8 @@ split_formula <- function(design_formula) {
 #' @param counts A (observation x feature) count matrix.
 #' @param metadata A dataframe containing observation-level metadata.
 #' @param batch_name The identifier for the batch column in 'metadata'.
-#' @param obs_name The identifier for the observation column in 'metadata',
-#'  defaults to "obs_id".
-#' @param n_feats The number of features used during estimation, defaults to
-#'  all features (default caps to 10000).
+#' @param obs_name The identifier for the observation column in 'metadata'.
+#' @param n_feats The number of features used during estimation.
 #' @param n_subset The number of observations per experimental unit used during
 #'  estimation, defaults to 50 (useful for scRNA-seq experiments).
 #' @param n_iters The number of iterations used for estimation.
@@ -63,9 +61,10 @@ disize <- function(
     obs_name = "obs_id",
     n_feats = 10000L,
     n_subset = 50L,
-    n_iters = 10000L,
+    n_iters = 5000L,
     rel_tol = 10000,
     init_alpha = 1e-8,
+    history_size = 5L,
     n_threads = 1L,
     verbose = 3L
 ) {
@@ -173,7 +172,7 @@ disize <- function(
 
     # Construct fixed-effects model matrix if present
     if (!base::is.null(design$fixed)) {
-        fe_design <- stats::model.matrix(design$fixed, metadata)
+        fe_design <- stats::model.matrix(design$fixed, metadata)[, -1, drop = FALSE]
 
         stan_data[["n_fe"]] <- ncol(fe_design)
         stan_data[["fe_design"]] <- fe_design
@@ -250,7 +249,7 @@ disize <- function(
             threads = n_threads,
             algorithm = "lbfgs",
             init_alpha = init_alpha,
-            history_size = 15L,
+            history_size = history_size,
             tol_rel_obj = rel_tol,
             tol_rel_grad = rel_tol,
             sig_figs = 16L,
@@ -268,7 +267,7 @@ disize <- function(
             threads = n_threads,
             algorithm = "lbfgs",
             init_alpha = init_alpha,
-            history_size = 15L,
+            history_size = history_size,
             tol_rel_obj = rel_tol,
             tol_rel_grad = rel_tol,
             sig_figs = 16L,
@@ -297,7 +296,7 @@ disize <- function(
         threads = n_threads,
         algorithm = "lbfgs",
         init_alpha = init_alpha,
-        history_size = 15L,
+        history_size = history_size,
         tol_rel_obj = rel_tol,
         tol_rel_grad = rel_tol,
         sig_figs = 16L,
