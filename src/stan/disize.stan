@@ -14,7 +14,7 @@ functions {
         array[] int re_id,
         array[] int batch_id,
         vector intercept,
-        matrix fe_coefs,
+        matrix raw_fe_coefs,
         matrix raw_re_coefs,
         matrix re_lambda,
         matrix fe_lambda,
@@ -32,20 +32,13 @@ functions {
         for (i in 1:n_slice_feats) {
             int feat_i = start + i - 1;
 
-            // Scaling standardized random-effects (with horseshoe shrinkage)
-            if (n_re != 0) {
-                for (re_i in 1:n_re) {
-                    re_coefs_col[re_i] = raw_re_coefs[re_i, feat_i] * (re_lambda[re_id[re_i], feat_i] * re_tau[re_id[re_i]]);
-                }
-            }
-
             // Priors ----
             // Half-cauchy prior over random-effects variance (to fulfill horseshoe)
             log_prob += cauchy_lpdf(re_lambda[, feat_i] | 0, 1);
 
             // Horseshoe prior over fixed-effects
             log_prob += cauchy_lpdf(fe_lambda[, feat_i] | 0, 1);
-            log_prob += normal_lpdf(fe_coefs[, feat_i] | 0, fe_lambda[, feat_i] .* fe_tau);
+            log_prob += normal_lpdf(raw_fe_coefs[, feat_i] | 0, 1);
 
             // Normal prior over (raw) random-effects
             log_prob += std_normal_lpdf(raw_re_coefs[, feat_i]);
@@ -54,10 +47,15 @@ functions {
             log_mu = rep_vector(intercept[feat_i], n_obs);
 
             if (n_fe != 0) {
-                log_mu += fe_design * col(fe_coefs, feat_i);
+                log_mu += fe_design * (raw_fe_coefs[, feat_i] .* (fe_lambda[, feat_i] .* fe_tau));
             }
 
             if (n_re != 0) {
+                // Scaling standardized random-effects coefficients
+                for (re_i in 1:n_re) {
+                    re_coefs_col[re_i] = raw_re_coefs[re_i, feat_i] * (re_lambda[re_id[re_i], feat_i] * re_tau[re_id[re_i]]);
+                }
+
                 log_mu += csr_matrix_times_vector(
                     n_obs, n_re, re_design_x, re_design_j, re_design_p, re_coefs_col
                 );
@@ -110,7 +108,7 @@ parameters {
     // Feature Expression ----
     vector[n_feats] intercept;
 
-    matrix[n_fe, n_feats] fe_coefs;
+    matrix[n_fe, n_feats] raw_fe_coefs;
 
     matrix[n_re, n_feats] raw_re_coefs;
     matrix<lower=0>[n_re_terms, n_feats] re_lambda;
@@ -147,7 +145,7 @@ model {
         re_id,
         batch_id,
         intercept,
-        fe_coefs,
+        raw_fe_coefs,
         raw_re_coefs,
         re_lambda,
         fe_lambda,
