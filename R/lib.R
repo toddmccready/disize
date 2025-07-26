@@ -43,10 +43,11 @@ split_formula <- function(design_formula) {
 #' @param n_subset The number of observations per experimental unit used during
 #'  estimation, defaults to 50 (useful for scRNA-seq experiments).
 #' @param n_iters The number of iterations used for estimation.
-#' @param n_threads The number of threads to use for parallel processing.
+#' @param rel_tol The relative tolerance used for convergence.
 #' @param init_alpha The initial step-size for the optimizer, lower values
 #'  can sometimes make it easier to estimate size factors for more complex
 #'  designs.
+#' @param n_threads The number of threads to use for parallel processing.
 #' @param verbose The verbosity level (`1`: only errors, `2`: also allows warnings,
 #'  `3`: also allows messages, `4`: also prints additional output useful for
 #'  debugging).
@@ -62,9 +63,10 @@ disize <- function(
     obs_name = "obs_id",
     n_feats = 10000L,
     n_subset = 50L,
-    n_iters = "auto",
+    n_iters = 10000L,
+    rel_tol = 10000,
+    init_alpha = 1e-8,
     n_threads = 1L,
-    init_alpha = 1e-6,
     verbose = 3L
 ) {
     # Cap n_feats
@@ -123,8 +125,12 @@ disize <- function(
     # Ensure valid number of features selected
     if (1 < verbose && ncol(counts) < n_feats) {
         warning(
-            "Insufficient number of features (", ncol(counts), ") after ", 
-            "subsetting observations to satisfy n_feats = ", n_feats, ". ",
+            "Insufficient number of features (",
+            ncol(counts),
+            ") after ",
+            "subsetting observations to satisfy n_feats = ",
+            n_feats,
+            ". ",
             "Try increasing 'n_subset' if you have repeated measurements."
         )
     }
@@ -223,28 +229,17 @@ disize <- function(
         stan_data[["n_feats"]] / n_threads
     )
 
-    # Compute heuristic for maximum # of iterations
-    if (n_iters == "auto") {
-        n_iters <- as.integer(
-            100 *
-                sqrt(
-                    stan_data[["n_batches"]] +
-                        stan_data[["n_fe"]] +
-                        stan_data[["n_re"]]
-                ) +
-                1000 * log10(stan_data[["n_feats"]])
-        )
-    }
-
     # Construct Stan model
     model <- instantiate::stan_package_model(
         name = "disize",
-        package = "disize",
-        compile = TRUE,
-        force = TRUE,
-        cpp_options = list(stan_threads = TRUE),
-        compile_model_methods = TRUE
+        package = "disize"
     )
+
+    # TEMPORARY UNTIL CMDSTANR CPP_OPTIONS REFACTOR ----
+    cpp_options <- model$.__enclos_env__$private$cpp_options_
+    cpp_options$stan_threads <- TRUE
+    model$.__enclos_env__$private$cpp_options_ <- cpp_options
+    # TEMPORARY UNTIL CMDSTANR CPP_OPTIONS REFACTOR ----
 
     # Estimate maximum time-to-fit ----
     init_times <- numeric(3)
@@ -255,7 +250,9 @@ disize <- function(
             threads = n_threads,
             algorithm = "lbfgs",
             init_alpha = init_alpha,
-            history_size = 8L,
+            history_size = 15L,
+            tol_rel_obj = rel_tol,
+            tol_rel_grad = rel_tol,
             sig_figs = 16L,
             show_messages = FALSE
         )
@@ -271,7 +268,9 @@ disize <- function(
             threads = n_threads,
             algorithm = "lbfgs",
             init_alpha = init_alpha,
-            history_size = 8L,
+            history_size = 15L,
+            tol_rel_obj = rel_tol,
+            tol_rel_grad = rel_tol,
             sig_figs = 16L,
             show_messages = FALSE
         )
@@ -298,53 +297,20 @@ disize <- function(
         threads = n_threads,
         algorithm = "lbfgs",
         init_alpha = init_alpha,
-        history_size = 8L,
+        history_size = 15L,
+        tol_rel_obj = rel_tol,
+        tol_rel_grad = rel_tol,
         sig_figs = 16L,
         show_messages = (4L <= verbose),
         refresh = ceiling(n_iters / 10)
     )
 
-    if (3L <= verbose) {
+    # Check for convergence
+    output <- capture.output(fit$output())
+    if (3L <= verbose && any(grepl("Convergence detected", output))) {
         message("Finised in ", round(fit$time()$total, 1), "s!")
-    }
-
-    # Extract parameter estimates
-    params <- fit$mle()
-
-    # Remove transformed size factors
-    params <- params[!grepl("^sf", names(params))]
-
-    # Extract variable skeleton
-    skeleton <- fit$variable_skeleton(FALSE)
-
-    # Extract unconstrained variable
-    uc_params <- fit$unconstrain_variables(utils::relist(params, skeleton))
-
-    # Compute gradient
-    gradient <- fit$grad_log_prob(uc_params)
-    names(gradient) <- names(params)[
-        names(params) != paste0("raw_sf[", stan_data[["n_batches"]], "]")
-    ]
-
-    # Extract size factor terms
-    sf_gradient <- gradient[grepl("raw_sf\\[", names(gradient))]
-
-    # Calculate norm
-    norm <- sum(sf_gradient^2) /
-        max(abs(attr(gradient, "log_prob")), 1.0)
-
-    # Check gradient for size factors
-    if (2L <= norm && 2L <= verbose) {
-        warning(
-            "Magnitude of relative size factor gradient (",
-            norm,
-            ") not sufficiently small, estimates may not have converged. Try ",
-            "increasing 'n_iters' from current value: ",
-            n_iters,
-            "."
-        )
-    } else if (4L <= verbose) {
-        message("Magnitude of relative size factor gradient: ", norm)
+    } else if (2L <= verbose) {
+        warning("Model did not converge, try increasing 'n_iters'.")
     }
 
     # Extract size factors
