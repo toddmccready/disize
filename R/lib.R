@@ -70,7 +70,7 @@ disize <- function(
     init_alpha = 1e-8,
     history_size = 10L,
     n_threads = 1L,
-    n_retries = 3L,
+    n_retries = 2L,
     verbose = 3L
 ) {
     # Argument Checks ----
@@ -286,9 +286,9 @@ disize <- function(
     }
 
     # Estimate fit
-    for (i in 1:n_retries) {
+    for (i in 1:(n_retries + 1L)) {
         fit <- tryCatch(
-            {
+            expr = {
                 model$optimize(
                     data = stan_data,
                     iter = n_iters,
