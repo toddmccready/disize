@@ -186,7 +186,8 @@ get_disize <- function(dataset, design_formula) {
         dataset$metadata,
         "batch_id",
         n_feats = ncol(dataset$counts),
-        verbose = 1L
+        verbose = 1L,
+        n_threads = 2
     )
 
     disize_sf
@@ -270,20 +271,21 @@ run_benchmark <- function(n_sims, sim_pars, design_formula, data) {
 }
 
 plot_benchmark <- function(benchmark, title, design_formula) {
-    the_plot <- ggplot(benchmark, aes(x = sd, color = comparison, fill = comparison)) +
+    the_plot <- ggplot(benchmark, aes(x = n_genes, color = comparison, fill = comparison)) +
         geom_ribbon(aes(ymin = q5, ymax = q95), alpha = 0.25) +
         geom_ribbon(aes(ymin = q25, ymax = q75), alpha = 0.25) +
         geom_ribbon(aes(ymin = q40, ymax = q60), alpha = 0.25) +
         scale_y_log10() +
         facet_wrap(
+            ncol = 1,
             facets = vars(sparsity),
             labeller = labeller(
-                sparsity = function(x) paste0("% Sparsity: ", x)
+                sparsity = function(x) paste0("Sparsity: ", x)
             )) +
         labs(
             title = title,
             subtitle = paste("Design Formula:", paste(as.character(design_formula), collapse = " ")),
-            x = "Biological Variation (Nonsparse Standard Deviation)", 
+            x = "# of Genes", 
             y = "Relative Error",
             color = "Method",
             fill = "Method") +
@@ -359,3 +361,4 @@ plot_benchmark(benchmark, "Comparing Two Conditions", design_formula)
 
 
 # Benchmarking Impact on Downstream Differential Expression Analysis
+
