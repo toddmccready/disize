@@ -10,14 +10,14 @@ disize(
   metadata,
   batch_name,
   obs_name = "obs_id",
-  n_feats = 10000L,
+  n_feats = min(10000L, ncol(counts)),
   n_subset = 50L,
   n_iters = 5000L,
   rel_tol = 10000,
   init_alpha = 1e-08,
   history_size = 10L,
   n_threads = 1L,
-  n_retries = 3L,
+  n_retries = 2L,
   verbose = 3L
 )
 }
