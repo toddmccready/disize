@@ -116,7 +116,7 @@ split_formula <- function(design_formula) {
 
 simulate_dataset <- function(design_formula, data, n_genes, sparsity, sd) {
     # Simulate inverse overdispersion factors
-    iodisps <- rlnorm(n_genes, log(10), 0.001)
+    iodisps <- rlnorm(n_genes, log(10), 0.1)
 
     # Split design formula
     design <- split_formula(design_formula)
@@ -305,8 +305,8 @@ plot_benchmark <- function(benchmark, title, design_formula) {
 # Simulating settings
 n_sims <- 5L
 sim_pars <- expand.grid(
-    "n_genes" = c(10000L, 20000L, 30000L),
-    "sparsity" = c(0.20, 0.40, 0.60, 0.80),
+    "n_genes" = c(10000L, 20000L, 30000L, 40000L),
+    "sparsity" = c(0.5),
     "sd" = c(1.0)
 ) |>
     tibble::rowid_to_column("setting_id")

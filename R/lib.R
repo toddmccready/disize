@@ -66,7 +66,7 @@ disize <- function(
     n_feats = min(10000L, ncol(counts)),
     n_subset = 50L,
     n_iters = 5000L,
-    rel_tol = 10000,
+    rel_tol = 5000,
     init_alpha = 1e-8,
     history_size = 10L,
     n_threads = 1L,
