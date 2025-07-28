@@ -27,10 +27,10 @@ Where $\mathbf{y}_g$ denotes the vector of counts of a gene $g$ for all observat
 
 The experimental design is specified by an R formula (`design_formula`) that constructs a "fixed-effects" model matrix $\mathbf{X}$ (without an intercept) and a "random-effects" model matrix $\mathbf{Z}$; this by itself is a regular GLMM.
 
-The confounding batch-effect is essentially an unknown offset $\mathbf{o} = \mathbf{B} \mathbf{s}$, where $\mathbf{B}$ specifies the batch membership for each observation and $\mathbf{s}$ contains the "size factors" which scale the true magnitude of expression.
+The confounding batch-effect is essentially an unknown "offset" (not in the literal sense as it is being estimated) $\mathbf{o} = \mathbf{B} \mathbf{s}$, where $\mathbf{B}$ specifies the batch membership for each observation and $\mathbf{s}$ contains the "size factors" which scale the true magnitude of expression.
 
-At its face, however, this model should not be identifiable for most experimental designs (often the batch ID results in too many free parameters such as when it is identical to a measured covariate).
-This identifiability issue is overcome by constraining $\mathbf{s}$ and assuming only a fraction of features are significantly affected by the covariates measured in the experiment;
+At its face, however, this model should not be joint identifiable for most experimental designs (often the batch ID is perfectly collinear with a measured covariate).
+This is overcome by constraining $\mathbf{s}$ and assuming only a fraction of features are significantly affected by the covariates measured in the experiment;
 in other words, the estimated coefficients $\mathbf{\beta}_g, \mathbf{b}_g$ (excluding the intercept) are *sparse* across genes.
 
 This assumption is encoded in the model by placing distinct horseshoe priors on each of the model coefficients (both the fixed- and random-effects).
@@ -44,7 +44,10 @@ $$\begin{aligned}
     \mathbf{\lambda}_g^{(f)} &\sim \text{Half-Cauchy}(\mathbf{0}, \mathbf{1}) \\
     \mathbf{b}_g &\sim \text{Normal}(\mathbf{0}, \mathbf{R} [ \mathbf{\lambda}_g^{(r)} \odot \mathbf{\tau}_g^{(r)} ]) \\
     \mathbf{\lambda}_g^{(r)} &\sim \text{Half-Cauchy}(\mathbf{0}, \mathbf{1}) \\
+    \mathbf{1} \cdot \exp(\mathbf{s}) = n_b
 \end{aligned}$$
+
+Where $\mathbf{R}$ specifies the random-effects term membership for each random-effect coefficient, and $n_b$ denotes the number of batches.
 
 ## Estimation
 

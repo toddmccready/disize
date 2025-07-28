@@ -66,6 +66,8 @@ $$
 
 # Benchmarking Size Factor Estimation
 
+
+
 ```{r, echo = FALSE}
 suppressPackageStartupMessages({
     library(reformulas)
@@ -204,7 +206,9 @@ get_deseq2 <- function(dataset) {
     deseq2_sf <- DESeq2::sizeFactors(dds)
 
     # Scale for comparisons
-    log(deseq2_sf / sum(deseq2_sf) * length(deseq2_sf))
+    deseq2_sf <- log(deseq2_sf / sum(deseq2_sf) * length(deseq2_sf))
+
+    deseq2_sf
 }
 get_edger <- function(dataset) {
     dds <- edgeR::DGEList(counts = t(dataset$counts))
@@ -214,7 +218,9 @@ get_edger <- function(dataset) {
     edger_sf <- dds$samples$norm.factors
 
     # Scale for comparisons
-    log(edger_sf / sum(edger_sf) * length(edger_sf))
+    edger_sf <- log(edger_sf / sum(edger_sf) * length(edger_sf))
+
+    edger_sf
 }
 
 run_benchmark <- function(n_sims, sim_pars, design_formula, data) {
@@ -306,7 +312,7 @@ plot_benchmark <- function(benchmark, title, design_formula) {
 n_sims <- 5L
 sim_pars <- expand.grid(
     "n_genes" = c(10000L, 20000L, 30000L, 40000L),
-    "sparsity" = c(0.5),
+    "sparsity" = c(0.2, 0.5, 0.8),
     "sd" = c(1.0)
 ) |>
     tibble::rowid_to_column("setting_id")
@@ -359,6 +365,42 @@ benchmark <- run_benchmark(n_sims, sim_pars, design_formula, data)
 plot_benchmark(benchmark, "Comparing Two Conditions", design_formula)
 ```
 
+## Comparing Two Conditions Over Time
 
-# Benchmarking Impact on Downstream Differential Expression Analysis
+```{r, echo = FALSE}
+design_formula <- ~ cond_id * timepoint + (1 | donor_id)
 
+n_donors <- 12L
+data <- data.frame(
+    donor_id = as.factor(1:n_donors),
+    cond_id = cut(1:n_donors, 2),
+    batch_id = as.factor(1:n_donors),
+    timepoint = rep(seq(0, 1, length = n_donors / 2), length = n_donors)
+)
+levels(data$cond_id) <- letters[1:2]
+
+message("Design Data:")
+gt::gt(data)
+
+# Run and plot benchmark
+benchmark <- run_benchmark(n_sims, sim_pars, design_formula, data)
+```
+
+```{r, echo = FALSE, fig.height=11}
+plot_benchmark(benchmark, "Comparing Two Conditions", design_formula)
+```
+
+
+# Impact on Downstream Differential Expression Analysis
+
+```{r}
+n_genes <- 100
+data <- data.frame(f = factor(1:n_genes))
+X <- model.matrix(~ 0 + f, data)
+
+beta <- rep(10, n_genes)
+
+data$y <- rnbinom(6, mu = exp(X %*% beta), size = 10)
+
+fit <- MASS::glm.nb(y ~ 0 + f, data)
+```

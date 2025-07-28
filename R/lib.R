@@ -13,7 +13,7 @@ split_formula <- function(design_formula) {
     # Separate fixed- and random-effects terms
     fixed <- NULL
     if (any(!re)) {
-        fixed <- stats::formula(paste0(" ~ 1 + ", paste(terms[!re], collapse = " + ")))
+        fixed <- stats::formula(paste0(" ~ 0 + ", paste(terms[!re], collapse = " + ")))
     }
 
     random <- NULL
@@ -93,6 +93,7 @@ disize <- function(
     if (3L <= verbose) {
         message("Formatting data...")
     }
+    
     # Include explicit observation names if not present
     if (is.null(rownames(counts)) && is.null(metadata[[obs_name]])) {
         rownames(counts) <- 1:nrow(counts)
@@ -172,7 +173,7 @@ disize <- function(
 
     # Construct fixed-effects model matrix
     if (!base::is.null(design$fixed)) {
-        fe_design <- stats::model.matrix(design$fixed, metadata)[, -1, drop = FALSE]
+        fe_design <- stats::model.matrix(design$fixed, metadata)
 
         stan_data[["n_fe"]] <- ncol(fe_design)
         stan_data[["fe_design"]] <- fe_design

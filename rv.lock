@@ -1418,7 +1418,7 @@ dependencies = [
 
 [[packages]]
 name = "parallelly"
-version = "1.45.0"
+version = "1.45.1"
 source = { repository = "https://cran.r-project.org/" }
 force_source = false
 dependencies = []
