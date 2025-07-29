@@ -332,8 +332,8 @@ The following simulation framework specifies:
 
 - A fixed experimental design: `design_formula`.
 - The amount of genes measured in the experiment: `n_genes`.
-- The fraction of genes who are not affected by a given measured covariate: `sparsity`.
-- The magnitude of the covariate effect (conditional on the gene being affected): `sd`.
+- The fraction of genes who are **not** affected by a given measured covariate: `sparsity`.
+- The allowed magnitude of the covariate effect (*conditional on the gene being affected*): `sd`.
 
 For all experimental designs we construct various scenarios to simulate under:
 
@@ -399,7 +399,7 @@ simulate_dataset <- function(design_formula, metadata, n_genes, sparsity, sd) {
     list(
         counts = counts, 
         metadata = metadata, 
-        size_factors = log(size_factors / sum(size_factors) * length(size_factors))
+        size_factors = log(size_factors / sum(size_factors) * length(size_factors)) # Scale for comparisons
     )
 }
 ```
@@ -472,10 +472,10 @@ levels(metadata$cond_id) <- letters[1:2]
 
 # Print experimental design
 message("Design Data:")
-gt::gt(metadata
+gt::gt(metadata)
 
 # Run and plot benchmark
-benchmark <- run_benchmark(n_sims, sim_pars, design_formula, metadata
+benchmark <- run_benchmark(n_sims, sim_pars, design_formula, metadata)
 ```
 
 ```{r, echo = FALSE, fig.height=11}
@@ -549,7 +549,7 @@ simulate_dataset <- function(design_formula, metadata, size_factors, n_genes, sp
 
 ```{r}
 # Define data generating process
-design_formula <- ~ cond_id + (1 | donor_id)
+design_formula <- ~ cond_id
 
 n_donors <- 6L
 metadata <- data.frame(
