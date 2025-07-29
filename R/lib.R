@@ -66,7 +66,7 @@ disize <- function(
     n_feats = min(10000L, ncol(counts)),
     n_subset = 50L,
     n_iters = 5000L,
-    rel_tol = 5000,
+    rel_tol = 1000,
     init_alpha = 1e-8,
     history_size = 10L,
     n_threads = 1L,
@@ -131,7 +131,7 @@ disize <- function(
 
     # Ensure valid number of features selected
     if (3L <= verbose && ncol(counts) < n_feats) {
-        warning(
+        message(
             "Insufficient number of features (",
             ncol(counts),
             ") after ",
@@ -309,10 +309,17 @@ disize <- function(
             }
         )
 
+        # Check for error
         if (!is.null(fit)) {
-            break
+            # Check for convergence
+            output <- utils::capture.output(fit$output())
+            if (any(grepl("Convergence detected", output))) {
+                break
+            } else if (3L <= verbose) {
+                message("Model did not converge, retrying fit...")
+            }
         } else if (3L <= verbose) {
-            message("Retrying fit...")
+            message("Error during estimation, retrying fit...")
         }
     }
 
