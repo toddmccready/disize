@@ -50,9 +50,9 @@ split_formula <- function(design_formula) {
 #'  algorithm.
 #' @param n_threads The number of threads to use for parallel processing.
 #' @param n_retries The maximum number of times to retry fitting.
-#' @param verbose The verbosity level (`1`: only errors, `2`: also allows warnings,
-#'  `3`: also allows messages, `4`: also prints additional output useful for
-#'  debugging).
+#' @param verbose The verbosity level (`1`: only errors, `2`: also allows
+#'  warnings,`3`: also allows messages, `4`: also prints additional
+#' output useful for debugging).
 #'
 #' @returns A named numeric vector containing the size factor estimates.
 #'
@@ -71,8 +71,7 @@ disize <- function(
     history_size = 10L,
     n_threads = 1L,
     n_retries = 2L,
-    verbose = 3L
-) {
+    verbose = 3L) {
     # Argument Checks ----
     # Check design formula is correct
     if (!methods::is(design_formula, "formula")) {
@@ -93,11 +92,11 @@ disize <- function(
     if (3L <= verbose) {
         message("Formatting data...")
     }
-    
+
     # Include explicit observation names if not present
     if (is.null(rownames(counts)) && is.null(metadata[[obs_name]])) {
-        rownames(counts) <- 1:nrow(counts)
-        metadata[[obs_name]] <- 1:nrow(counts)
+        rownames(counts) <- seq_len(nrow(counts))
+        metadata[[obs_name]] <- seq_len(nrow(counts))
     } else if (!is.null(rownames(counts)) && is.null(metadata[[obs_name]])) {
         metadata[[obs_name]] <- rownames(counts)
     } else if (is.null(rownames(counts)) && !is.null(metadata[[obs_name]])) {
@@ -106,7 +105,7 @@ disize <- function(
 
     # Include explicit feature names if not present
     if (is.null(colnames(counts))) {
-        colnames(counts) <- 1:ncol(counts)
+        colnames(counts) <- seq_len(ncol(counts))
     }
 
     # Extract predictor terms
@@ -210,7 +209,7 @@ disize <- function(
         stan_data[["re_design_j"]] <- re_design@j + 1L
         stan_data[["re_design_p"]] <- re_design@p + 1L
         stan_data[["n_re_terms"]] <- length(remm$cnms)
-        stan_data[["re_id"]] <- rep(1:length(remm$cnms), times = diff(remm$Gp))
+        stan_data[["re_id"]] <- rep(seq_along(remm$cnms), times = diff(remm$Gp))
     } else {
         stan_data[["n_re"]] <- 0L
         stan_data[["n_nz_re"]] <- 0L
@@ -305,7 +304,7 @@ disize <- function(
                 )
             },
             error = function(err) {
-                return(NULL)
+                NULL
             }
         )
 
