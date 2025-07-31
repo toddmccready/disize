@@ -9,8 +9,8 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+    collapse = TRUE,
+    comment = "#>"
 )
 ```
 
@@ -36,7 +36,7 @@ identifier.
 
 > If the row indices of `counts` and `metadata` do not correspond to the same observation but are named, you can specify `obs_name` which will automatically re-order `counts` to match the indices in `metadata`.
 
-> **Note**: `disize` encourages users to set the `n_threads` argument in order to take advantage of parallelization.
+> **Note**: `disize` encourages users to set the `n_threads` argument in order to take advantage of parallelization. Experiment with different values of `n_threads` to find the best performance for your dataset.
 
 # An example with DESeq2
 
@@ -64,7 +64,7 @@ suppressPackageStartupMessages({
 })
 
 # Set number of threads to use
-n_threads <- parallel::detectCores()
+n_threads <- parallel::detectCores() / 2
 ```
 
 ## Downloading the data
@@ -84,7 +84,7 @@ metadata <- data.frame(
 
 # Coerce to formatted matrix
 gene_names <- counts$gene_id
-counts <- t(as.matrix(counts[,-1]))
+counts <- t(as.matrix(counts[, -1]))
 colnames(counts) <- gene_names
 ```
 
@@ -100,7 +100,7 @@ For this dataset, the study was primarily interested in the effect of
 `condition` on expression, thus the formula we would input into `disize` is:
 
 ```{r}
-design_formula <- ~ condition
+design_formula <- ~condition
 ```
 
 We can finally run `disize` to get the estimated size factors:

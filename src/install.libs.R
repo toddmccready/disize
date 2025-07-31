@@ -28,7 +28,8 @@ callr::r(
     func = function(bin_stan) {
         instantiate::stan_package_compile(
             models = instantiate::stan_package_model_files(path = bin_stan),
-            cpp_options = list(stan_threads = TRUE)
+            cpp_options = list(stan_threads = TRUE),
+            stanc_options = list("Oexperimental")
         )
     },
     args = list(bin_stan = bin_stan),

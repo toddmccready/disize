@@ -36,5 +36,5 @@ dependencies = [
     "edgeR",
     "future",
     "future.apply",
-    "gt",
+    "gt"
 ]

@@ -13,7 +13,7 @@ disize(
   n_feats = min(10000L, ncol(counts)),
   n_subset = 50L,
   n_iters = 5000L,
-  rel_tol = 5000,
+  rel_tol = 10000,
   init_alpha = 1e-08,
   history_size = 10L,
   n_threads = 1L,
@@ -52,9 +52,9 @@ algorithm.}
 
 \item{n_retries}{The maximum number of times to retry fitting.}
 
-\item{verbose}{The verbosity level (\code{1}: only errors, \code{2}: also allows warnings,
-\code{3}: also allows messages, \code{4}: also prints additional output useful for
-debugging).}
+\item{verbose}{The verbosity level (\code{1}: only errors, \code{2}: also allows
+warnings,\code{3}: also allows messages, \code{4}: also prints additional
+output useful for debugging).}
 }
 \value{
 A named numeric vector containing the size factor estimates.

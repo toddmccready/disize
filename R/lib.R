@@ -13,7 +13,9 @@ split_formula <- function(design_formula) {
     # Separate fixed- and random-effects terms
     fixed <- NULL
     if (any(!re)) {
-        fixed <- stats::formula(paste0(" ~ 0 + ", paste(terms[!re], collapse = " + ")))
+        fixed <- stats::formula(
+            paste0(" ~ 0 + ", paste(terms[!re], collapse = " + "))
+        )
     }
 
     random <- NULL
@@ -66,7 +68,7 @@ disize <- function(
     n_feats = min(10000L, ncol(counts)),
     n_subset = 50L,
     n_iters = 5000L,
-    rel_tol = 1000,
+    rel_tol = 10000,
     init_alpha = 1e-8,
     history_size = 10L,
     n_threads = 1L,
@@ -237,12 +239,13 @@ disize <- function(
     model$.__enclos_env__$private$cpp_options_ <- cpp_options
     # TEMPORARY UNTIL CMDSTANR CPP_OPTIONS REFACTOR ----
 
-    # Guestimate maximum time-to-fit
-    init_times <- iter_times <- numeric(3)
-    for (i in 1:3) {
-        dummy_fit <- model$optimize(
+    # Optimize over initialization
+    inits <- list()
+    grads <- numeric(3)
+    for (i in 1:(n_retries + 1L)) {
+        fit <- model$optimize(
             data = stan_data,
-            iter = 1L,
+            iter = 250L,
             threads = n_threads,
             algorithm = "lbfgs",
             init_alpha = init_alpha,
@@ -253,30 +256,32 @@ disize <- function(
             show_messages = FALSE
         )
 
-        init_times[i] <- dummy_fit$time()$total
+        # Grab output
+        output <- capture.output(fit$output())
+        output <- output[length(output) - 2]
+
+        # Extract final iteration's gradient
+        final_gradient <- strsplit(
+            x = trimws(gsub("\\s+", " ", output)),
+            split = " "
+        )[[1]][4] |>
+            as.numeric()
+
+        # Store fit and gradient
+        inits[[i]] <- fit
+        grads[[i]] <- final_gradient
     }
 
-    for (i in 1:3) {
-        dummy_fit <- model$optimize(
-            data = stan_data,
-            iter = 50L,
-            threads = n_threads,
-            algorithm = "lbfgs",
-            init_alpha = init_alpha,
-            history_size = history_size,
-            tol_rel_obj = rel_tol,
-            tol_rel_grad = rel_tol,
-            sig_figs = 16L,
-            show_messages = FALSE
-        )
+    # Order fits with respect to final gradient
+    fit_order <- order(grads)
 
-        iter_times[i] <- dummy_fit$time()$total
-    }
-
-    max_eta <- mean(init_times) +
-        (mean(iter_times) - mean(init_times)) / 49 * n_iters
+    # Compute estimated maximum ETA
+    max_eta <- mean(sapply(inits, function(x) {
+        x$time()$total
+    })) / 250 * n_iters
 
     # Estimate model parameters ----
+    options(cmdstanr_warn_inits = FALSE)
     if (3L <= verbose) {
         message(
             "Estimating size factors... (Max ETA: ~",
@@ -291,6 +296,7 @@ disize <- function(
             expr = {
                 model$optimize(
                     data = stan_data,
+                    init = inits[[fit_order[i]]],
                     iter = n_iters,
                     threads = n_threads,
                     algorithm = "lbfgs",
@@ -308,7 +314,7 @@ disize <- function(
             }
         )
 
-        # Check for error
+        # Handle error case
         if (!is.null(fit)) {
             # Check for convergence
             output <- utils::capture.output(fit$output())

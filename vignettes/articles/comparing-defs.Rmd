@@ -9,8 +9,8 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+    collapse = TRUE,
+    comment = "#>"
 )
 ```
 
@@ -29,7 +29,7 @@ suppressPackageStartupMessages({
 })
 
 # Set number of threads to use
-n_threads <- parallel::detectCores()
+n_threads <- parallel::detectCores() / 2
 ```
 
 ## Reading in data
@@ -39,14 +39,14 @@ n_threads <- parallel::detectCores()
 counts_path <- system.file(
     "extdata",
     "pasilla_gene_counts.tsv",
-    package="pasilla",
-    mustWork=TRUE
+    package = "pasilla",
+    mustWork = TRUE
 )
 metadata_path <- system.file(
     "extdata",
     "pasilla_sample_annotation.csv",
-    package="pasilla",
-    mustWork=TRUE
+    package = "pasilla",
+    mustWork = TRUE
 )
 
 # Read in data
@@ -89,7 +89,7 @@ print(metadata)
 In the absence of batch-effects we are interested in the effects of `condition`, so our `design_formula` should be:
 
 ```{r}
-design_formula <- ~ condition
+design_formula <- ~condition
 ```
 
 With all the required arguments we can now run `disize` for both batch definitions:

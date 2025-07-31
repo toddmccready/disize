@@ -9,8 +9,8 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+    collapse = TRUE,
+    comment = "#>"
 )
 ```
 
@@ -68,22 +68,17 @@ $$
 
 ```{r, echo = FALSE}
 suppressPackageStartupMessages({
-    library(reformulas)
     library(disize)
     library(DESeq2)
     library(edgeR)
     library(dplyr)
     library(purrr)
     library(tidyr)
+    library(parallel)
     library(future)
     library(future.apply)
     library(ggplot2)
 })
-
-future::plan(
-    future::multisession, 
-    workers = parallel::detectCores() / 2
-)
 ```
 
 ```{r, echo = FALSE}
@@ -98,7 +93,9 @@ split_formula <- function(design_formula) {
     # Separate fixed- and random-effects terms
     fixed <- NULL
     if (any(!re)) {
-        fixed <- stats::formula(paste0(" ~ 0 + ", paste(terms[!re], collapse = " + ")))
+        fixed <- stats::formula(
+            paste0(" ~ 0 + ", paste(terms[!re], collapse = " + "))
+        )
     }
 
     random <- NULL
@@ -148,9 +145,9 @@ simulate_dataset <- function(design_formula, metadata, n_genes, sparsity, sd) {
     }
 
     # Simulate size factors
-    size_factors <- runif(length(levels(metadata$batch_id)), 0.1, 1.0) |> 
+    size_factors <- runif(length(levels(metadata$batch_id)), 0.1, 1.0) |>
         setNames(levels(metadata$batch_id))
-    
+
     # Simulate counts
     counts <- sapply(1:n_genes, function(g_i) {
         intercept <- rnorm(1)
@@ -169,10 +166,11 @@ simulate_dataset <- function(design_formula, metadata, n_genes, sparsity, sd) {
             unlist()
 
         # Compute realized magnitude
-        log_mu <- as.vector(intercept + 
-            fe_design %*% fe_coefs + 
-            re_design %*% re_coefs + 
-            log(size_factors[data$batch_id])
+        log_mu <- as.vector(
+            intercept +
+                fe_design %*% fe_coefs +
+                re_design %*% re_coefs +
+                log(size_factors[metadata$batch_id])
         )
 
         # Draw counts from negative binomial
@@ -183,9 +181,11 @@ simulate_dataset <- function(design_formula, metadata, n_genes, sparsity, sd) {
     mode(counts) <- "integer"
 
     list(
-        counts = counts, 
-        metadata = metadata, 
-        size_factors = log(size_factors / sum(size_factors) * length(size_factors))
+        counts = counts,
+        metadata = metadata,
+        size_factors = log(
+            size_factors / sum(size_factors) * length(size_factors)
+        )
     )
 }
 
@@ -209,7 +209,7 @@ get_deseq2 <- function(dataset) {
     dds <- DESeq2::DESeqDataSetFromMatrix(
         countData = t(dataset$counts),
         colData = dataset$metadata,
-        design = ~ 1
+        design = ~1
     )
     dds <- DESeq2::estimateSizeFactors(dds)
 
@@ -239,33 +239,49 @@ get_edger <- function(dataset) {
 # Run a benchmark with specified simulation settings
 run_benchmark <- function(n_sims, sim_pars, design_formula, metadata) {
     benchmark <- sim_pars |>
-        dplyr::mutate(d = purrr::pmap(list(n_genes, sparsity, sd), function(n_genes, sparsity, sd) {
-            errors <- future.apply::future_replicate(
-                n = n_sims, 
-                expr = {
-                # Simulate dataset
-                dataset <- simulate_dataset(design_formula, metadata, n_genes, sparsity, sd)
+        dplyr::mutate(
+            d = purrr::pmap(
+                list(n_genes, sparsity, sd),
+                function(n_genes, sparsity, sd) {
+                    errors <- future.apply::future_replicate(
+                        n = n_sims,
+                        expr = {
+                            # Simulate dataset
+                            dataset <- simulate_dataset(
+                                design_formula, metadata,
+                                n_genes,
+                                sparsity,
+                                sd
+                            )
 
-                # Estimate size factors
-                disize_sf <- get_disize(dataset, design_formula)
-                deseq2_sf <- get_deseq2(dataset)
-                edger_sf <- get_edger(dataset)
+                            # Estimate size factors
+                            disize_sf <- get_disize(dataset, design_formula)
+                            deseq2_sf <- get_deseq2(dataset)
+                            edger_sf <- get_edger(dataset)
 
-                # Compute error on log-scale
-                tibble::tibble(
-                    disize = sqrt(sum((dataset$size_factors - disize_sf)^2)),
-                    deseq2 = sqrt(sum((dataset$size_factors - deseq2_sf)^2)),
-                    edger = sqrt(sum((dataset$size_factors - edger_sf)^2))
-                )
-                },
-                simplify = FALSE
+                            # Compute error on log-scale
+                            tibble::tibble(
+                                disize = (dataset$size_factors - disize_sf)^2,
+                                deseq2 = (dataset$size_factors - deseq2_sf)^2,
+                                edger = (dataset$size_factors - edger_sf)^2
+                            ) |>
+                                dplyr::summarise(
+                                    dplyr::across(
+                                        .cols = everything(),
+                                        .fns = ~ sqrt(sum(.x))
+                                    )
+                                )
+                        },
+                        simplify = FALSE
+                    )
+
+                    # Denote simulation ID
+                    dplyr::bind_rows(errors) |>
+                        tibble::rowid_to_column("sim_id")
+                }
             )
-
-            # Denote simulation ID
-            dplyr::bind_rows(errors) |>
-                tibble::rowid_to_column("sim_id")
-        })) |>
-        tidyr::unnest(d) |> 
+        ) |>
+        tidyr::unnest(d) |>
         # Map to relative error
         dplyr::mutate(
             disize_vs_disize = disize / disize,
@@ -286,13 +302,16 @@ run_benchmark <- function(n_sims, sim_pars, design_formula, metadata) {
             q25 = quantile(relative_error, 0.25),
             q5 = quantile(relative_error, 0.05)
         )
-    
+
     benchmark
 }
 
 # Plot benchmarks
 plot_benchmark <- function(benchmark, title, design_formula) {
-    the_plot <- ggplot(benchmark, aes(x = n_genes, color = comparison, fill = comparison)) +
+    the_plot <- ggplot(
+        benchmark,
+        aes(x = n_genes, color = comparison, fill = comparison)
+    ) +
         geom_ribbon(aes(ymin = q5, ymax = q95), alpha = 0.25) +
         geom_ribbon(aes(ymin = q25, ymax = q75), alpha = 0.25) +
         geom_ribbon(aes(ymin = q40, ymax = q60), alpha = 0.25) +
@@ -302,14 +321,19 @@ plot_benchmark <- function(benchmark, title, design_formula) {
             facets = vars(sparsity),
             labeller = labeller(
                 sparsity = function(x) paste0("Sparsity: ", x)
-            )) +
+            )
+        ) +
         labs(
             title = title,
-            subtitle = paste("Design Formula:", paste(as.character(design_formula), collapse = " ")),
-            x = "# of Genes", 
+            subtitle = paste(
+                "Design Formula:",
+                paste(as.character(design_formula), collapse = " ")
+            ),
+            x = "# of Genes",
             y = "Relative Error",
             color = "Method",
-            fill = "Method") +
+            fill = "Method"
+        ) +
         scale_fill_discrete(
             labels = c("DESeq2", "disize", "edgeR")
         ) +
@@ -317,14 +341,42 @@ plot_benchmark <- function(benchmark, title, design_formula) {
             labels = c("DESeq2", "disize", "edgeR")
         ) +
         theme_classic()
-    
+
     the_plot
 }
 ```
 
 ```{r, echo = FALSE}
+# Configure cluster
+cl <- parallel::makeCluster(parallel::detectCores() / 2)
+
+parallel::clusterEvalQ(cl, {
+    library(disize)
+    library(DESeq2)
+    library(edgeR)
+    library(dplyr)
+    library(purrr)
+    library(tidyr)
+    library(ggplot2)
+})
+parallel::clusterExport(
+    cl = cl,
+    varlist = c(
+        "split_formula",
+        "simulate_dataset",
+        "get_disize",
+        "get_deseq2",
+        "get_edger"
+    )
+)
+
+# Set future plan
+future::plan(future::cluster, workers = cl)
+```
+
+```{r, echo = FALSE}
 # Number of simulations
-n_sims <- 5L
+n_sims <- (parallel::detectCores() / 2)
 ```
 
 We're interested in how well `DESeq2`, `edgeR` and `disize` estimate the true size factors underlying a given dataset.
@@ -344,7 +396,7 @@ sim_pars <- expand.grid(
     "sparsity" = c(0.2, 0.5, 0.8),
     "sd" = c(1.0)
 )
-sim_pars$setting_id <- 1:nrow(sim_pars)
+sim_pars$setting_id <- seq_len(nrow(sim_pars))
 ```
 
 and then simulate a dataset corresponding to a given scenario:
@@ -358,13 +410,13 @@ simulate_dataset <- function(design_formula, metadata, n_genes, sparsity, sd) {
     # Construct fixed-effects model matrix
     fe_design <- # ...
 
-    # Construct random-effects model matrix
-    re_design <- # ...
+        # Construct random-effects model matrix
+        re_design <- # ...
 
-    # Simulate size factors
-    size_factors <- runif(length(levels(metadata$batch_id)), 0.1, 1.0) |> 
+        # Simulate size factors
+        size_factors <- runif(length(levels(metadata$batch_id)), 0.1, 1.0) |>
         setNames(levels(metadata$batch_id))
-    
+
     # Simulate counts
     counts <- sapply(1:n_genes, function(g_i) {
         intercept <- rnorm(1)
@@ -383,10 +435,11 @@ simulate_dataset <- function(design_formula, metadata, n_genes, sparsity, sd) {
             unlist()
 
         # Compute realized magnitude
-        log_mu <- as.vector(intercept + 
-            fe_design %*% fe_coefs + 
-            re_design %*% re_coefs + 
-            log(size_factors[data$batch_id])
+        log_mu <- as.vector(
+            intercept +
+                fe_design %*% fe_coefs +
+                re_design %*% re_coefs +
+                log(size_factors[metadata$batch_id])
         )
 
         # Draw counts from negative binomial
@@ -397,9 +450,12 @@ simulate_dataset <- function(design_formula, metadata, n_genes, sparsity, sd) {
     mode(counts) <- "integer"
 
     list(
-        counts = counts, 
-        metadata = metadata, 
-        size_factors = log(size_factors / sum(size_factors) * length(size_factors)) # Scale for comparisons
+        counts = counts,
+        metadata = metadata,
+        size_factors = log(
+            # Scale for comparisons
+            size_factors / sum(size_factors) * length(size_factors)
+        )
     )
 }
 ```
@@ -485,71 +541,11 @@ plot_benchmark(benchmark, "Comparing Two Conditions Over Time", design_formula)
 # Impact on Downstream Differential Expression Analysis
 
 ```{r, echo = FALSE}
-simulate_dataset <- function(design_formula, metadata, size_factors, n_genes, sparsity, sd) {
-    # Simulate inverse overdispersion factors
-    iodisps <- rlnorm(n_genes, log(10), 0.1)
-
-    # Split design formula
-    design <- split_formula(design_formula)
-
-    # Construct model matrices
-    if (!is.null(design$fixed)) {
-        fe_design <- model.matrix(design$fixed, metadata)
-    } else {
-        fe_design <- matrix(nrow = nrow(metadata), ncol = 0L)
-    }
-
-    if (!is.null(design$random)) {
-        remm <- reformulas::mkReTrms(
-            bars = reformulas::findbars(design$random),
-            fr = metadata,
-            calc.lambdat = FALSE,
-            sparse = TRUE
-        )
-        re_design <- Matrix::t(remm$Zt)
-    } else {
-        remm <- list(
-            Ztlist = list(matrix(nrow = nrow(metadata), ncol = 0L))
-        )
-        re_design <- matrix(nrow = nrow(metadata), ncol = 0L)
-    }
-    
-    # Simulate counts
-    counts <- sapply(1:n_genes, function(i) {
-        # Simulate covariate coefficients
-        intercept <- rnorm(1)
-        fe_coefs <- rbinom(ncol(fe_design), 1, 1 - sparsity) * rnorm(ncol(fe_design), sd = sd)
-        re_coefs <- lapply(lapply(remm$Ztlist, nrow), function(n_rows) {
-            rbinom(1, 1, 1 - sparsity) * rnorm(n_rows, sd = sd)
-        }) |>
-            unlist()
-
-        # Compute realized magnitude
-        log_mu <- (intercept + 
-            fe_design %*% fe_coefs + 
-            re_design %*% re_coefs + 
-            log(size_factors[data$batch_id])
-        ) |>
-            as.vector()
-
-        # Simulate counts
-        rnbinom(nrow(metadata), mu = exp(log_mu), size = iodisps[i])
-    })
-
-    # Cast to integers
-    mode(counts) <- "integer"
-
-    list(
-        counts = counts, 
-        metadata = metadata, 
-        size_factors = log(size_factors / sum(size_factors) * length(size_factors))
-    )
-}
 ```
 
 ```{r}
 # Define data generating process
-design_formula <- ~ cond_id
+design_formula <- ~cond_id
 
 n_donors <- 6L
 metadata <- data.frame(
@@ -563,7 +559,5 @@ levels(metadata$cond_id) <- letters[1:2]
 size_factors <- runif(n_donors, 0.5, 1.0)
 
 # Induce systematic difference in batch-effect
-size_factors[1:(n_donors/2)] <- size_factors[1:(n_donors/2)] / 2
-
-dataset <- simulate_dataset(design_formula, metadata, size_factors, 10000L, 0.5, 1.0)
+size_factors[1:(n_donors / 2)] <- size_factors[1:(n_donors / 2)] / 2
 ```
