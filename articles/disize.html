@@ -30,7 +30,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="../articles/disize.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../articles/disize.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
@@ -98,7 +98,9 @@ do not correspond to the same observation but are named, you can specify
 <blockquote>
 <p><strong>Note</strong>: <code>disize</code> encourages users to set
 the <code>n_threads</code> argument in order to take advantage of
-parallelization.</p>
+parallelization. Experiment with different values of
+<code>n_threads</code> to find the best performance for your
+dataset.</p>
 </blockquote>
 <div class="section level2">
 <h2 id="an-example-with-deseq2">An example with DESeq2<a class="anchor" aria-label="anchor" href="#an-example-with-deseq2"></a>
@@ -140,7 +142,7 @@ further processing).</p>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Set number of threads to use</span></span>
-<span><span class="va">n_threads</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">n_threads</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="downloading-the-data">Downloading the data<a class="anchor" aria-label="anchor" href="#downloading-the-data"></a>
@@ -160,7 +162,7 @@ further processing).</p>
 <span></span>
 <span><span class="co"># Coerce to formatted matrix</span></span>
 <span><span class="va">gene_names</span> <span class="op">&lt;-</span> <span class="va">counts</span><span class="op">$</span><span class="va">gene_id</span></span>
-<span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">counts</span><span class="op">[</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">counts</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">gene_names</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -187,7 +189,7 @@ experimental design:</p>
 <code>condition</code> on expression, thus the formula we would input
 into <code>disize</code> is:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">design_formula</span> <span class="op">&lt;-</span> <span class="op">~</span> <span class="va">condition</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">design_formula</span> <span class="op">&lt;-</span> <span class="op">~</span><span class="va">condition</span></span></code></pre></div>
 <p>We can finally run <code>disize</code> to get the estimated size
 factors:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -199,13 +201,13 @@ factors:</p>
 <span>    n_threads <span class="op">=</span> <span class="va">n_threads</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~32.5s)</span></span>
-<span><span class="co">#&gt; Finised in 12.4s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~37.6s)</span></span>
+<span><span class="co">#&gt; Finised in 6.5s!</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.086711573  0.010924573 -0.077573953  0.080145994  0.008387612  0.094615433 </span></span>
+<span><span class="co">#&gt;  0.086710805  0.010926103 -0.077574125  0.080145985  0.008387295  0.094615952 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.065187799  0.037279948  0.106725115 -0.164916966 -0.136815500 -0.025962074</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.065187891  0.037279059  0.106725148 -0.164916892 -0.136815457 -0.025961990</span></span></code></pre></div>
 <p>Evidently the batch-effect is indeed small across most samples! The
 samples “NELPS1” and “NELPS2” seem to have been processed slightly
 worse, but otherwise the estimated size factors are approximately the
@@ -222,13 +224,13 @@ a larger <code>n_feats</code>:</p>
 <span>    n_threads <span class="op">=</span> <span class="va">n_threads</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Formatting data...</span></span>
-<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~55.9s)</span></span>
-<span><span class="co">#&gt; Finised in 24.4s!</span></span>
+<span><span class="co">#&gt; Estimating size factors... (Max ETA: ~61.2s)</span></span>
+<span><span class="co">#&gt; Finised in 17s!</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">size_factors_2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        Ctrl1        Ctrl2        Ctrl3         LPS1         LPS2         LPS3 </span></span>
-<span><span class="co">#&gt;  0.094264585  0.013007705 -0.070803021  0.069177987 -0.005185924  0.081820273 </span></span>
+<span><span class="co">#&gt;  0.094265216  0.013003969 -0.070799181  0.069177948 -0.005184451  0.081822314 </span></span>
 <span><span class="co">#&gt;          NE1          NE2          NE3       NELPS1       NELPS2       NELPS3 </span></span>
-<span><span class="co">#&gt; -0.043598047  0.050039617  0.113597528 -0.173230185 -0.143794054 -0.031765591</span></span></code></pre></div>
+<span><span class="co">#&gt; -0.043599225  0.050043772  0.113594444 -0.173231735 -0.143795593 -0.031766908</span></span></code></pre></div>
 <p>Indeed the estimates remain largely the same.</p>
 </div>
 <div class="section level3">
@@ -261,30 +263,30 @@ object, the analysis then proceeds normally.</p>
 <span><span class="co">#&gt; DataFrame with 57132 rows and 6 columns</span></span>
 <span><span class="co">#&gt;                       baseMean log2FoldChange     lfcSE        stat      pvalue</span></span>
 <span><span class="co">#&gt;                      &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt;   &lt;numeric&gt;   &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028180 1.94153e+03     -0.7871862 0.0925976 -8.50114725 1.87726e-17</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028182 2.81686e+01     -0.8862797 0.5028262 -1.76259646 7.79686e-02</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028185 3.35066e-01     -0.0402415 4.4073563 -0.00913052 9.92715e-01</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028184 1.03779e+04      0.7660365 0.0651604 11.75617395 6.56420e-32</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028187 9.79170e+02     -0.1786587 0.1105460 -1.61614712 1.06063e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028180 1.94153e+03     -0.7871857 0.0925983 -8.50107714 1.87839e-17</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028182 2.81686e+01     -0.8862779 0.5028263 -1.76259259 7.79692e-02</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028185 3.35066e-01     -0.0402411 4.4073563 -0.00913043 9.92715e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028184 1.03779e+04      0.7660373 0.0651609 11.75609549 6.57030e-32</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028187 9.79170e+02     -0.1786585 0.1105467 -1.61613590 1.06065e-01</span></span>
 <span><span class="co">#&gt; ...                        ...            ...       ...         ...         ...</span></span>
-<span><span class="co">#&gt; ENSMUSG00000106108   10.697655      6.7530320 1.4302308    4.721638 2.33953e-06</span></span>
-<span><span class="co">#&gt; ENSMUSG00000042675 1581.164411     -0.0365519 0.0763698   -0.478617 6.32211e-01</span></span>
-<span><span class="co">#&gt; ENSMUSG00000036959 1429.611296      0.5472422 0.0835722    6.548136 5.82596e-11</span></span>
-<span><span class="co">#&gt; ENSMUSG00000036958    0.658051     -3.8966752 4.2776587   -0.910936 3.62329e-01</span></span>
-<span><span class="co">#&gt; ENSMUSG00000042678    5.578372     -5.5971675 1.7015851   -3.289384 1.00407e-03</span></span>
+<span><span class="co">#&gt; ENSMUSG00000106108   10.697649      6.7530320 1.4302309    4.721637 2.33953e-06</span></span>
+<span><span class="co">#&gt; ENSMUSG00000042675 1581.165128     -0.0365516 0.0763699   -0.478612 6.32214e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000036959 1429.611131      0.5472424 0.0835730    6.548077 5.82827e-11</span></span>
+<span><span class="co">#&gt; ENSMUSG00000036958    0.658053     -3.8966804 4.2776586   -0.910938 3.62328e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000042678    5.578370     -5.5971666 1.7015855   -3.289383 1.00407e-03</span></span>
 <span><span class="co">#&gt;                           padj</span></span>
 <span><span class="co">#&gt;                      &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028180 1.75087e-16</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028182 1.51915e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028180 1.75193e-16</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028182 1.51916e-01</span></span>
 <span><span class="co">#&gt; ENSMUSG00000028185          NA</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028184 1.03475e-30</span></span>
-<span><span class="co">#&gt; ENSMUSG00000028187 1.97549e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028184 1.03571e-30</span></span>
+<span><span class="co">#&gt; ENSMUSG00000028187 1.97554e-01</span></span>
 <span><span class="co">#&gt; ...                        ...</span></span>
-<span><span class="co">#&gt; ENSMUSG00000106108 9.56180e-06</span></span>
-<span><span class="co">#&gt; ENSMUSG00000042675 7.67219e-01</span></span>
-<span><span class="co">#&gt; ENSMUSG00000036959 3.62249e-10</span></span>
+<span><span class="co">#&gt; ENSMUSG00000106108 9.56183e-06</span></span>
+<span><span class="co">#&gt; ENSMUSG00000042675 7.67222e-01</span></span>
+<span><span class="co">#&gt; ENSMUSG00000036959 3.62392e-10</span></span>
 <span><span class="co">#&gt; ENSMUSG00000036958          NA</span></span>
-<span><span class="co">#&gt; ENSMUSG00000042678 2.93008e-03</span></span></code></pre></div>
+<span><span class="co">#&gt; ENSMUSG00000042678 2.93010e-03</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

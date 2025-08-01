@@ -32,7 +32,7 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../articles/disize.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
+<li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/benchmarking.html">Benchmarking against DESeq2 and edgeR</a></li>
@@ -90,14 +90,14 @@ by the effect of the covariates (<span class="math inline">\mathbf{\alpha}_g + \
 matrix <span class="math inline">\mathbf{X}</span> (without an
 intercept) and a “random-effects” model matrix <span class="math inline">\mathbf{Z}</span>; this by itself is a regular
 GLMM.</p>
-<p>The confounding batch-effect is essentially an unknown offset <span class="math inline">\mathbf{o} = \mathbf{B} \mathbf{s}</span>, where
+<p>The confounding batch-effect is essentially an unknown “offset” (not
+in the literal sense as it is being estimated) <span class="math inline">\mathbf{o} = \mathbf{B} \mathbf{s}</span>, where
 <span class="math inline">\mathbf{B}</span> specifies the batch
 membership for each observation and <span class="math inline">\mathbf{s}</span> contains the “size factors” which
 scale the true magnitude of expression.</p>
-<p>At its face, however, this model should not be identifiable for most
-experimental designs (often the batch ID results in too many free
-parameters such as when it is identical to a measured covariate). This
-identifiability issue is overcome by constraining <span class="math inline">\mathbf{s}</span> and assuming only a fraction of
+<p>At its face, however, this model should not be joint identifiable for
+most experimental designs (often the batch ID is perfectly collinear
+with a measured covariate). This is overcome by constraining <span class="math inline">\mathbf{s}</span> and assuming only a fraction of
 features are significantly affected by the covariates measured in the
 experiment; in other words, the estimated coefficients <span class="math inline">\mathbf{\beta}_g, \mathbf{b}_g</span> (excluding the
 intercept) are <em>sparse</em> across genes.</p>
@@ -120,7 +120,11 @@ experiments:</p>
 \mathbf{\lambda}_g^{(r)} \odot \mathbf{\tau}_g^{(r)} ]) \\
     \mathbf{\lambda}_g^{(r)} &amp;\sim \text{Half-Cauchy}(\mathbf{0},
 \mathbf{1}) \\
+    \mathbf{1} \cdot \exp(\mathbf{s}) = n_b
 \end{aligned}</span></p>
+<p>Where <span class="math inline">\mathbf{R}</span> specifies the
+random-effects term membership for each random-effect coefficient, and
+<span class="math inline">n_b</span> denotes the number of batches.</p>
 <div class="section level2">
 <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a>
 </h2>
